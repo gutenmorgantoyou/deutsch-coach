@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Deutsch Coach 🇩🇪</title>
+
+
+    <style>
+        body {
+            margin: 0;
+            font-family: Arial, sans-serif;
+            background: #f5f5f5;
+            color: #222;
+        }
+
+        .app {
+            max-width: 600px;
+            margin: auto;
+            padding: 24px;
+        }
+
+        h1 {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .card {
+            background: white;
+            border-radius: 16px;
+            padding: 20px;
+            margin-bottom: 16px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+        }
+
+        .label {
+            font-size: 14px;
+            color: #777;
+            margin-bottom: 8px;
+        }
+
+        .text {
+            font-size: 20px;
+            line-height: 1.5;
+        }
+
+        button {
+            width: 100%;
+            border: none;
+            border-radius: 14px;
+            padding: 18px;
+            font-size: 20px;
+            background: #1976d2;
+            color: white;
+            cursor: pointer;
+        }
+
+        button.listening {
+            background: #d32f2f;
+        }
+
+        #status {
+            text-align: center;
+            margin-top: 16px;
+            color: #666;
+        }
+    </style>
+</head>
+
+<body>
+
+<div class="app">
+
+    <h1>🇩🇪 Deutsch Coach</h1>
+
+    <div class="card">
+        <div class="label">Deutsch Coach</div>
+        <div class="text" id="botText">
+            Hallo! Wie geht es dir heute?
+        </div>
+    </div>
+
+    <div class="card">
+        <div class="label">Du</div>
+        <div class="text" id="userText">
+            —
+        </div>
+    </div>
+
+    <button id="speakButton">
+        🎙️ Sprechen
+    </button>
+
+    <div id="status">
+        Bereit
+    </div>
+
+</div>
+
+<script>
+
+const speakButton = document.getElementById("speakButton");
+const userText = document.getElementById("userText");
+const status = document.getElementById("status");
+
+const SpeechRecognition =
+    window.SpeechRecognition ||
+    window.webkitSpeechRecognition;
+
+if (!SpeechRecognition) {
+
+    status.textContent =
+        "Spracherkennung wird von diesem Browser nicht unterstützt.";
+
+} else {
+
+    const recognition = new SpeechRecognition();
+
+    recognition.lang = "de-DE";
+
+    recognition.continuous = false;
+
+    recognition.interimResults = false;
+
+    recognition.maxAlternatives = 1;
+
+
+    speakButton.onclick = () => {
+
+        recognition.start();
+
+        speakButton.classList.add("listening");
+
+        speakButton.textContent = "🎙️ Zuhören...";
+
+        status.textContent = "Ich höre zu...";
+    };
+
+
+    recognition.onresult = (event) => {
+
+        const text =
+            event.results[0][0].transcript;
+
+        userText.textContent = text;
+
+        status.textContent = "Erkannt!";
+    };
+
+
+    recognition.onerror = (event) => {
+
+        console.log(event.error);
+
+        status.textContent =
+            "Fehler: " + event.error;
+    };
+
+
+    recognition.onend = () => {
+
+        speakButton.classList.remove("listening");
+
+        speakButton.textContent =
+            "🎙️ Sprechen";
+
+        if (status.textContent === "Ich höre zu...") {
+            status.textContent = "Bereit";
+        }
+    };
+
+}
+
+</script>
+
+</body>
+</html>
