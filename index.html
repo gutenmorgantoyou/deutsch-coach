@@ -60,6 +60,11 @@
             background: #d32f2f;
         }
 
+        button:disabled {
+            background: #999;
+            cursor: not-allowed;
+        }
+
         #status {
             text-align: center;
             margin-top: 16px;
@@ -102,11 +107,14 @@
 
 const speakButton = document.getElementById("speakButton");
 const userText = document.getElementById("userText");
+const botText = document.getElementById("botText");
 const status = document.getElementById("status");
 
 const SpeechRecognition =
     window.SpeechRecognition ||
     window.webkitSpeechRecognition;
+
+const synth = window.speechSynthesis;
 
 if (!SpeechRecognition) {
 
@@ -132,6 +140,8 @@ if (!SpeechRecognition) {
 
         speakButton.classList.add("listening");
 
+        speakButton.disabled = true;
+
         speakButton.textContent = "🎙️ Zuhören...";
 
         status.textContent = "Ich höre zu...";
@@ -146,6 +156,11 @@ if (!SpeechRecognition) {
         userText.textContent = text;
 
         status.textContent = "Erkannt!";
+
+        // Get bot response and speak it
+        setTimeout(() => {
+            getBotResponse(text);
+        }, 500);
     };
 
 
@@ -155,6 +170,8 @@ if (!SpeechRecognition) {
 
         status.textContent =
             "Fehler: " + event.error;
+
+        speakButton.disabled = false;
     };
 
 
@@ -170,6 +187,64 @@ if (!SpeechRecognition) {
         }
     };
 
+}
+
+// Simple response system
+function getBotResponse(userInput) {
+    const responses = {
+        "guten morgen": "Guten Morgen! Wie geht es dir?",
+        "guten tag": "Guten Tag! Schön, dich zu sehen!",
+        "guten abend": "Guten Abend! Wie war dein Tag?",
+        "wie geht es dir": "Mir geht es gut, danke der Nachfrage! Und dir?",
+        "mir geht es gut": "Das freut mich zu hören!",
+        "danke": "Gerne! Alles klar?",
+        "ja": "Sehr gut! Bis bald!",
+        "nein": "Was ist denn los? Erzähl mir mehr!",
+        "default": "Interessant! Kannst du das wiederhole n?"
+    };
+
+    const lowerInput = userInput.toLowerCase();
+    let response = responses["default"];
+
+    // Find matching response
+    for (let key in responses) {
+        if (lowerInput.includes(key)) {
+            response = responses[key];
+            break;
+        }
+    }
+
+    // Update bot text
+    botText.textContent = response;
+    status.textContent = "Antworte...";
+
+    // Speak the response
+    speakResponse(response);
+}
+
+// Text-to-speech function
+function speakResponse(text) {
+    // Cancel any ongoing speech
+    synth.cancel();
+
+    const utterance = new SpeechSynthesisUtterance(text);
+    utterance.lang = "de-DE";
+    utterance.rate = 1;
+    utterance.pitch = 1;
+    utterance.volume = 1;
+
+    utterance.onend = () => {
+        status.textContent = "Fertig! Sprich wieder.";
+        speakButton.disabled = false;
+    };
+
+    utterance.onerror = (event) => {
+        console.error("Speech error:", event.error);
+        status.textContent = "Fehler beim Sprechen";
+        speakButton.disabled = false;
+    };
+
+    synth.speak(utterance);
 }
 
 </script>
