@@ -17,12 +17,35 @@
         .app {
             max-width: 600px;
             margin: auto;
-            padding: 24px;
+            padding: 20px;
         }
 
         h1 {
             text-align: center;
-            margin-bottom: 24px;
+            margin-bottom: 20px;
+        }
+
+        .level-card {
+            background: white;
+            border-radius: 16px;
+            padding: 16px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+        }
+
+        .level-title {
+            font-size: 14px;
+            color: #777;
+            margin-bottom: 10px;
+        }
+
+        .level-select {
+            width: 100%;
+            padding: 14px;
+            border-radius: 12px;
+            border: 1px solid #ccc;
+            font-size: 18px;
+            background: white;
         }
 
         .conversation-title {
@@ -67,6 +90,19 @@
             line-height: 1.4;
         }
 
+        .correction {
+            margin-top: 8px;
+            padding: 10px;
+            background: #fff8e1;
+            border-radius: 10px;
+            font-size: 14px;
+            line-height: 1.4;
+        }
+
+        .correction strong {
+            color: #8a6500;
+        }
+
         button {
             width: 100%;
             border: none;
@@ -93,6 +129,13 @@
             margin-top: 16px;
             color: #666;
         }
+
+        .level-description {
+            margin-top: 8px;
+            font-size: 13px;
+            color: #777;
+            line-height: 1.4;
+        }
     </style>
 </head>
 
@@ -102,9 +145,60 @@
 
     <h1>🇩🇪 Deutsch Coach</h1>
 
+
+    <!-- LEVEL SELECTOR -->
+
+    <div class="level-card">
+
+        <div class="level-title">
+            🎯 Dein Deutsch-Niveau
+        </div>
+
+        <select
+            id="levelSelect"
+            class="level-select"
+        >
+
+            <option value="A1">
+                A1 – Anfänger
+            </option>
+
+            <option value="A2">
+                A2 – Grundkenntnisse
+            </option>
+
+            <option value="B1">
+                B1 – Mittelstufe
+            </option>
+
+            <option value="B2">
+                B2 – Gute Mittelstufe
+            </option>
+
+            <option value="C1">
+                C1 – Fortgeschritten
+            </option>
+
+            <option value="C2">
+                C2 – Nahezu muttersprachlich
+            </option>
+
+        </select>
+
+        <div
+            id="levelDescription"
+            class="level-description"
+        >
+            Einfache Wörter und kurze Sätze.
+        </div>
+
+    </div>
+
+
     <div class="conversation-title">
         Gespräch
     </div>
+
 
     <div id="conversation">
 
@@ -150,9 +244,15 @@ const status =
 const conversation =
     document.getElementById("conversation");
 
+const levelSelect =
+    document.getElementById("levelSelect");
+
+const levelDescription =
+    document.getElementById("levelDescription");
+
 
 /*
- * Your Cloudflare Worker
+ * Cloudflare Worker
  */
 
 const API_URL =
@@ -160,16 +260,56 @@ const API_URL =
 
 
 /*
+ * Current German level.
+ */
+
+let currentLevel =
+    localStorage.getItem(
+        "deutschCoachLevel"
+    ) || "A1";
+
+
+levelSelect.value =
+    currentLevel;
+
+
+/*
+ * Level descriptions.
+ */
+
+const descriptions = {
+
+    A1:
+        "Einfache Wörter und kurze Sätze.",
+
+    A2:
+        "Einfache Gespräche über Alltag und bekannte Themen.",
+
+    B1:
+        "Normale Gespräche mit etwas komplexeren Sätzen.",
+
+    B2:
+        "Natürlichere Gespräche mit vielfältigem Wortschatz.",
+
+    C1:
+        "Anspruchsvolle Gespräche mit komplexerem Deutsch.",
+
+    C2:
+        "Sehr fortgeschrittenes, nahezu muttersprachliches Deutsch."
+
+};
+
+
+levelDescription.textContent =
+    descriptions[currentLevel];
+
+
+/*
+ * Conversation memory.
+ *
  * IMPORTANT:
- *
- * This array is the conversation memory.
- *
- * It contains ONLY the German conversation.
- *
- * English translations are NOT added here.
- *
- * This means the AI continues to receive
- * the full conversation context.
+ * Only German conversation goes here.
+ * English translations are NOT stored.
  */
 
 const messages = [
@@ -184,17 +324,44 @@ const messages = [
 
 
 /*
- * Add a message to the conversation.
- *
- * German text is displayed first.
- * English translation is displayed underneath.
+ * Change level.
+ */
+
+levelSelect.onchange =
+    () => {
+
+        currentLevel =
+            levelSelect.value;
+
+
+        localStorage.setItem(
+            "deutschCoachLevel",
+            currentLevel
+        );
+
+
+        levelDescription.textContent =
+            descriptions[currentLevel];
+
+
+        status.textContent =
+            "Niveau " +
+            currentLevel +
+            " ausgewählt.";
+
+    };
+
+
+/*
+ * Add visible message.
  */
 
 function addMessage(
     speaker,
     text,
     type,
-    translation = ""
+    translation = "",
+    correction = ""
 ) {
 
     const message =
@@ -255,14 +422,33 @@ function addMessage(
     }
 
 
+    /*
+     * Optional correction.
+     */
+
+    if (correction) {
+
+        const correctionElement =
+            document.createElement("div");
+
+        correctionElement.className =
+            "correction";
+
+        correctionElement.innerHTML =
+            "<strong>✏️ Korrektur:</strong> " +
+            escapeHtml(correction);
+
+        message.appendChild(
+            correctionElement
+        );
+
+    }
+
+
     conversation.appendChild(
         message
     );
 
-
-    /*
-     * Scroll to newest message.
-     */
 
     window.scrollTo({
 
@@ -278,11 +464,24 @@ function addMessage(
 
 
 /*
- * Translate a German sentence
- * into English.
- *
- * This request does NOT affect
- * the conversation history.
+ * Protect displayed correction text.
+ */
+
+function escapeHtml(text) {
+
+    const div =
+        document.createElement("div");
+
+    div.textContent =
+        text;
+
+    return div.innerHTML;
+
+}
+
+
+/*
+ * Translate German to English.
  */
 
 async function translateToEnglish(text) {
@@ -303,9 +502,11 @@ async function translateToEnglish(text) {
 
                 body: JSON.stringify({
 
-                    translate: true,
+                    translate:
+                        true,
 
-                    text: text
+                    text:
+                        text
 
                 })
 
@@ -326,18 +527,10 @@ async function translateToEnglish(text) {
         }
 
 
-        if (
-            !data.translation
-        ) {
-
-            throw new Error(
-                "No translation returned."
-            );
-
-        }
-
-
-        return data.translation.trim();
+        return (
+            data.translation ||
+            "Translation unavailable."
+        ).trim();
 
 
     } catch (error) {
@@ -355,8 +548,7 @@ async function translateToEnglish(text) {
 
 
 /*
- * Speak German using the phone's
- * built-in speech synthesis.
+ * Speak German.
  */
 
 function speakGerman(text) {
@@ -397,7 +589,7 @@ function speakGerman(text) {
 
 
 /*
- * Ask the AI Coach.
+ * Ask Coach.
  */
 
 async function askCoach() {
@@ -405,20 +597,11 @@ async function askCoach() {
     status.textContent =
         "🤔 Ich denke...";
 
-
     speakButton.disabled =
         true;
 
 
     try {
-
-        /*
-         * Send the complete conversation
-         * history to the Worker.
-         *
-         * The Worker then sends it to
-         * OpenRouter.
-         */
 
         const response =
             await fetch(API_URL, {
@@ -435,7 +618,10 @@ async function askCoach() {
                 body: JSON.stringify({
 
                     messages:
-                        messages
+                        messages,
+
+                    level:
+                        currentLevel
 
                 })
 
@@ -466,10 +652,7 @@ async function askCoach() {
 
 
         /*
-         * IMPORTANT:
-         *
-         * Add the AI response to
-         * conversation memory.
+         * Store ONLY the German AI response.
          */
 
         messages.push({
@@ -484,9 +667,7 @@ async function askCoach() {
 
 
         /*
-         * Get English translation.
-         *
-         * This is ONLY for display.
+         * Translate the AI response.
          */
 
         const translation =
@@ -496,8 +677,7 @@ async function askCoach() {
 
 
         /*
-         * Add German + English
-         * to the visible conversation.
+         * Display AI response.
          */
 
         addMessage(
@@ -508,13 +688,15 @@ async function askCoach() {
 
             "coach",
 
-            translation
+            translation,
+
+            data.correction || ""
 
         );
 
 
         /*
-         * Speak German response.
+         * Speak German.
          */
 
         speakGerman(
@@ -587,18 +769,13 @@ if (!SpeechRecognition) {
 
 
     /*
-     * Start microphone.
+     * Start listening.
      */
 
     speakButton.onclick =
         () => {
 
             try {
-
-                /*
-                 * Stop any current
-                 * coach speech.
-                 */
 
                 window.speechSynthesis.cancel();
 
@@ -621,9 +798,7 @@ if (!SpeechRecognition) {
 
             } catch (error) {
 
-                console.error(
-                    error
-                );
+                console.error(error);
 
             }
 
@@ -652,13 +827,9 @@ if (!SpeechRecognition) {
 
 
             /*
-             * IMPORTANT:
+             * Store learner's German.
              *
-             * Add learner's German
-             * to conversation memory.
-             *
-             * English translation is NOT
-             * stored in messages.
+             * English translation is NOT stored.
              */
 
             messages.push({
@@ -673,9 +844,7 @@ if (!SpeechRecognition) {
 
 
             /*
-             * Translate learner's sentence.
-             *
-             * Translation is visual only.
+             * Translate learner message.
              */
 
             const translation =
@@ -685,8 +854,7 @@ if (!SpeechRecognition) {
 
 
             /*
-             * Show learner's German +
-             * English translation.
+             * Show learner message.
              */
 
             addMessage(
@@ -703,7 +871,7 @@ if (!SpeechRecognition) {
 
 
             /*
-             * Ask the AI Coach.
+             * Ask AI.
              */
 
             await askCoach();
@@ -712,7 +880,7 @@ if (!SpeechRecognition) {
 
 
     /*
-     * Speech recognition errors.
+     * Recognition errors.
      */
 
     recognition.onerror =
@@ -732,7 +900,6 @@ if (!SpeechRecognition) {
                 status.textContent =
                     "Mikrofonzugriff wurde verweigert.";
 
-
             } else if (
                 event.error ===
                 "no-speech"
@@ -740,7 +907,6 @@ if (!SpeechRecognition) {
 
                 status.textContent =
                     "Ich habe nichts gehört.";
-
 
             } else {
 
@@ -754,7 +920,7 @@ if (!SpeechRecognition) {
 
 
     /*
-     * Recognition finished.
+     * Recognition ended.
      */
 
     recognition.onend =
