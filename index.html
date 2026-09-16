@@ -1,202 +1,201 @@
-<!DOCTYPE html><html lang="en">
+<!DOCTYPE html>
+<html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0"><title>Deutsch Coach 🇩🇪</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<style>
-    body {
-        margin: 0;
-        font-family: Arial, sans-serif;
-        background: #f5f5f5;
-        color: #222;
-    }
+    <title>Deutsch Coach 🇩🇪</title>
 
-    .app {
-        max-width: 600px;
-        margin: auto;
-        padding: 24px;
-    }
+    <style>
+        body {
+            margin: 0;
+            font-family: Arial, sans-serif;
+            background: #f5f5f5;
+            color: #222;
+        }
 
-    h1 {
-        text-align: center;
-        margin-bottom: 20px;
-    }
+        .app {
+            max-width: 600px;
+            margin: auto;
+            padding: 24px;
+        }
 
-    .card {
-        background: white;
-        border-radius: 16px;
-        padding: 20px;
-        margin-bottom: 16px;
-        box-shadow: 0 2px 8px rgba(0,0,0,0.08);
-    }
+        h1 {
+            text-align: center;
+            margin-bottom: 20px;
+        }
 
-    .card-title {
-        font-size: 18px;
-        font-weight: bold;
-        margin-bottom: 18px;
-    }
+        .last-exchange {
+            background: white;
+            border-radius: 16px;
+            padding: 20px;
+            margin-bottom: 16px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+        }
 
-    .exchange-section {
-        margin-bottom: 20px;
-    }
+        .last-title {
+            font-size: 14px;
+            color: #777;
+            margin-bottom: 14px;
+            font-weight: bold;
+        }
 
-    .exchange-section:last-child {
-        margin-bottom: 0;
-    }
+        .exchange-row {
+            margin-bottom: 14px;
+        }
 
-    .label {
-        font-size: 14px;
-        color: #777;
-        margin-bottom: 6px;
-    }
+        .exchange-speaker {
+            font-size: 13px;
+            color: #777;
+            margin-bottom: 4px;
+        }
 
-    .german {
-        font-size: 20px;
-        line-height: 1.5;
-    }
+        .german {
+            font-size: 19px;
+            line-height: 1.5;
+        }
 
-    .english {
-        font-size: 16px;
-        color: #666;
-        line-height: 1.5;
-        margin-top: 5px;
-    }
+        .english {
+            font-size: 15px;
+            color: #555;
+            margin-top: 5px;
+            line-height: 1.4;
+        }
 
-    .history-title {
-        font-size: 18px;
-        font-weight: bold;
-        margin-bottom: 16px;
-    }
+        #conversation {
+            margin-top: 20px;
+        }
 
-    #conversation {
-        margin-top: 0;
-    }
+        .conversation-title {
+            font-size: 14px;
+            color: #777;
+            font-weight: bold;
+            margin-bottom: 12px;
+        }
 
-    .message {
-        margin-bottom: 14px;
-    }
+        .message {
+            margin-bottom: 14px;
+        }
 
-    .message .speaker {
-        font-size: 13px;
-        color: #777;
-        margin-bottom: 4px;
-    }
+        .message .speaker {
+            font-size: 13px;
+            color: #777;
+            margin-bottom: 4px;
+        }
 
-    .message .bubble {
-        background: #fff;
-        border-radius: 12px;
-        padding: 12px;
-        line-height: 1.5;
-    }
+        .message .bubble {
+            background: #fff;
+            border-radius: 12px;
+            padding: 12px;
+            line-height: 1.5;
+            font-size: 18px;
+        }
 
-    .message.user .bubble {
-        background: #e3f2fd;
-    }
+        .message.user .bubble {
+            background: #e3f2fd;
+        }
 
-    .message.coach .bubble {
-        background: #eeeeee;
-    }
+        .message.coach .bubble {
+            background: #eeeeee;
+        }
 
-    button {
-        width: 100%;
-        border: none;
-        border-radius: 14px;
-        padding: 18px;
-        font-size: 20px;
-        background: #1976d2;
-        color: white;
-        cursor: pointer;
-    }
+        button {
+            width: 100%;
+            border: none;
+            border-radius: 14px;
+            padding: 18px;
+            font-size: 20px;
+            background: #1976d2;
+            color: white;
+            cursor: pointer;
+            margin-top: 16px;
+        }
 
-    button.listening {
-        background: #d32f2f;
-    }
+        button.listening {
+            background: #d32f2f;
+        }
 
-    button:disabled {
-        opacity: 0.6;
-        cursor: wait;
-    }
+        button:disabled {
+            opacity: 0.6;
+            cursor: wait;
+        }
 
-    #status {
-        text-align: center;
-        margin-top: 16px;
-        color: #666;
-    }
-</style>
+        #status {
+            text-align: center;
+            margin-top: 16px;
+            color: #666;
+        }
+    </style>
+</head>
 
-</head><body><div class="app"><h1>🇩🇪 Deutsch Coach</h1>
+<body>
 
+<div class="app">
 
-<!-- LATEST EXCHANGE -->
-
-<div class="card">
-
-    <div class="card-title">
-        Letzter Austausch
-    </div>
+    <h1>🇩🇪 Deutsch Coach</h1>
 
 
-    <!-- Learner -->
+    <!--
+        LAST EXCHANGE
 
-    <div class="exchange-section">
+        English translations appear ONLY here.
+        They will NOT appear in the conversation history.
+    -->
 
-        <div class="label">
-            Du
+    <div class="last-exchange">
+
+        <div class="last-title">
+            Letzter Austausch
         </div>
 
-        <div
-            class="german"
-            id="latestUserGerman"
-        >
-            —
+        <div class="exchange-row">
+
+            <div class="exchange-speaker">
+                Du
+            </div>
+
+            <div class="german" id="lastUserGerman">
+                —
+            </div>
+
+            <div class="english" id="lastUserEnglish">
+                🇬🇧 —
+            </div>
+
         </div>
 
-        <div
-            class="english"
-            id="latestUserEnglish"
-        >
-            🇬🇧 —
-        </div>
 
-    </div>
+        <div class="exchange-row">
 
+            <div class="exchange-speaker">
+                Deutsch Coach
+            </div>
 
-    <!-- Coach -->
+            <div class="german" id="lastCoachGerman">
+                Hallo! Wie geht es dir heute?
+            </div>
 
-    <div class="exchange-section">
+            <div class="english" id="lastCoachEnglish">
+                🇬🇧 Hello! How are you today?
+            </div>
 
-        <div class="label">
-            Deutsch Coach
-        </div>
-
-        <div
-            class="german"
-            id="latestCoachGerman"
-        >
-            Hallo! Wie geht es dir heute?
-        </div>
-
-        <div
-            class="english"
-            id="latestCoachEnglish"
-        >
-            🇬🇧 Hello! How are you today?
         </div>
 
     </div>
 
-</div>
 
+    <!--
+        CONVERSATION HISTORY
 
-<!-- CONVERSATION HISTORY -->
-
-<div class="card">
-
-    <div class="history-title">
-        Gespräch
-    </div>
+        German only.
+        No English translations here.
+    -->
 
     <div id="conversation">
+
+        <div class="conversation-title">
+            Gespräch
+        </div>
 
         <div class="message coach">
 
@@ -212,20 +211,20 @@
 
     </div>
 
+
+    <button id="speakButton">
+        🎙️ Sprechen
+    </button>
+
+
+    <div id="status">
+        Bereit
+    </div>
+
 </div>
 
 
-<!-- SPEAK BUTTON -->
-
-<button id="speakButton">
-    🎙️ Sprechen
-</button>
-
-<div id="status">
-    Bereit
-</div>
-
-</div><script>
+<script>
 
 const speakButton =
     document.getElementById("speakButton");
@@ -236,17 +235,17 @@ const status =
 const conversation =
     document.getElementById("conversation");
 
-const latestUserGerman =
-    document.getElementById("latestUserGerman");
+const lastUserGerman =
+    document.getElementById("lastUserGerman");
 
-const latestUserEnglish =
-    document.getElementById("latestUserEnglish");
+const lastUserEnglish =
+    document.getElementById("lastUserEnglish");
 
-const latestCoachGerman =
-    document.getElementById("latestCoachGerman");
+const lastCoachGerman =
+    document.getElementById("lastCoachGerman");
 
-const latestCoachEnglish =
-    document.getElementById("latestCoachEnglish");
+const lastCoachEnglish =
+    document.getElementById("lastCoachEnglish");
 
 
 /*
@@ -258,14 +257,16 @@ const API_URL =
 
 
 /*
- * Conversation history
+ * Conversation history.
+ *
+ * IMPORTANT:
+ * English translations are NOT stored here.
  */
 
 const messages = [
 
     {
         role: "assistant",
-
         content:
             "Hallo! Wie geht es dir heute?"
     }
@@ -274,7 +275,8 @@ const messages = [
 
 
 /*
- * Add message to history
+ * Add a message to the German-only
+ * conversation history.
  */
 
 function addMessage(
@@ -289,7 +291,6 @@ function addMessage(
     message.className =
         "message " + type;
 
-
     const speakerElement =
         document.createElement("div");
 
@@ -298,7 +299,6 @@ function addMessage(
 
     speakerElement.textContent =
         speaker;
-
 
     const bubble =
         document.createElement("div");
@@ -309,7 +309,6 @@ function addMessage(
     bubble.textContent =
         text;
 
-
     message.appendChild(
         speakerElement
     );
@@ -318,27 +317,80 @@ function addMessage(
         bubble
     );
 
-
     conversation.appendChild(
         message
     );
 
-
     window.scrollTo({
-
         top:
             document.body.scrollHeight,
-
         behavior:
             "smooth"
-
     });
 }
 
 
 /*
- * Speak German using
- * phone speech synthesis
+ * Translate text into English.
+ *
+ * We use the same AI backend.
+ */
+
+async function translateToEnglish(text) {
+
+    try {
+
+        const response =
+            await fetch(API_URL, {
+
+                method: "POST",
+
+                headers: {
+                    "Content-Type":
+                        "application/json"
+                },
+
+                body: JSON.stringify({
+
+                    translate: true,
+
+                    text: text
+
+                })
+
+            });
+
+
+        const data =
+            await response.json();
+
+
+        if (!response.ok) {
+
+            throw new Error(
+                data.error ||
+                "Translation error"
+            );
+        }
+
+
+        return data.translation || text;
+
+    } catch (error) {
+
+        console.error(
+            "Translation error:",
+            error
+        );
+
+        return text;
+    }
+}
+
+
+/*
+ * Speak German using the phone's
+ * built-in speech synthesis.
  */
 
 function speakGerman(text) {
@@ -349,27 +401,19 @@ function speakGerman(text) {
         return;
     }
 
-
     window.speechSynthesis.cancel();
 
-
     const speech =
-        new SpeechSynthesisUtterance(
-            text
-        );
-
+        new SpeechSynthesisUtterance(text);
 
     speech.lang =
         "de-DE";
 
-
     speech.rate =
         0.9;
 
-
     speech.pitch =
         1;
-
 
     window.speechSynthesis.speak(
         speech
@@ -378,7 +422,7 @@ function speakGerman(text) {
 
 
 /*
- * Ask the AI coach
+ * Ask the AI coach.
  */
 
 async function askCoach() {
@@ -386,81 +430,55 @@ async function askCoach() {
     status.textContent =
         "🤔 Ich denke...";
 
-
     speakButton.disabled =
         true;
-
 
     try {
 
         const response =
-            await fetch(
+            await fetch(API_URL, {
 
-                API_URL,
+                method: "POST",
 
-                {
+                headers: {
+                    "Content-Type":
+                        "application/json"
+                },
 
-                    method:
-                        "POST",
+                body: JSON.stringify({
 
-                    headers: {
+                    messages:
+                        messages
 
-                        "Content-Type":
-                            "application/json"
+                })
 
-                    },
-
-                    body:
-                        JSON.stringify({
-
-                            messages:
-                                messages
-
-                        })
-
-                }
-
-            );
+            });
 
 
         const data =
             await response.json();
 
 
-        /*
-         * Server error
-         */
-
         if (!response.ok) {
 
             throw new Error(
-
                 data.error ||
                 "Server error"
-
             );
-
         }
 
-
-        /*
-         * Check German reply
-         */
 
         if (!data.reply) {
 
             throw new Error(
-
                 "Keine Antwort vom Coach."
-
             );
-
         }
 
 
         /*
-         * Add coach reply
-         * to conversation history
+         * Add German AI response
+         * to conversation history.
          */
 
         messages.push({
@@ -475,57 +493,38 @@ async function askCoach() {
 
 
         /*
-         * Update latest
-         * coach German
-         */
-
-        latestCoachGerman.textContent =
-            data.reply;
-
-
-        /*
-         * Update latest
-         * coach English
-         */
-
-        latestCoachEnglish.textContent =
-            "🇬🇧 " +
-            (
-                data.replyEnglish ||
-                "Translation unavailable."
-            );
-
-
-        /*
-         * Update learner English
-         */
-
-        latestUserEnglish.textContent =
-            "🇬🇧 " +
-            (
-                data.userEnglish ||
-                "Translation unavailable."
-            );
-
-
-        /*
-         * Add German coach reply
-         * to history
+         * Show German response
+         * in history.
          */
 
         addMessage(
-
             "Deutsch Coach",
-
             data.reply,
-
             "coach"
-
         );
 
 
         /*
-         * Speak German reply
+         * Update Last Exchange.
+         */
+
+        lastCoachGerman.textContent =
+            data.reply;
+
+
+        /*
+         * Get English translation.
+         */
+
+        lastCoachEnglish.textContent =
+            "🇬🇧 " +
+            await translateToEnglish(
+                data.reply
+            );
+
+
+        /*
+         * Speak German response.
          */
 
         speakGerman(
@@ -536,16 +535,13 @@ async function askCoach() {
         status.textContent =
             "Bereit";
 
-
     } catch (error) {
 
         console.error(error);
 
-
         status.textContent =
             "Fehler: " +
             error.message;
-
 
     } finally {
 
@@ -557,7 +553,7 @@ async function askCoach() {
 
 
 /*
- * Browser speech recognition
+ * Speech recognition.
  */
 
 const SpeechRecognition =
@@ -573,7 +569,6 @@ if (!SpeechRecognition) {
     speakButton.disabled =
         true;
 
-
 } else {
 
     const recognition =
@@ -583,58 +578,49 @@ if (!SpeechRecognition) {
     recognition.lang =
         "de-DE";
 
-
     recognition.continuous =
         false;
 
-
     recognition.interimResults =
         false;
-
 
     recognition.maxAlternatives =
         1;
 
 
     /*
-     * Start listening
+     * Start listening.
      */
 
-    speakButton.onclick =
-        () => {
+    speakButton.onclick = () => {
 
-            try {
+        try {
 
-                window.speechSynthesis.cancel();
+            window.speechSynthesis.cancel();
 
+            recognition.start();
 
-                recognition.start();
+            speakButton.classList.add(
+                "listening"
+            );
 
+            speakButton.textContent =
+                "🎙️ Zuhören...";
 
-                speakButton.classList.add(
-                    "listening"
-                );
+            status.textContent =
+                "Ich höre zu...";
 
+        } catch (error) {
 
-                speakButton.textContent =
-                    "🎙️ Zuhören...";
+            console.error(error);
 
+        }
 
-                status.textContent =
-                    "Ich höre zu...";
-
-
-            } catch (error) {
-
-                console.error(error);
-
-            }
-
-        };
+    };
 
 
     /*
-     * Speech recognized
+     * Speech recognized.
      */
 
     recognition.onresult =
@@ -647,21 +633,8 @@ if (!SpeechRecognition) {
 
 
             /*
-             * Show learner's German
-             * immediately
-             */
-
-            latestUserGerman.textContent =
-                text;
-
-
-            latestUserEnglish.textContent =
-                "🇬🇧 Übersetzung wird geladen...";
-
-
-            /*
-             * Add learner message
-             * to conversation
+             * Add learner's German
+             * to history.
              */
 
             messages.push({
@@ -676,23 +649,40 @@ if (!SpeechRecognition) {
 
 
             /*
-             * Add learner message
-             * to history
+             * Show learner's German
+             * in history.
              */
 
             addMessage(
-
                 "Du",
-
                 text,
-
                 "user"
-
             );
 
 
             /*
-             * Ask AI
+             * Update Last Exchange
+             * with learner's German.
+             */
+
+            lastUserGerman.textContent =
+                text;
+
+
+            /*
+             * Translate learner's
+             * sentence into English.
+             */
+
+            lastUserEnglish.textContent =
+                "🇬🇧 " +
+                await translateToEnglish(
+                    text
+                );
+
+
+            /*
+             * Ask the coach.
              */
 
             await askCoach();
@@ -701,18 +691,15 @@ if (!SpeechRecognition) {
 
 
     /*
-     * Speech recognition errors
+     * Speech recognition errors.
      */
 
     recognition.onerror =
         (event) => {
 
             console.log(
-
                 "Speech error:",
-
                 event.error
-
             );
 
 
@@ -724,7 +711,6 @@ if (!SpeechRecognition) {
                 status.textContent =
                     "Mikrofonzugriff wurde verweigert.";
 
-
             } else if (
                 event.error ===
                 "no-speech"
@@ -732,7 +718,6 @@ if (!SpeechRecognition) {
 
                 status.textContent =
                     "Ich habe nichts gehört.";
-
 
             } else {
 
@@ -746,7 +731,7 @@ if (!SpeechRecognition) {
 
 
     /*
-     * Recognition finished
+     * Recognition ended.
      */
 
     recognition.onend =
@@ -756,7 +741,6 @@ if (!SpeechRecognition) {
                 "listening"
             );
 
-
             speakButton.textContent =
                 "🎙️ Sprechen";
 
@@ -764,5 +748,22 @@ if (!SpeechRecognition) {
 
 }
 
-</script></body>
+</script>
+
+</body>
 </html>
+
+One important thing
+
+This "index.html" expects the Worker to support a second request:
+
+translate: true
+
+Your current "worker.js" does not support that yet. So don't deploy this "index.html" alone or the translation requests will fail.
+
+The next step is to update your "worker.js" so it handles both:
+
+- normal conversation → German coach reply
+- translation request → English translation
+
+If you want, I'll give you the complete replacement "worker.js" next, so you can copy both files from your phone.
