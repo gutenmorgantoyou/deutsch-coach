@@ -2,7 +2,8 @@ const SYSTEM_PROMPT = `
 You are Deutsch Coach, a friendly German conversation partner
 and German teacher.
 
-The learner wants to practice German by having a natural conversation.
+The learner wants to practice German by having a natural,
+human-like conversation.
 
 Rules:
 - Respond primarily in German.
@@ -11,14 +12,12 @@ Rules:
 - Ask natural follow-up questions when appropriate.
 - Do not behave like a quiz.
 - Do not use predetermined questions.
-- Adapt your German to the learner's apparent level.
+- Adapt your German to the learner's level.
 - Be friendly and encouraging.
-- If the learner makes a small mistake, naturally model the correct German.
+- If the learner makes a mistake, naturally model the correct German.
 - Do not give long grammar explanations unless the learner asks.
 - If the learner uses English, help them and encourage German.
-- The goal is a natural human-like conversation.
-
-Return only the coach's response.
+- The goal is a natural conversation, not a lesson.
 `;
 
 export default {
@@ -33,7 +32,7 @@ export default {
       "Access-Control-Allow-Headers": "Content-Type"
     };
 
-    // Handle browser CORS preflight
+    // Browser CORS preflight
     if (request.method === "OPTIONS") {
       return new Response(null, {
         status: 204,
@@ -41,7 +40,7 @@ export default {
       });
     }
 
-    // Only POST is allowed
+    // Only POST requests
     if (request.method !== "POST") {
       return new Response(
         JSON.stringify({
@@ -59,11 +58,11 @@ export default {
 
     try {
 
-      // Check API key
-      if (!env.GEMINI_API_KEY) {
+      // Check OpenRouter secret
+      if (!env.OPENROUTER_API_KEY) {
         return new Response(
           JSON.stringify({
-            error: "GEMINI_API_KEY is missing."
+            error: "OPENROUTER_API_KEY is missing."
           }),
           {
             status: 500,
@@ -75,7 +74,7 @@ export default {
         );
       }
 
-      // Read request
+      // Read request from the website
       const body = await request.json();
 
       if (
@@ -97,78 +96,71 @@ export default {
       }
 
       // Keep the latest 20 messages
-      const conversation = body.messages
+      const messages = body.messages
         .slice(-20)
-        .map(message => {
-
-          const speaker =
+        .map(message => ({
+          role:
             message.role === "assistant"
-              ? "Deutsch Coach"
-              : "Lerner";
+              ? "assistant"
+              : "user",
+          content: String(message.content)
+        }));
 
-          return `${speaker}: ${String(message.content)}`;
+      // Send conversation to OpenRouter
+      const response = await fetch(
+        "https://openrouter.ai/api/v1/chat/completions",
+        {
+          method: "POST",
 
-        })
-        .join("\n");
+          headers: {
+            "Authorization":
+              `Bearer ${env.OPENROUTER_API_KEY}`,
 
-      const input = `
-${SYSTEM_PROMPT}
+            "Content-Type":
+              "application/json",
 
-Here is the conversation so far:
+            "HTTP-Referer":
+              "https://gutenmorgantoyou.github.io/deutsch-coach/",
 
-${conversation}
+            "X-Title":
+              "Deutsch Coach"
+          },
 
-Continue the conversation naturally.
+          body: JSON.stringify({
 
-Respond only as Deutsch Coach.
-`;
+            // OpenRouter's free model router
+            model: "openrouter/free",
 
-      // Gemini Interactions API
-      const url =
-        "https://generativelanguage.googleapis.com/v1beta/interactions";
+            messages: [
+              {
+                role: "system",
+                content: SYSTEM_PROMPT
+              },
+              ...messages
+            ],
 
-      const response = await fetch(url, {
+            temperature: 0.7,
 
-        method: "POST",
-
-        headers: {
-          "Content-Type": "application/json",
-          "x-goog-api-key": env.GEMINI_API_KEY
-        },
-
-        body: JSON.stringify({
-
-          model: "gemini-3.6-flash",
-
-          input: input,
-
-          /*
-           * Force the inference placement to
-           * Google Cloud US East 4.
-           */
-          placement: {
-            region: "gcp:us-east-4"
-          }
-
-        })
-
-      });
+            max_tokens: 300
+          })
+        }
+      );
 
       const responseText =
         await response.text();
 
-      // Gemini returned an error
+      // OpenRouter returned an error
       if (!response.ok) {
 
         console.error(
-          "Gemini API error:",
+          "OpenRouter API error:",
           responseText
         );
 
         return new Response(
           JSON.stringify({
             error:
-              "Gemini error " +
+              "OpenRouter error " +
               response.status +
               ": " +
               responseText
@@ -186,66 +178,16 @@ Respond only as Deutsch Coach.
       const data =
         JSON.parse(responseText);
 
-      // Extract Gemini response
-      let reply = "";
+      // Extract AI response
+      const reply =
+        data?.choices?.[0]?.message?.content;
 
-      if (data.output_text) {
-
-        reply = data.output_text;
-
-      } else if (Array.isArray(data.outputs)) {
-
-        for (const output of data.outputs) {
-
-          if (
-            output &&
-            output.type === "text" &&
-            output.text
-          ) {
-            reply = output.text;
-            break;
-          }
-
-        }
-
-      } else if (Array.isArray(data.steps)) {
-
-        for (const step of data.steps) {
-
-          if (
-            step &&
-            step.type === "model_output" &&
-            Array.isArray(step.content)
-          ) {
-
-            for (const content of step.content) {
-
-              if (
-                content.type === "text" &&
-                content.text
-              ) {
-                reply = content.text;
-                break;
-              }
-
-            }
-
-          }
-
-          if (reply) {
-            break;
-          }
-        }
-      }
-
-      // No response text
       if (!reply) {
 
         return new Response(
           JSON.stringify({
             error:
-              "Gemini returned no text: " +
-              responseText
+              "OpenRouter returned no text."
           }),
           {
             status: 500,
@@ -257,7 +199,7 @@ Respond only as Deutsch Coach.
         );
       }
 
-      // Success
+      // Successful response
       return new Response(
         JSON.stringify({
           reply: reply.trim()
