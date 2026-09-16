@@ -1,38 +1,37 @@
-const SYSTEM_PROMPT = `
-You are Deutsch Coach, a friendly German conversation partner
-and German teacher.
+const BASE_SYSTEM_PROMPT = `
+You are Deutsch Coach, a friendly German conversation
+partner and German teacher.
 
-The learner wants to practice German by having a natural,
+The learner wants to practice German through a natural,
 human-like conversation.
 
+Your main goal is conversation.
+
 Rules:
+
 - Respond primarily in German.
 - Keep responses short and conversational.
 - Follow the topic the learner introduces.
 - Ask natural follow-up questions when appropriate.
 - Do not behave like a quiz.
 - Do not use predetermined questions.
-- Adapt your German to the learner's level.
 - Be friendly and encouraging.
-- If the learner makes a mistake, naturally model the correct German.
-- Do not give long grammar explanations unless the learner asks.
+- If the learner makes a German mistake, naturally model
+  the correct German.
+- Do not give long grammar explanations unless the learner
+  asks.
 - If the learner uses English, help them and encourage German.
-- The goal is a natural conversation, not a lesson.
-
-IMPORTANT:
-- Never reveal your internal reasoning.
+- Never reveal internal reasoning.
 - Never show a thinking process.
-- Never explain how you generated your answer.
-- Never output analysis, planning, chain-of-thought, or self-criticism.
-- Only return the final conversational response that the learner should see.
+- Never output analysis or chain-of-thought.
+- Only return the final response intended for the learner.
 `;
 
 
 const TRANSLATION_PROMPT = `
 You are a German-to-English translator.
 
-Translate the user's German sentence into natural,
-simple English.
+Translate the German sentence into natural, simple English.
 
 Rules:
 - Return ONLY the English translation.
@@ -42,6 +41,69 @@ Rules:
 - Do not show reasoning.
 - Do not write "Translation:".
 `;
+
+
+/*
+ * Level instructions.
+ */
+
+const LEVEL_INSTRUCTIONS = {
+
+    A1: `
+The learner is A1.
+
+Use very simple German.
+Use short sentences.
+Use common everyday words.
+Avoid complicated grammar.
+Ask simple questions.
+Prefer one idea per sentence.
+`,
+
+    A2: `
+The learner is A2.
+
+Use simple everyday German.
+Use short to medium sentences.
+Introduce slightly more vocabulary.
+Use basic past and future forms when natural.
+Avoid unnecessarily difficult expressions.
+`,
+
+    B1: `
+The learner is B1.
+
+Use natural everyday German.
+Use moderately complex sentences.
+Introduce useful vocabulary and expressions.
+Allow normal conversational grammar.
+`,
+
+    B2: `
+The learner is B2.
+
+Use natural conversational German.
+Use a wider vocabulary.
+Use more complex sentence structures when appropriate.
+Introduce idiomatic expressions occasionally.
+`,
+
+    C1: `
+The learner is C1.
+
+Use advanced natural German.
+Use nuanced vocabulary and complex sentence structures.
+Allow idiomatic and sophisticated expressions.
+`,
+
+    C2: `
+The learner is C2.
+
+Use highly natural, nuanced German.
+Use sophisticated vocabulary and complex structures.
+Conversation can approach native-level German.
+`
+};
 
 
 export default {
@@ -67,7 +129,7 @@ export default {
 
 
         /*
-         * CORS preflight
+         * CORS preflight.
          */
 
         if (request.method === "OPTIONS") {
@@ -85,34 +147,21 @@ export default {
 
 
         /*
-         * Only POST requests
+         * Only POST.
          */
 
         if (request.method !== "POST") {
 
-            return new Response(
-
-                JSON.stringify({
-
-                    error:
-                        "Only POST requests are allowed."
-
-                }),
+            return jsonResponse(
 
                 {
+                    error:
+                        "Only POST requests are allowed."
+                },
 
-                    status: 405,
+                405,
 
-                    headers: {
-
-                        ...corsHeaders,
-
-                        "Content-Type":
-                            "application/json"
-
-                    }
-
-                }
+                corsHeaders
 
             );
 
@@ -122,43 +171,26 @@ export default {
         try {
 
             /*
-             * Check OpenRouter secret
+             * Check API key.
              */
 
             if (!env.OPENROUTER_API_KEY) {
 
-                return new Response(
-
-                    JSON.stringify({
-
-                        error:
-                            "OPENROUTER_API_KEY is missing."
-
-                    }),
+                return jsonResponse(
 
                     {
+                        error:
+                            "OPENROUTER_API_KEY is missing."
+                    },
 
-                        status: 500,
+                    500,
 
-                        headers: {
-
-                            ...corsHeaders,
-
-                            "Content-Type":
-                                "application/json"
-
-                        }
-
-                    }
+                    corsHeaders
 
                 );
 
             }
 
-
-            /*
-             * Read request
-             */
 
             const body =
                 await request.json();
@@ -166,46 +198,30 @@ export default {
 
             /*
              * ------------------------------------------------
-             * TRANSLATION REQUEST
+             * TRANSLATION
              * ------------------------------------------------
-             *
-             * This is used only to display English underneath
-             * the German conversation.
-             *
-             * It is NOT added to conversation history.
              */
 
             if (body.translate === true) {
 
                 const text =
-                    String(body.text || "").trim();
+                    String(
+                        body.text || ""
+                    ).trim();
 
 
                 if (!text) {
 
-                    return new Response(
-
-                        JSON.stringify({
-
-                            error:
-                                "No text was provided."
-
-                        }),
+                    return jsonResponse(
 
                         {
+                            error:
+                                "No text was provided."
+                        },
 
-                            status: 400,
+                        400,
 
-                            headers: {
-
-                                ...corsHeaders,
-
-                                "Content-Type":
-                                    "application/json"
-
-                            }
-
-                        }
+                        corsHeaders
 
                     );
 
@@ -213,216 +229,77 @@ export default {
 
 
                 const response =
-                    await fetch(
+                    await callOpenRouter(
 
-                        "https://openrouter.ai/api/v1/chat/completions",
+                        env.OPENROUTER_API_KEY,
 
-                        {
+                        [
 
-                            method: "POST",
+                            {
+                                role:
+                                    "system",
 
-                            headers: {
-
-                                "Authorization":
-                                    `Bearer ${env.OPENROUTER_API_KEY}`,
-
-                                "Content-Type":
-                                    "application/json",
-
-                                "HTTP-Referer":
-                                    "https://gutenmorgantoyou.github.io/deutsch-coach/",
-
-                                "X-Title":
-                                    "Deutsch Coach"
-
+                                content:
+                                    TRANSLATION_PROMPT
                             },
 
+                            {
+                                role:
+                                    "user",
 
-                            body: JSON.stringify({
-
-                                model:
-                                    "openrouter/free",
-
-                                messages: [
-
-                                    {
-
-                                        role:
-                                            "system",
-
-                                        content:
-                                            TRANSLATION_PROMPT
-
-                                    },
-
-                                    {
-
-                                        role:
-                                            "user",
-
-                                        content:
-                                            text
-
-                                    }
-
-                                ],
-
-
-                                /*
-                                 * Ask the model not to use
-                                 * visible reasoning.
-                                 */
-
-                                reasoning: {
-
-                                    effort:
-                                        "none"
-
-                                },
-
-
-                                temperature:
-                                    0.2,
-
-
-                                max_tokens:
-                                    150
-
-                            })
-
-                        }
-
-                    );
-
-
-                const responseText =
-                    await response.text();
-
-
-                if (!response.ok) {
-
-                    console.error(
-                        "OpenRouter translation error:",
-                        responseText
-                    );
-
-
-                    return new Response(
-
-                        JSON.stringify({
-
-                            error:
-                                "OpenRouter translation error " +
-                                response.status
-
-                        }),
-
-                        {
-
-                            status: 500,
-
-                            headers: {
-
-                                ...corsHeaders,
-
-                                "Content-Type":
-                                    "application/json"
-
+                                content:
+                                    text
                             }
 
-                        }
+                        ],
 
-                    );
+                        150,
 
-                }
+                        0.2
 
-
-                const data =
-                    JSON.parse(
-                        responseText
                     );
 
 
                 let translation =
-                    data?.choices?.[0]?.message?.content;
-
-
-                /*
-                 * Some models may return an object/array.
-                 * Convert it safely to text.
-                 */
-
-                if (
-                    typeof translation !==
-                    "string"
-                ) {
-
-                    translation =
-                        String(
-                            translation || ""
-                        );
-
-                }
+                    extractText(
+                        response
+                    );
 
 
                 translation =
-                    translation.trim();
+                    cleanReply(
+                        translation
+                    );
 
 
                 if (!translation) {
 
-                    return new Response(
-
-                        JSON.stringify({
-
-                            error:
-                                "Translation returned no text."
-
-                        }),
+                    return jsonResponse(
 
                         {
+                            error:
+                                "Translation returned no text."
+                        },
 
-                            status: 500,
+                        500,
 
-                            headers: {
-
-                                ...corsHeaders,
-
-                                "Content-Type":
-                                    "application/json"
-
-                            }
-
-                        }
+                        corsHeaders
 
                     );
 
                 }
 
 
-                return new Response(
-
-                    JSON.stringify({
-
-                        translation:
-                            translation
-
-                    }),
+                return jsonResponse(
 
                     {
+                        translation:
+                            translation
+                    },
 
-                        status: 200,
+                    200,
 
-                        headers: {
-
-                            ...corsHeaders,
-
-                            "Content-Type":
-                                "application/json"
-
-                        }
-
-                    }
+                    corsHeaders
 
                 );
 
@@ -431,7 +308,7 @@ export default {
 
             /*
              * ------------------------------------------------
-             * NORMAL CONVERSATION REQUEST
+             * NORMAL CONVERSATION
              * ------------------------------------------------
              */
 
@@ -440,29 +317,16 @@ export default {
                 body.messages.length === 0
             ) {
 
-                return new Response(
-
-                    JSON.stringify({
-
-                        error:
-                            "No conversation was provided."
-
-                    }),
+                return jsonResponse(
 
                     {
+                        error:
+                            "No conversation was provided."
+                    },
 
-                        status: 400,
+                    400,
 
-                        headers: {
-
-                            ...corsHeaders,
-
-                            "Content-Type":
-                                "application/json"
-
-                        }
-
-                    }
+                    corsHeaders
 
                 );
 
@@ -470,11 +334,19 @@ export default {
 
 
             /*
-             * Keep conversation history.
-             *
-             * English translations are NOT included because
-             * the index.html only stores German conversation
-             * messages in this array.
+             * Get level.
+             */
+
+            const level =
+                LEVEL_INSTRUCTIONS[
+                    body.level
+                ]
+                    ? body.level
+                    : "A1";
+
+
+            /*
+             * Keep latest 20 German messages.
              */
 
             const messages =
@@ -501,204 +373,161 @@ export default {
 
 
             /*
-             * Send conversation to OpenRouter.
+             * Build level-specific system prompt.
+             */
+
+            const systemPrompt = `
+
+${BASE_SYSTEM_PROMPT}
+
+CURRENT LEARNER LEVEL:
+${level}
+
+LEVEL INSTRUCTIONS:
+${LEVEL_INSTRUCTIONS[level]}
+
+CORRECTION RULES:
+
+- Pay attention to the learner's German.
+- If the learner makes an important mistake,
+  provide a short correction.
+- Do not correct every tiny mistake.
+- Do not interrupt the natural flow of conversation.
+- The correction should be useful for the learner's level.
+- The main response must remain conversational.
+- Never include your reasoning.
+
+Return JSON with exactly two fields:
+
+{
+  "reply": "your natural German response",
+  "correction": "short correction or empty string"
+}
+
+The "reply" must contain ONLY the German response
+the learner should see.
+
+The "correction" must contain ONLY a short useful correction.
+Do not include English translation in either field.
+`;
+
+
+            /*
+             * Ask OpenRouter.
              */
 
             const response =
-                await fetch(
+                await callOpenRouter(
 
-                    "https://openrouter.ai/api/v1/chat/completions",
+                    env.OPENROUTER_API_KEY,
 
-                    {
+                    [
 
-                        method: "POST",
+                        {
+                            role:
+                                "system",
 
-                        headers: {
-
-                            "Authorization":
-                                `Bearer ${env.OPENROUTER_API_KEY}`,
-
-                            "Content-Type":
-                                "application/json",
-
-                            "HTTP-Referer":
-                                "https://gutenmorgantoyou.github.io/deutsch-coach/",
-
-                            "X-Title":
-                                "Deutsch Coach"
-
+                            content:
+                                systemPrompt
                         },
 
+                        ...messages
 
-                        body: JSON.stringify({
+                    ],
 
-                            model:
-                                "openrouter/free",
+                    400,
 
-
-                            messages: [
-
-                                {
-
-                                    role:
-                                        "system",
-
-                                    content:
-                                        SYSTEM_PROMPT
-
-                                },
-
-                                ...messages
-
-                            ],
-
-
-                            /*
-                             * Important:
-                             * ask OpenRouter for no reasoning.
-                             */
-
-                            reasoning: {
-
-                                effort:
-                                    "none"
-
-                            },
-
-
-                            temperature:
-                                0.7,
-
-
-                            max_tokens:
-                                300
-
-                        })
-
-                    }
+                    0.7
 
                 );
-
-
-            const responseText =
-                await response.text();
 
 
             /*
-             * OpenRouter error
+             * Extract model response.
              */
 
-            if (!response.ok) {
-
-                console.error(
-
-                    "OpenRouter API error:",
-
-                    responseText
-
+            let raw =
+                extractText(
+                    response
                 );
 
 
-                return new Response(
-
-                    JSON.stringify({
-
-                        error:
-                            "OpenRouter error " +
-                            response.status +
-                            ": " +
-                            responseText
-
-                    }),
-
-                    {
-
-                        status: 500,
-
-                        headers: {
-
-                            ...corsHeaders,
-
-                            "Content-Type":
-                                "application/json"
-
-                        }
-
-                    }
-
+            raw =
+                cleanReply(
+                    raw
                 );
+
+
+            /*
+             * Parse JSON returned by model.
+             */
+
+            let result;
+
+
+            try {
+
+                result =
+                    JSON.parse(raw);
+
+            } catch (parseError) {
+
+                /*
+                 * Fallback if a free model returns
+                 * plain text instead of JSON.
+                 */
+
+                result = {
+
+                    reply:
+                        raw,
+
+                    correction:
+                        ""
+
+                };
 
             }
 
-
-            const data =
-                JSON.parse(
-                    responseText
-                );
-
-
-            /*
-             * Get final AI response.
-             */
 
             let reply =
-                data?.choices?.[0]?.message?.content;
+                String(
+                    result.reply || ""
+                ).trim();
 
 
-            if (
-                typeof reply !==
-                "string"
-            ) {
-
-                reply =
-                    String(
-                        reply || ""
-                    );
-
-            }
-
-
-            reply =
-                reply.trim();
+            let correction =
+                String(
+                    result.correction || ""
+                ).trim();
 
 
             /*
-             * Safety cleanup.
-             *
-             * If a model ignores the instruction and includes
-             * a visible reasoning section, remove common
-             * reasoning markers before displaying it.
+             * Remove accidental reasoning from reply.
              */
 
             reply =
-                cleanReply(reply);
+                cleanReply(
+                    reply
+                );
 
+
+            /*
+             * If the model returned nothing useful.
+             */
 
             if (!reply) {
 
-                return new Response(
-
-                    JSON.stringify({
-
-                        error:
-                            "OpenRouter returned no final text."
-
-                    }),
+                return jsonResponse(
 
                     {
+                        error:
+                            "OpenRouter returned no final text."
+                    },
 
-                        status: 500,
+                    500,
 
-                        headers: {
-
-                            ...corsHeaders,
-
-                            "Content-Type":
-                                "application/json"
-
-                        }
-
-                    }
+                    corsHeaders
 
                 );
 
@@ -706,32 +535,24 @@ export default {
 
 
             /*
-             * Successful conversation response.
+             * Successful response.
              */
 
-            return new Response(
-
-                JSON.stringify({
-
-                    reply:
-                        reply
-
-                }),
+            return jsonResponse(
 
                 {
 
-                    status: 200,
+                    reply:
+                        reply,
 
-                    headers: {
+                    correction:
+                        correction
 
-                        ...corsHeaders,
+                },
 
-                        "Content-Type":
-                            "application/json"
+                200,
 
-                    }
-
-                }
+                corsHeaders
 
             );
 
@@ -744,30 +565,17 @@ export default {
             );
 
 
-            return new Response(
+            return jsonResponse(
 
-                JSON.stringify({
-
+                {
                     error:
                         "Worker error: " +
                         error.message
+                },
 
-                }),
+                500,
 
-                {
-
-                    status: 500,
-
-                    headers: {
-
-                        ...corsHeaders,
-
-                        "Content-Type":
-                            "application/json"
-
-                    }
-
-                }
+                corsHeaders
 
             );
 
@@ -779,32 +587,152 @@ export default {
 
 
 /*
- * Remove common visible reasoning formats.
- *
- * This is only a fallback. The main protection is the
- * system prompt + reasoning: { effort: "none" }.
+ * Call OpenRouter.
+ */
+
+async function callOpenRouter(
+    apiKey,
+    messages,
+    maxTokens,
+    temperature
+) {
+
+    const response =
+        await fetch(
+
+            "https://openrouter.ai/api/v1/chat/completions",
+
+            {
+
+                method:
+                    "POST",
+
+                headers: {
+
+                    "Authorization":
+                        `Bearer ${apiKey}`,
+
+                    "Content-Type":
+                        "application/json",
+
+                    "HTTP-Referer":
+                        "https://gutenmorgantoyou.github.io/deutsch-coach/",
+
+                    "X-Title":
+                        "Deutsch Coach"
+
+                },
+
+                body:
+                    JSON.stringify({
+
+                        model:
+                            "openrouter/free",
+
+                        messages:
+                            messages,
+
+                        reasoning: {
+
+                            effort:
+                                "none"
+
+                        },
+
+                        temperature:
+                            temperature,
+
+                        max_tokens:
+                            maxTokens
+
+                    })
+
+            }
+
+        );
+
+
+    const responseText =
+        await response.text();
+
+
+    if (!response.ok) {
+
+        console.error(
+            "OpenRouter API error:",
+            responseText
+        );
+
+
+        throw new Error(
+
+            "OpenRouter error " +
+            response.status
+
+        );
+
+    }
+
+
+    return JSON.parse(
+        responseText
+    );
+
+}
+
+
+/*
+ * Extract text from OpenRouter response.
+ */
+
+function extractText(data) {
+
+    let content =
+        data?.choices?.[0]?.message?.content;
+
+
+    if (
+        typeof content ===
+        "string"
+    ) {
+
+        return content.trim();
+
+    }
+
+
+    return String(
+        content || ""
+    ).trim();
+
+}
+
+
+/*
+ * Clean accidental visible reasoning.
  */
 
 function cleanReply(text) {
 
     let result =
-        String(text || "").trim();
+        String(
+            text || ""
+        ).trim();
 
 
     /*
-     * Remove <think>...</think> blocks.
+     * Remove <think> blocks.
      */
 
     result =
         result.replace(
+
             /<think>[\s\S]*?<\/think>/gi,
+
             ""
+
         );
 
-
-    /*
-     * Remove common "thinking process" sections.
-     */
 
     const markers = [
 
@@ -815,8 +743,6 @@ function cleanReply(text) {
         "Thinking process:",
 
         "Chain of thought:",
-
-        "Analysis:",
 
         "Let's analyze this:",
 
@@ -840,28 +766,55 @@ function cleanReply(text) {
         if (index !== -1) {
 
             result =
-                result.substring(
-                    0,
-                    index
-                ).trim();
+                result
+                    .substring(
+                        0,
+                        index
+                    )
+                    .trim();
 
         }
 
     }
 
 
-    /*
-     * Remove accidental markdown-style
-     * reasoning headings at the beginning.
-     */
-
-    result =
-        result.replace(
-            /^(analysis|reasoning|thinking)\s*:\s*/i,
-            ""
-        );
-
-
     return result.trim();
+
+}
+
+
+/*
+ * JSON response helper.
+ */
+
+function jsonResponse(
+    data,
+    status,
+    corsHeaders
+) {
+
+    return new Response(
+
+        JSON.stringify(
+            data
+        ),
+
+        {
+
+            status:
+                status,
+
+            headers: {
+
+                ...corsHeaders,
+
+                "Content-Type":
+                    "application/json"
+
+            }
+
+        }
+
+    );
 
 }
