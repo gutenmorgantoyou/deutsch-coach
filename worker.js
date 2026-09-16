@@ -13,9 +13,8 @@ Rules:
 - Do not use predetermined questions.
 - Adapt your German to the learner's apparent level.
 - Be friendly and encouraging.
-- If the learner makes a small mistake, don't stop the conversation
-  for a long grammar explanation.
-- When useful, naturally model the correct German.
+- If the learner makes a small mistake, naturally model the correct German.
+- Do not give long grammar explanations unless the learner asks.
 - If the learner uses English, help them and encourage German.
 - The goal is a natural human-like conversation.
 
@@ -59,10 +58,9 @@ export default {
     try {
 
       if (!env.GEMINI_API_KEY) {
-
         return new Response(
           JSON.stringify({
-            error: "GEMINI_API_KEY is missing in Cloudflare."
+            error: "GEMINI_API_KEY is missing."
           }),
           {
             status: 500,
@@ -93,51 +91,60 @@ export default {
         );
       }
 
-      const messages =
-        body.messages.slice(-20);
+      /*
+       * Build a single conversation string.
+       *
+       * We are intentionally doing this statelessly for now.
+       * The browser sends the conversation history on every request.
+       */
 
-      const contents = messages.map(message => ({
-        role:
-          message.role === "assistant"
-            ? "model"
-            : "user",
+      const conversation = body.messages
+        .slice(-20)
+        .map(message => {
 
-        parts: [
-          {
-            text: String(message.content)
-          }
-        ]
-      }));
+          const speaker =
+            message.role === "assistant"
+              ? "Deutsch Coach"
+              : "Lerner";
 
-      const model = "gemini-3.6-flash";
+          return `${speaker}: ${String(message.content)}`;
+
+        })
+        .join("\n");
+
+      const input = `
+${SYSTEM_PROMPT}
+
+Here is the conversation so far:
+
+${conversation}
+
+Continue the conversation naturally.
+
+Respond only as Deutsch Coach.
+`;
+
+      /*
+       * Current Gemini Interactions API.
+       */
 
       const url =
-        `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${env.GEMINI_API_KEY}`;
+        "https://generativelanguage.googleapis.com/v1beta/interactions";
 
       const response = await fetch(url, {
 
         method: "POST",
 
         headers: {
-          "Content-Type": "application/json"
+          "Content-Type": "application/json",
+          "x-goog-api-key": env.GEMINI_API_KEY
         },
 
         body: JSON.stringify({
 
-          systemInstruction: {
-            parts: [
-              {
-                text: SYSTEM_PROMPT
-              }
-            ]
-          },
+          model: "gemini-3.6-flash",
 
-          contents: contents,
-
-          generationConfig: {
-            temperature: 0.8,
-            maxOutputTokens: 250
-          }
+          input: input
 
         })
 
@@ -149,7 +156,7 @@ export default {
       if (!response.ok) {
 
         console.error(
-          "Gemini API error:",
+          "Gemini Interactions API error:",
           responseText
         );
 
@@ -174,8 +181,59 @@ export default {
       const data =
         JSON.parse(responseText);
 
-      const reply =
-        data?.candidates?.[0]?.content?.parts?.[0]?.text;
+      /*
+       * Find the model's text output.
+       */
+
+      let reply = "";
+
+      if (data.output_text) {
+
+        reply = data.output_text;
+
+      } else if (Array.isArray(data.outputs)) {
+
+        for (const output of data.outputs) {
+
+          if (
+            output &&
+            output.type === "text" &&
+            output.text
+          ) {
+            reply = output.text;
+            break;
+          }
+
+        }
+
+      } else if (Array.isArray(data.steps)) {
+
+        for (const step of data.steps) {
+
+          if (
+            step &&
+            step.type === "model_output" &&
+            Array.isArray(step.content)
+          ) {
+
+            for (const content of step.content) {
+
+              if (
+                content.type === "text" &&
+                content.text
+              ) {
+                reply = content.text;
+                break;
+              }
+
+            }
+
+          }
+
+          if (reply) break;
+        }
+
+      }
 
       if (!reply) {
 
