@@ -33,7 +33,15 @@
     .card-title {
         font-size: 18px;
         font-weight: bold;
-        margin-bottom: 16px;
+        margin-bottom: 18px;
+    }
+
+    .exchange-section {
+        margin-bottom: 20px;
+    }
+
+    .exchange-section:last-child {
+        margin-bottom: 0;
     }
 
     .label {
@@ -42,7 +50,7 @@
         margin-bottom: 6px;
     }
 
-    .text {
+    .german {
         font-size: 20px;
         line-height: 1.5;
     }
@@ -51,21 +59,7 @@
         font-size: 16px;
         color: #666;
         line-height: 1.5;
-        margin-top: 4px;
-        margin-bottom: 16px;
-    }
-
-    .exchange-section {
-        margin-bottom: 18px;
-    }
-
-    .exchange-section:last-child {
-        margin-bottom: 0;
-    }
-
-    .german {
-        font-size: 20px;
-        line-height: 1.5;
+        margin-top: 5px;
     }
 
     .history-title {
@@ -75,7 +69,7 @@
     }
 
     #conversation {
-        margin-top: 20px;
+        margin-top: 0;
     }
 
     .message {
@@ -133,7 +127,7 @@
 </head><body><div class="app"><h1>🇩🇪 Deutsch Coach</h1>
 
 
-<!-- Latest exchange -->
+<!-- LATEST EXCHANGE -->
 
 <div class="card">
 
@@ -141,6 +135,8 @@
         Letzter Austausch
     </div>
 
+
+    <!-- Learner -->
 
     <div class="exchange-section">
 
@@ -164,6 +160,8 @@
 
     </div>
 
+
+    <!-- Coach -->
 
     <div class="exchange-section">
 
@@ -190,7 +188,7 @@
 </div>
 
 
-<!-- Conversation history -->
+<!-- CONVERSATION HISTORY -->
 
 <div class="card">
 
@@ -216,6 +214,8 @@
 
 </div>
 
+
+<!-- SPEAK BUTTON -->
 
 <button id="speakButton">
     🎙️ Sprechen
@@ -249,18 +249,33 @@ const latestCoachEnglish =
     document.getElementById("latestCoachEnglish");
 
 
+/*
+ * Cloudflare Worker
+ */
+
 const API_URL =
     "https://deutsch-coach-api.gutenmorgantoyou.workers.dev";
 
 
+/*
+ * Conversation history
+ */
+
 const messages = [
+
     {
         role: "assistant",
+
         content:
             "Hallo! Wie geht es dir heute?"
     }
+
 ];
 
+
+/*
+ * Add message to history
+ */
 
 function addMessage(
     speaker,
@@ -274,28 +289,57 @@ function addMessage(
     message.className =
         "message " + type;
 
-    message.innerHTML = `
-        <div class="speaker">
-            ${speaker}
-        </div>
 
-        <div class="bubble"></div>
-    `;
+    const speakerElement =
+        document.createElement("div");
 
-    message.querySelector(
-        ".bubble"
-    ).textContent = text;
+    speakerElement.className =
+        "speaker";
 
-    conversation.appendChild(message);
+    speakerElement.textContent =
+        speaker;
+
+
+    const bubble =
+        document.createElement("div");
+
+    bubble.className =
+        "bubble";
+
+    bubble.textContent =
+        text;
+
+
+    message.appendChild(
+        speakerElement
+    );
+
+    message.appendChild(
+        bubble
+    );
+
+
+    conversation.appendChild(
+        message
+    );
+
 
     window.scrollTo({
+
         top:
             document.body.scrollHeight,
+
         behavior:
             "smooth"
+
     });
 }
 
+
+/*
+ * Speak German using
+ * phone speech synthesis
+ */
 
 function speakGerman(text) {
 
@@ -305,19 +349,27 @@ function speakGerman(text) {
         return;
     }
 
+
     window.speechSynthesis.cancel();
 
+
     const speech =
-        new SpeechSynthesisUtterance(text);
+        new SpeechSynthesisUtterance(
+            text
+        );
+
 
     speech.lang =
         "de-DE";
 
+
     speech.rate =
         0.9;
 
+
     speech.pitch =
         1;
+
 
     window.speechSynthesis.speak(
         speech
@@ -325,34 +377,49 @@ function speakGerman(text) {
 }
 
 
+/*
+ * Ask the AI coach
+ */
+
 async function askCoach() {
 
     status.textContent =
         "🤔 Ich denke...";
 
+
     speakButton.disabled =
         true;
+
 
     try {
 
         const response =
             await fetch(
+
                 API_URL,
+
                 {
+
                     method:
                         "POST",
 
                     headers: {
+
                         "Content-Type":
                             "application/json"
+
                     },
 
                     body:
                         JSON.stringify({
+
                             messages:
                                 messages
+
                         })
+
                 }
+
             );
 
 
@@ -360,38 +427,66 @@ async function askCoach() {
             await response.json();
 
 
+        /*
+         * Server error
+         */
+
         if (!response.ok) {
 
             throw new Error(
+
                 data.error ||
                 "Server error"
+
             );
+
         }
 
+
+        /*
+         * Check German reply
+         */
 
         if (!data.reply) {
 
             throw new Error(
+
                 "Keine Antwort vom Coach."
+
             );
+
         }
 
 
+        /*
+         * Add coach reply
+         * to conversation history
+         */
+
         messages.push({
+
             role:
                 "assistant",
 
             content:
                 data.reply
+
         });
 
 
         /*
-         * Update latest exchange.
+         * Update latest
+         * coach German
          */
 
         latestCoachGerman.textContent =
             data.reply;
+
+
+        /*
+         * Update latest
+         * coach English
+         */
 
         latestCoachEnglish.textContent =
             "🇬🇧 " +
@@ -402,19 +497,35 @@ async function askCoach() {
 
 
         /*
-         * Add German response
-         * to conversation history.
+         * Update learner English
+         */
+
+        latestUserEnglish.textContent =
+            "🇬🇧 " +
+            (
+                data.userEnglish ||
+                "Translation unavailable."
+            );
+
+
+        /*
+         * Add German coach reply
+         * to history
          */
 
         addMessage(
+
             "Deutsch Coach",
+
             data.reply,
+
             "coach"
+
         );
 
 
         /*
-         * Speak German response.
+         * Speak German reply
          */
 
         speakGerman(
@@ -425,21 +536,29 @@ async function askCoach() {
         status.textContent =
             "Bereit";
 
+
     } catch (error) {
 
         console.error(error);
+
 
         status.textContent =
             "Fehler: " +
             error.message;
 
+
     } finally {
 
         speakButton.disabled =
             false;
+
     }
 }
 
+
+/*
+ * Browser speech recognition
+ */
 
 const SpeechRecognition =
     window.SpeechRecognition ||
@@ -454,23 +573,32 @@ if (!SpeechRecognition) {
     speakButton.disabled =
         true;
 
+
 } else {
 
     const recognition =
         new SpeechRecognition();
 
+
     recognition.lang =
         "de-DE";
+
 
     recognition.continuous =
         false;
 
+
     recognition.interimResults =
         false;
+
 
     recognition.maxAlternatives =
         1;
 
+
+    /*
+     * Start listening
+     */
 
     speakButton.onclick =
         () => {
@@ -479,24 +607,35 @@ if (!SpeechRecognition) {
 
                 window.speechSynthesis.cancel();
 
+
                 recognition.start();
+
 
                 speakButton.classList.add(
                     "listening"
                 );
 
+
                 speakButton.textContent =
                     "🎙️ Zuhören...";
+
 
                 status.textContent =
                     "Ich höre zu...";
 
+
             } catch (error) {
 
                 console.error(error);
+
             }
+
         };
 
+
+    /*
+     * Speech recognized
+     */
 
     recognition.onresult =
         async (event) => {
@@ -508,73 +647,74 @@ if (!SpeechRecognition) {
 
 
             /*
-             * Add learner message
-             * to conversation history.
-             */
-
-            messages.push({
-                role:
-                    "user",
-
-                content:
-                    text
-            });
-
-
-            /*
              * Show learner's German
-             * immediately.
+             * immediately
              */
 
             latestUserGerman.textContent =
                 text;
+
 
             latestUserEnglish.textContent =
                 "🇬🇧 Übersetzung wird geladen...";
 
 
             /*
-             * Show learner message
-             * in German history.
+             * Add learner message
+             * to conversation
+             */
+
+            messages.push({
+
+                role:
+                    "user",
+
+                content:
+                    text
+
+            });
+
+
+            /*
+             * Add learner message
+             * to history
              */
 
             addMessage(
+
                 "Du",
+
                 text,
+
                 "user"
+
             );
 
 
             /*
-             * Ask AI for response
-             * and translations.
+             * Ask AI
              */
 
             await askCoach();
 
-            /*
-             * The Worker returns the
-             * English translation of
-             * the learner's sentence.
-             */
-
-            /*
-             * askCoach has already received
-             * the response, so we need to
-             * request the translation through
-             * the returned data.
-             */
-
         };
 
+
+    /*
+     * Speech recognition errors
+     */
 
     recognition.onerror =
         (event) => {
 
             console.log(
+
                 "Speech error:",
+
                 event.error
+
             );
+
 
             if (
                 event.error ===
@@ -584,6 +724,7 @@ if (!SpeechRecognition) {
                 status.textContent =
                     "Mikrofonzugriff wurde verweigert.";
 
+
             } else if (
                 event.error ===
                 "no-speech"
@@ -592,14 +733,21 @@ if (!SpeechRecognition) {
                 status.textContent =
                     "Ich habe nichts gehört.";
 
+
             } else {
 
                 status.textContent =
                     "Fehler: " +
                     event.error;
+
             }
+
         };
 
+
+    /*
+     * Recognition finished
+     */
 
     recognition.onend =
         () => {
@@ -608,8 +756,10 @@ if (!SpeechRecognition) {
                 "listening"
             );
 
+
             speakButton.textContent =
                 "🎙️ Sprechen";
+
         };
 
 }
