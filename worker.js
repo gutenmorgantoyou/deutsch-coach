@@ -18,21 +18,29 @@ Rules:
 - Do not give long grammar explanations unless the learner asks.
 - If the learner uses English, help them and encourage German.
 - The goal is a natural conversation, not a lesson.
+
+IMPORTANT:
+- Never reveal your internal reasoning.
+- Never show a thinking process.
+- Never explain how you generated your answer.
+- Never output analysis, planning, chain-of-thought, or self-criticism.
+- Only return the final conversational response that the learner should see.
 `;
 
 
 const TRANSLATION_PROMPT = `
 You are a German-to-English translator.
 
-Translate the provided German sentence into natural,
+Translate the user's German sentence into natural,
 simple English.
 
 Rules:
 - Return ONLY the English translation.
-- Do not add explanations.
-- Do not add quotation marks.
-- Keep the meaning accurate.
-- Keep the translation natural and conversational.
+- Do not explain the translation.
+- Do not provide alternatives.
+- Do not provide grammar explanations.
+- Do not show reasoning.
+- Do not write "Translation:".
 `;
 
 
@@ -59,7 +67,7 @@ export default {
 
 
         /*
-         * Browser CORS preflight
+         * CORS preflight
          */
 
         if (request.method === "OPTIONS") {
@@ -157,24 +165,30 @@ export default {
 
 
             /*
-             * --------------------------------
+             * ------------------------------------------------
              * TRANSLATION REQUEST
-             * --------------------------------
+             * ------------------------------------------------
+             *
+             * This is used only to display English underneath
+             * the German conversation.
+             *
+             * It is NOT added to conversation history.
              */
 
             if (body.translate === true) {
 
-                if (
-                    typeof body.text !== "string" ||
-                    body.text.trim() === ""
-                ) {
+                const text =
+                    String(body.text || "").trim();
+
+
+                if (!text) {
 
                     return new Response(
 
                         JSON.stringify({
 
                             error:
-                                "No text was provided for translation."
+                                "No text was provided."
 
                         }),
 
@@ -197,15 +211,6 @@ export default {
 
                 }
 
-
-                const text =
-                    body.text.trim();
-
-
-                /*
-                 * Send translation request
-                 * to OpenRouter.
-                 */
 
                 const response =
                     await fetch(
@@ -232,43 +237,58 @@ export default {
 
                             },
 
-                            body:
-                                JSON.stringify({
 
-                                    model:
-                                        "openrouter/free",
+                            body: JSON.stringify({
 
-                                    messages: [
+                                model:
+                                    "openrouter/free",
 
-                                        {
+                                messages: [
 
-                                            role:
-                                                "system",
+                                    {
 
-                                            content:
-                                                TRANSLATION_PROMPT
+                                        role:
+                                            "system",
 
-                                        },
+                                        content:
+                                            TRANSLATION_PROMPT
 
-                                        {
+                                    },
 
-                                            role:
-                                                "user",
+                                    {
 
-                                            content:
-                                                text
+                                        role:
+                                            "user",
 
-                                        }
+                                        content:
+                                            text
 
-                                    ],
+                                    }
 
-                                    temperature:
-                                        0.2,
+                                ],
 
-                                    max_tokens:
-                                        100
 
-                                })
+                                /*
+                                 * Ask the model not to use
+                                 * visible reasoning.
+                                 */
+
+                                reasoning: {
+
+                                    effort:
+                                        "none"
+
+                                },
+
+
+                                temperature:
+                                    0.2,
+
+
+                                max_tokens:
+                                    150
+
+                            })
 
                         }
 
@@ -278,10 +298,6 @@ export default {
                 const responseText =
                     await response.text();
 
-
-                /*
-                 * OpenRouter translation error
-                 */
 
                 if (!response.ok) {
 
@@ -297,9 +313,7 @@ export default {
 
                             error:
                                 "OpenRouter translation error " +
-                                response.status +
-                                ": " +
-                                responseText
+                                response.status
 
                         }),
 
@@ -329,12 +343,30 @@ export default {
                     );
 
 
-                const translation =
-                    data
-                        ?.choices
-                        ?.[0]
-                        ?.message
-                        ?.content;
+                let translation =
+                    data?.choices?.[0]?.message?.content;
+
+
+                /*
+                 * Some models may return an object/array.
+                 * Convert it safely to text.
+                 */
+
+                if (
+                    typeof translation !==
+                    "string"
+                ) {
+
+                    translation =
+                        String(
+                            translation || ""
+                        );
+
+                }
+
+
+                translation =
+                    translation.trim();
 
 
                 if (!translation) {
@@ -344,7 +376,7 @@ export default {
                         JSON.stringify({
 
                             error:
-                                "OpenRouter returned no translation."
+                                "Translation returned no text."
 
                         }),
 
@@ -368,16 +400,12 @@ export default {
                 }
 
 
-                /*
-                 * Return English translation
-                 */
-
                 return new Response(
 
                     JSON.stringify({
 
                         translation:
-                            translation.trim()
+                            translation
 
                     }),
 
@@ -402,11 +430,10 @@ export default {
 
 
             /*
-             * --------------------------------
-             * NORMAL COACH CONVERSATION
-             * --------------------------------
+             * ------------------------------------------------
+             * NORMAL CONVERSATION REQUEST
+             * ------------------------------------------------
              */
-
 
             if (
                 !Array.isArray(body.messages) ||
@@ -443,7 +470,11 @@ export default {
 
 
             /*
-             * Keep the latest 20 messages.
+             * Keep conversation history.
+             *
+             * English translations are NOT included because
+             * the index.html only stores German conversation
+             * messages in this array.
              */
 
             const messages =
@@ -454,8 +485,11 @@ export default {
                     .map(message => ({
 
                         role:
-                            message.role === "assistant"
+                            message.role ===
+                            "assistant"
+
                                 ? "assistant"
+
                                 : "user",
 
                         content:
@@ -495,35 +529,51 @@ export default {
 
                         },
 
-                        body:
-                            JSON.stringify({
 
-                                model:
-                                    "openrouter/free",
+                        body: JSON.stringify({
 
-                                messages: [
+                            model:
+                                "openrouter/free",
 
-                                    {
 
-                                        role:
-                                            "system",
+                            messages: [
 
-                                        content:
-                                            SYSTEM_PROMPT
+                                {
 
-                                    },
+                                    role:
+                                        "system",
 
-                                    ...messages
+                                    content:
+                                        SYSTEM_PROMPT
 
-                                ],
+                                },
 
-                                temperature:
-                                    0.7,
+                                ...messages
 
-                                max_tokens:
-                                    300
+                            ],
 
-                            })
+
+                            /*
+                             * Important:
+                             * ask OpenRouter for no reasoning.
+                             */
+
+                            reasoning: {
+
+                                effort:
+                                    "none"
+
+                            },
+
+
+                            temperature:
+                                0.7,
+
+
+                            max_tokens:
+                                300
+
+                        })
 
                     }
 
@@ -535,7 +585,7 @@ export default {
 
 
             /*
-             * OpenRouter returned an error.
+             * OpenRouter error
              */
 
             if (!response.ok) {
@@ -588,15 +638,40 @@ export default {
 
 
             /*
-             * Extract AI response.
+             * Get final AI response.
              */
 
-            const reply =
-                data
-                    ?.choices
-                    ?.[0]
-                    ?.message
-                    ?.content;
+            let reply =
+                data?.choices?.[0]?.message?.content;
+
+
+            if (
+                typeof reply !==
+                "string"
+            ) {
+
+                reply =
+                    String(
+                        reply || ""
+                    );
+
+            }
+
+
+            reply =
+                reply.trim();
+
+
+            /*
+             * Safety cleanup.
+             *
+             * If a model ignores the instruction and includes
+             * a visible reasoning section, remove common
+             * reasoning markers before displaying it.
+             */
+
+            reply =
+                cleanReply(reply);
 
 
             if (!reply) {
@@ -606,7 +681,7 @@ export default {
                     JSON.stringify({
 
                         error:
-                            "OpenRouter returned no text."
+                            "OpenRouter returned no final text."
 
                     }),
 
@@ -631,7 +706,7 @@ export default {
 
 
             /*
-             * Successful coach response.
+             * Successful conversation response.
              */
 
             return new Response(
@@ -639,7 +714,7 @@ export default {
                 JSON.stringify({
 
                     reply:
-                        reply.trim()
+                        reply
 
                 }),
 
@@ -701,3 +776,92 @@ export default {
     }
 
 };
+
+
+/*
+ * Remove common visible reasoning formats.
+ *
+ * This is only a fallback. The main protection is the
+ * system prompt + reasoning: { effort: "none" }.
+ */
+
+function cleanReply(text) {
+
+    let result =
+        String(text || "").trim();
+
+
+    /*
+     * Remove <think>...</think> blocks.
+     */
+
+    result =
+        result.replace(
+            /<think>[\s\S]*?<\/think>/gi,
+            ""
+        );
+
+
+    /*
+     * Remove common "thinking process" sections.
+     */
+
+    const markers = [
+
+        "Here's a thinking process:",
+
+        "Here is a thinking process:",
+
+        "Thinking process:",
+
+        "Chain of thought:",
+
+        "Analysis:",
+
+        "Let's analyze this:",
+
+        "Let me analyze this:"
+
+    ];
+
+
+    for (
+        const marker of markers
+    ) {
+
+        const index =
+            result
+                .toLowerCase()
+                .indexOf(
+                    marker.toLowerCase()
+                );
+
+
+        if (index !== -1) {
+
+            result =
+                result.substring(
+                    0,
+                    index
+                ).trim();
+
+        }
+
+    }
+
+
+    /*
+     * Remove accidental markdown-style
+     * reasoning headings at the beginning.
+     */
+
+    result =
+        result.replace(
+            /^(analysis|reasoning|thinking)\s*:\s*/i,
+            ""
+        );
+
+
+    return result.trim();
+
+}
