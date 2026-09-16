@@ -17,7 +17,6 @@ Rules:
   for a long grammar explanation.
 - When useful, naturally model the correct German.
 - If the learner uses English, help them and encourage German.
-- Never invent something the learner said.
 - The goal is a natural human-like conversation.
 
 Return only the coach's response.
@@ -59,6 +58,22 @@ export default {
 
     try {
 
+      if (!env.GEMINI_API_KEY) {
+
+        return new Response(
+          JSON.stringify({
+            error: "GEMINI_API_KEY is missing in Cloudflare."
+          }),
+          {
+            status: 500,
+            headers: {
+              ...corsHeaders,
+              "Content-Type": "application/json"
+            }
+          }
+        );
+      }
+
       const body = await request.json();
 
       if (!Array.isArray(body.messages) ||
@@ -78,11 +93,6 @@ export default {
         );
       }
 
-      /*
-       * Only send the most recent conversation
-       * to keep requests small.
-       */
-
       const messages =
         body.messages.slice(-20);
 
@@ -98,10 +108,6 @@ export default {
           }
         ]
       }));
-
-      /*
-       * Current stable Gemini model.
-       */
 
       const model = "gemini-2.5-flash";
 
@@ -137,19 +143,23 @@ export default {
 
       });
 
-      if (!response.ok) {
+      const responseText =
+        await response.text();
 
-        const errorText =
-          await response.text();
+      if (!response.ok) {
 
         console.error(
           "Gemini API error:",
-          errorText
+          responseText
         );
 
         return new Response(
           JSON.stringify({
-            error: "The AI service returned an error."
+            error:
+              "Gemini error " +
+              response.status +
+              ": " +
+              responseText
           }),
           {
             status: 500,
@@ -162,7 +172,7 @@ export default {
       }
 
       const data =
-        await response.json();
+        JSON.parse(responseText);
 
       const reply =
         data?.candidates?.[0]?.content?.parts?.[0]?.text;
@@ -171,7 +181,9 @@ export default {
 
         return new Response(
           JSON.stringify({
-            error: "The AI did not return a response."
+            error:
+              "Gemini returned no text: " +
+              responseText
           }),
           {
             status: 500,
@@ -205,7 +217,9 @@ export default {
 
       return new Response(
         JSON.stringify({
-          error: "Something went wrong."
+          error:
+            "Worker error: " +
+            error.message
         }),
         {
           status: 500,
