@@ -33,6 +33,7 @@ export default {
       "Access-Control-Allow-Headers": "Content-Type"
     };
 
+    // Handle browser CORS preflight
     if (request.method === "OPTIONS") {
       return new Response(null, {
         status: 204,
@@ -40,6 +41,7 @@ export default {
       });
     }
 
+    // Only POST is allowed
     if (request.method !== "POST") {
       return new Response(
         JSON.stringify({
@@ -57,6 +59,7 @@ export default {
 
     try {
 
+      // Check API key
       if (!env.GEMINI_API_KEY) {
         return new Response(
           JSON.stringify({
@@ -72,11 +75,13 @@ export default {
         );
       }
 
+      // Read request
       const body = await request.json();
 
-      if (!Array.isArray(body.messages) ||
-          body.messages.length === 0) {
-
+      if (
+        !Array.isArray(body.messages) ||
+        body.messages.length === 0
+      ) {
         return new Response(
           JSON.stringify({
             error: "No conversation was provided."
@@ -91,13 +96,7 @@ export default {
         );
       }
 
-      /*
-       * Build a single conversation string.
-       *
-       * We are intentionally doing this statelessly for now.
-       * The browser sends the conversation history on every request.
-       */
-
+      // Keep the latest 20 messages
       const conversation = body.messages
         .slice(-20)
         .map(message => {
@@ -124,10 +123,7 @@ Continue the conversation naturally.
 Respond only as Deutsch Coach.
 `;
 
-      /*
-       * Current Gemini Interactions API.
-       */
-
+      // Gemini Interactions API
       const url =
         "https://generativelanguage.googleapis.com/v1beta/interactions";
 
@@ -144,7 +140,15 @@ Respond only as Deutsch Coach.
 
           model: "gemini-3.6-flash",
 
-          input: input
+          input: input,
+
+          /*
+           * Force the inference placement to
+           * Google Cloud US East 4.
+           */
+          placement: {
+            region: "gcp:us-east-4"
+          }
 
         })
 
@@ -153,10 +157,11 @@ Respond only as Deutsch Coach.
       const responseText =
         await response.text();
 
+      // Gemini returned an error
       if (!response.ok) {
 
         console.error(
-          "Gemini Interactions API error:",
+          "Gemini API error:",
           responseText
         );
 
@@ -181,10 +186,7 @@ Respond only as Deutsch Coach.
       const data =
         JSON.parse(responseText);
 
-      /*
-       * Find the model's text output.
-       */
-
+      // Extract Gemini response
       let reply = "";
 
       if (data.output_text) {
@@ -230,11 +232,13 @@ Respond only as Deutsch Coach.
 
           }
 
-          if (reply) break;
+          if (reply) {
+            break;
+          }
         }
-
       }
 
+      // No response text
       if (!reply) {
 
         return new Response(
@@ -253,6 +257,7 @@ Respond only as Deutsch Coach.
         );
       }
 
+      // Success
       return new Response(
         JSON.stringify({
           reply: reply.trim()
