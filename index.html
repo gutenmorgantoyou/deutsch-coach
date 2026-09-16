@@ -7,6 +7,7 @@
     <title>Deutsch Coach 🇩🇪</title>
 
     <style>
+
         body {
             margin: 0;
             font-family: Arial, sans-serif;
@@ -64,6 +65,11 @@
             cursor: wait;
         }
 
+        #newConversationButton {
+            margin-top: 12px;
+            background: #757575;
+        }
+
         #status {
             text-align: center;
             margin-top: 16px;
@@ -89,6 +95,7 @@
             border-radius: 12px;
             padding: 12px;
             line-height: 1.5;
+            font-size: 18px;
         }
 
         .message.user .bubble {
@@ -98,6 +105,7 @@
         .message.coach .bubble {
             background: #eeeeee;
         }
+
     </style>
 </head>
 
@@ -110,17 +118,29 @@
     <div id="conversation">
 
         <div class="message coach">
-            <div class="speaker">Deutsch Coach</div>
+
+            <div class="speaker">
+                Deutsch Coach
+            </div>
+
             <div class="bubble">
                 Hallo! Wie geht es dir heute?
             </div>
+
         </div>
 
     </div>
 
+
     <button id="speakButton">
         🎙️ Sprechen
     </button>
+
+
+    <button id="newConversationButton">
+        🔄 Neue Unterhaltung
+    </button>
+
 
     <div id="status">
         Bereit
@@ -128,15 +148,25 @@
 
 </div>
 
+
 <script>
 
-const speakButton = document.getElementById("speakButton");
-const status = document.getElementById("status");
-const conversation = document.getElementById("conversation");
+
+const speakButton =
+    document.getElementById("speakButton");
+
+const newConversationButton =
+    document.getElementById("newConversationButton");
+
+const status =
+    document.getElementById("status");
+
+const conversation =
+    document.getElementById("conversation");
 
 
 /*
- * Your Cloudflare Worker.
+ * Cloudflare Worker
  */
 
 const API_URL =
@@ -144,68 +174,133 @@ const API_URL =
 
 
 /*
- * Conversation history.
+ * Initial coach message
  */
 
-const messages = [
+const INITIAL_MESSAGE =
+    "Hallo! Wie geht es dir heute?";
+
+
+/*
+ * Conversation history
+ */
+
+let messages = [
+
     {
         role: "assistant",
-        content: "Hallo! Wie geht es dir heute?"
+        content: INITIAL_MESSAGE
     }
+
 ];
 
 
-function addMessage(speaker, text, type) {
+/*
+ * Add a message to the screen
+ */
 
-    const message = document.createElement("div");
+function addMessage(
+    speaker,
+    text,
+    type
+) {
+
+    const message =
+        document.createElement("div");
 
     message.className =
         "message " + type;
 
-    message.innerHTML = `
-        <div class="speaker">${speaker}</div>
-        <div class="bubble"></div>
-    `;
 
-    message.querySelector(".bubble").textContent = text;
+    const speakerElement =
+        document.createElement("div");
 
-    conversation.appendChild(message);
+    speakerElement.className =
+        "speaker";
+
+    speakerElement.textContent =
+        speaker;
+
+
+    const bubble =
+        document.createElement("div");
+
+    bubble.className =
+        "bubble";
+
+    bubble.textContent =
+        text;
+
+
+    message.appendChild(
+        speakerElement
+    );
+
+    message.appendChild(
+        bubble
+    );
+
+
+    conversation.appendChild(
+        message
+    );
+
 
     window.scrollTo({
-        top: document.body.scrollHeight,
-        behavior: "smooth"
+
+        top:
+            document.body.scrollHeight,
+
+        behavior:
+            "smooth"
+
     });
+
 }
 
 
 /*
- * Speak German using the phone's
- * built-in speech synthesis.
+ * Speak German using the
+ * phone's speech synthesis
  */
 
 function speakGerman(text) {
 
-    if (!("speechSynthesis" in window)) {
+    if (
+        !("speechSynthesis" in window)
+    ) {
         return;
     }
 
+
     window.speechSynthesis.cancel();
+
 
     const speech =
         new SpeechSynthesisUtterance(text);
 
-    speech.lang = "de-DE";
 
-    speech.rate = 0.9;
+    speech.lang =
+        "de-DE";
 
-    speech.pitch = 1;
 
-    window.speechSynthesis.speak(speech);
+    speech.rate =
+        0.9;
+
+
+    speech.pitch =
+        1;
+
+
+    window.speechSynthesis.speak(
+        speech
+    );
+
 }
 
 
 /*
- * Send conversation to Cloudflare Worker.
+ * Ask the AI coach
  */
 
 async function askCoach() {
@@ -213,24 +308,40 @@ async function askCoach() {
     status.textContent =
         "🤔 Ich denke...";
 
-    speakButton.disabled = true;
+
+    speakButton.disabled =
+        true;
+
 
     try {
 
         const response =
-            await fetch(API_URL, {
+            await fetch(
 
-                method: "POST",
+                API_URL,
 
-                headers: {
-                    "Content-Type": "application/json"
-                },
+                {
 
-                body: JSON.stringify({
-                    messages: messages
-                })
+                    method: "POST",
 
-            });
+                    headers: {
+
+                        "Content-Type":
+                            "application/json"
+
+                    },
+
+                    body:
+                        JSON.stringify({
+
+                            messages:
+                                messages
+
+                        })
+
+                }
+
+            );
 
 
         const data =
@@ -240,9 +351,12 @@ async function askCoach() {
         if (!response.ok) {
 
             throw new Error(
+
                 data.error ||
                 "Server error"
+
             );
+
         }
 
 
@@ -251,57 +365,121 @@ async function askCoach() {
             throw new Error(
                 "Keine Antwort vom Coach."
             );
+
         }
 
 
         /*
-         * Add AI response to history.
+         * Add coach response
+         * to conversation history
          */
 
         messages.push({
-            role: "assistant",
-            content: data.reply
+
+            role:
+                "assistant",
+
+            content:
+                data.reply
+
         });
 
 
         /*
-         * Display AI response.
+         * Display coach response
          */
 
         addMessage(
+
             "Deutsch Coach",
+
             data.reply,
+
             "coach"
+
         );
 
 
         /*
-         * Speak response.
+         * Speak coach response
          */
 
-        speakGerman(data.reply);
+        speakGerman(
+            data.reply
+        );
 
 
         status.textContent =
             "Bereit";
 
+
     } catch (error) {
 
         console.error(error);
 
+
         status.textContent =
-            "Fehler: " + error.message;
+            "Fehler: " +
+            error.message;
+
 
     } finally {
 
-        speakButton.disabled = false;
+        speakButton.disabled =
+            false;
 
     }
+
 }
 
 
 /*
- * Speech recognition.
+ * Start a new conversation
+ */
+
+newConversationButton.onclick =
+    () => {
+
+        window.speechSynthesis.cancel();
+
+
+        messages = [
+
+            {
+
+                role:
+                    "assistant",
+
+                content:
+                    INITIAL_MESSAGE
+
+            }
+
+        ];
+
+
+        conversation.innerHTML = "";
+
+
+        addMessage(
+
+            "Deutsch Coach",
+
+            INITIAL_MESSAGE,
+
+            "coach"
+
+        );
+
+
+        status.textContent =
+            "Neue Unterhaltung gestartet.";
+
+    };
+
+
+/*
+ * Speech recognition
  */
 
 const SpeechRecognition =
@@ -314,83 +492,116 @@ if (!SpeechRecognition) {
     status.textContent =
         "Spracherkennung wird von diesem Browser nicht unterstützt.";
 
-    speakButton.disabled = true;
+
+    speakButton.disabled =
+        true;
+
 
 } else {
 
     const recognition =
         new SpeechRecognition();
 
+
     recognition.lang =
         "de-DE";
+
 
     recognition.continuous =
         false;
 
+
     recognition.interimResults =
         false;
+
 
     recognition.maxAlternatives =
         1;
 
 
-    speakButton.onclick = () => {
+    /*
+     * Start listening
+     */
 
-        try {
+    speakButton.onclick =
+        () => {
 
-            window.speechSynthesis.cancel();
+            try {
 
-            recognition.start();
+                window.speechSynthesis.cancel();
 
-            speakButton.classList.add(
-                "listening"
-            );
 
-            speakButton.textContent =
-                "🎙️ Zuhören...";
+                recognition.start();
 
-            status.textContent =
-                "Ich höre zu...";
 
-        } catch (error) {
+                speakButton.classList.add(
+                    "listening"
+                );
 
-            console.error(error);
 
-        }
+                speakButton.textContent =
+                    "🎙️ Zuhören...";
 
-    };
 
+                status.textContent =
+                    "Ich höre zu...";
+
+
+            } catch (error) {
+
+                console.error(error);
+
+            }
+
+        };
+
+
+    /*
+     * Speech recognized
+     */
 
     recognition.onresult =
         async (event) => {
 
             const text =
-                event.results[0][0].transcript;
+                event
+                    .results[0][0]
+                    .transcript;
 
 
             /*
-             * Add learner message.
+             * Add learner message
+             * exactly once
              */
 
             messages.push({
-                role: "user",
-                content: text
+
+                role:
+                    "user",
+
+                content:
+                    text
+
             });
 
 
             /*
-             * Show learner message.
+             * Display learner message
              */
 
             addMessage(
+
                 "Du",
+
                 text,
+
                 "user"
+
             );
 
 
             /*
-             * Ask Gemini.
+             * Ask coach
              */
 
             await askCoach();
@@ -398,36 +609,56 @@ if (!SpeechRecognition) {
         };
 
 
+    /*
+     * Speech recognition errors
+     */
+
     recognition.onerror =
         (event) => {
 
             console.log(
+
                 "Speech error:",
+
                 event.error
+
             );
 
 
-            if (event.error === "not-allowed") {
+            if (
+                event.error ===
+                "not-allowed"
+            ) {
 
                 status.textContent =
                     "Mikrofonzugriff wurde verweigert.";
 
-            } else if (
-                event.error === "no-speech"
+            }
+
+            else if (
+                event.error ===
+                "no-speech"
             ) {
 
                 status.textContent =
                     "Ich habe nichts gehört.";
 
-            } else {
+            }
+
+            else {
 
                 status.textContent =
-                    "Fehler: " + event.error;
+                    "Fehler: " +
+                    event.error;
 
             }
 
         };
 
+
+    /*
+     * Recognition finished
+     */
 
     recognition.onend =
         () => {
@@ -435,6 +666,7 @@ if (!SpeechRecognition) {
             speakButton.classList.remove(
                 "listening"
             );
+
 
             speakButton.textContent =
                 "🎙️ Sprechen";
