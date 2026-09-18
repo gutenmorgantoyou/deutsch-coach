@@ -1,944 +1,2348 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-    <title>Deutsch Coach 🇩🇪</title>
+  <meta charset="UTF-8">
 
-    <style>
-        body {
-            margin: 0;
-            font-family: Arial, sans-serif;
-            background: #f5f5f5;
-            color: #222;
-        }
+  <meta
+    name="viewport"
+    content="width=device-width, initial-scale=1.0"
+  >
 
-        .app {
-            max-width: 600px;
-            margin: auto;
-            padding: 20px;
-        }
+  <title>Deutsch Coach 🇩🇪</title>
 
-        h1 {
-            text-align: center;
-            margin-bottom: 20px;
-        }
+  <style>
 
-        .level-card {
-            background: white;
-            border-radius: 16px;
-            padding: 16px;
-            margin-bottom: 20px;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
-        }
+    * {
+      box-sizing: border-box;
+    }
 
-        .level-title {
-            font-size: 14px;
-            color: #777;
-            margin-bottom: 10px;
-        }
+    body {
+      margin: 0;
+      font-family: Arial, sans-serif;
+      background: #f5f5f5;
+      color: #222;
+    }
 
-        .level-select {
-            width: 100%;
-            padding: 14px;
-            border-radius: 12px;
-            border: 1px solid #ccc;
-            font-size: 18px;
-            background: white;
-        }
+    .app {
+      max-width: 650px;
+      margin: 0 auto;
+      padding: 18px;
+    }
 
-        .conversation-title {
-            font-size: 15px;
-            color: #777;
-            font-weight: bold;
-            margin-bottom: 12px;
-        }
+    h1 {
+      margin-top: 5px;
+      margin-bottom: 20px;
+    }
 
-        .message {
-            margin-bottom: 18px;
-        }
+    h2 {
+      font-size: 18px;
+      margin-top: 0;
+    }
 
-        .message .speaker {
-            font-size: 13px;
-            color: #777;
-            margin-bottom: 5px;
-        }
+    .card {
+      background: white;
+      border-radius: 16px;
+      padding: 18px;
+      margin-bottom: 16px;
+      box-shadow:
+        0 2px 12px rgba(0,0,0,0.06);
+    }
 
-        .message .bubble {
-            background: white;
-            border-radius: 12px;
-            padding: 14px;
-            line-height: 1.5;
-            font-size: 18px;
-            box-shadow: 0 1px 4px rgba(0,0,0,0.05);
-        }
+    label {
+      display: block;
+      font-weight: bold;
+      margin-bottom: 8px;
+    }
 
-        .message.user .bubble {
-            background: #e3f2fd;
-        }
+    select,
+    textarea,
+    button {
+      font-family: inherit;
+    }
 
-        .message.coach .bubble {
-            background: #eeeeee;
-        }
+    select,
+    textarea {
+      width: 100%;
+      padding: 12px;
+      border-radius: 10px;
+      border: 1px solid #ccc;
+      font-size: 16px;
+      background: white;
+    }
 
-        .translation {
-            font-size: 14px;
-            color: #666;
-            margin-top: 6px;
-            padding-left: 4px;
-            line-height: 1.4;
-        }
+    textarea {
+      resize: vertical;
+      min-height: 70px;
+    }
 
-        .correction {
-            margin-top: 8px;
-            padding: 10px;
-            background: #fff8e1;
-            border-radius: 10px;
-            font-size: 14px;
-            line-height: 1.4;
-        }
+    button {
+      border: none;
+      border-radius: 12px;
+      padding: 12px 16px;
+      font-size: 15px;
+      cursor: pointer;
+      background: #222;
+      color: white;
+      margin-top: 8px;
+    }
 
-        .correction strong {
-            color: #8a6500;
-        }
+    button.secondary {
+      background: #eee;
+      color: #222;
+    }
 
-        button {
-            width: 100%;
-            border: none;
-            border-radius: 14px;
-            padding: 18px;
-            font-size: 20px;
-            background: #1976d2;
-            color: white;
-            cursor: pointer;
-            margin-top: 8px;
-        }
+    button.success {
+      background: #2e7d32;
+    }
 
-        button.listening {
-            background: #d32f2f;
-        }
+    button.danger {
+      background: #b3261e;
+    }
 
-        button:disabled {
-            opacity: 0.6;
-            cursor: wait;
-        }
+    button:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
 
-        #status {
-            text-align: center;
-            margin-top: 16px;
-            color: #666;
-        }
+    .level-description {
+      margin-top: 8px;
+      color: #666;
+      font-size: 14px;
+    }
 
-        .level-description {
-            margin-top: 8px;
-            font-size: 13px;
-            color: #777;
-            line-height: 1.4;
-        }
-    </style>
+    .message {
+      padding: 13px;
+      border-radius: 12px;
+      margin: 10px 0;
+    }
+
+    .coach {
+      background: #f1f1f1;
+    }
+
+    .user {
+      background: #e7f1ff;
+    }
+
+    .message-label {
+      font-weight: bold;
+      margin-bottom: 6px;
+    }
+
+    .translation {
+      color: #666;
+      font-size: 14px;
+      margin-top: 8px;
+    }
+
+    .correction {
+      background: #fff8df;
+      border-left: 4px solid #d59b00;
+      padding: 12px;
+      border-radius: 8px;
+      margin-top: 10px;
+    }
+
+    .correction strong {
+      display: block;
+      margin-bottom: 5px;
+    }
+
+    .vocab {
+      background: #eef8ee;
+      padding: 12px;
+      border-radius: 10px;
+      margin-top: 10px;
+    }
+
+    .vocab-item {
+      margin: 5px 0;
+    }
+
+    .status {
+      font-size: 14px;
+      color: #666;
+      margin-top: 8px;
+    }
+
+    .button-row {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+
+    .button-row button {
+      flex: 1;
+      min-width: 130px;
+    }
+
+    .stats {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 10px;
+    }
+
+    .stat {
+      background: #f5f5f5;
+      border-radius: 12px;
+      padding: 14px;
+      text-align: center;
+    }
+
+    .stat-number {
+      font-size: 25px;
+      font-weight: bold;
+    }
+
+    .stat-label {
+      font-size: 12px;
+      color: #666;
+      margin-top: 4px;
+    }
+
+    .topic-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 8px;
+    }
+
+    .topic {
+      background: #f2f2f2;
+      color: #222;
+      margin: 0;
+    }
+
+    .topic.active {
+      background: #222;
+      color: white;
+    }
+
+    .hidden {
+      display: none !important;
+    }
+
+    .word-card {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 10px;
+      padding: 10px 0;
+      border-bottom: 1px solid #eee;
+    }
+
+    .word-card:last-child {
+      border-bottom: none;
+    }
+
+    .word {
+      font-weight: bold;
+    }
+
+    .meaning {
+      color: #666;
+      font-size: 14px;
+    }
+
+    .review-button {
+      margin: 0;
+      padding: 8px 10px;
+      font-size: 13px;
+    }
+
+    .small {
+      font-size: 13px;
+      color: #666;
+    }
+
+    .error {
+      color: #b3261e;
+      background: #ffecec;
+      padding: 12px;
+      border-radius: 10px;
+      margin-top: 10px;
+    }
+
+    .success-box {
+      color: #246b2a;
+      background: #eaf7ea;
+      padding: 12px;
+      border-radius: 10px;
+      margin-top: 10px;
+    }
+
+    @media (max-width: 480px) {
+
+      .app {
+        padding: 12px;
+      }
+
+      .button-row {
+        flex-direction: column;
+      }
+
+      .button-row button {
+        width: 100%;
+      }
+
+    }
+
+  </style>
+
 </head>
+
 
 <body>
 
 <div class="app">
 
-    <h1>🇩🇪 Deutsch Coach</h1>
+  <h1>🇩🇪 Deutsch Coach</h1>
 
 
-    <!-- LEVEL SELECTOR -->
+  <!-- LEVEL -->
 
-    <div class="level-card">
+  <div class="card">
 
-        <div class="level-title">
-            🎯 Dein Deutsch-Niveau
-        </div>
+    <h2>🎯 Dein Deutsch-Niveau</h2>
 
-        <select
-            id="levelSelect"
-            class="level-select"
-        >
+    <select id="level">
 
-            <option value="A1">
-                A1 – Anfänger
-            </option>
+      <option value="A1">
+        A1 – Anfänger
+      </option>
 
-            <option value="A2">
-                A2 – Grundkenntnisse
-            </option>
+      <option value="A2">
+        A2 – Grundkenntnisse
+      </option>
 
-            <option value="B1">
-                B1 – Mittelstufe
-            </option>
+      <option value="B1">
+        B1 – Mittelstufe
+      </option>
 
-            <option value="B2">
-                B2 – Gute Mittelstufe
-            </option>
+      <option value="B2">
+        B2 – Gute Mittelstufe
+      </option>
 
-            <option value="C1">
-                C1 – Fortgeschritten
-            </option>
+      <option value="C1">
+        C1 – Fortgeschritten
+      </option>
 
-            <option value="C2">
-                C2 – Nahezu muttersprachlich
-            </option>
+      <option value="C2">
+        C2 – Nahezu muttersprachlich
+      </option>
 
-        </select>
+    </select>
 
-        <div
-            id="levelDescription"
-            class="level-description"
-        >
-            Einfache Wörter und kurze Sätze.
-        </div>
+    <div
+      id="levelDescription"
+      class="level-description"
+    ></div>
+
+  </div>
+
+
+  <!-- TOPIC -->
+
+  <div class="card">
+
+    <h2>🎯 Gesprächsthema</h2>
+
+    <div class="topic-grid">
+
+      <button
+        class="topic active"
+        data-topic=""
+      >
+        Freies Gespräch
+      </button>
+
+      <button
+        class="topic"
+        data-topic="Alltag"
+      >
+        Alltag
+      </button>
+
+      <button
+        class="topic"
+        data-topic="Reisen"
+      >
+        Reisen
+      </button>
+
+      <button
+        class="topic"
+        data-topic="Essen"
+      >
+        Essen
+      </button>
+
+      <button
+        class="topic"
+        data-topic="Arbeit"
+      >
+        Arbeit
+      </button>
+
+      <button
+        class="topic"
+        data-topic="Hobbys"
+      >
+        Hobbys
+      </button>
+
+      <button
+        class="topic"
+        data-topic="Familie"
+      >
+        Familie
+      </button>
+
+      <button
+        class="topic"
+        data-topic="Deutschland"
+      >
+        Deutschland
+      </button>
 
     </div>
 
-
-    <div class="conversation-title">
-        Gespräch
-    </div>
+  </div>
 
 
-    <div id="conversation">
+  <!-- CONVERSATION -->
 
-        <div class="message coach">
+  <div class="card">
 
-            <div class="speaker">
-                Deutsch Coach
-            </div>
+    <h2>Gespräch</h2>
 
-            <div class="bubble">
-                Hallo! Wie geht es dir heute?
-            </div>
+    <div id="conversation"></div>
 
-            <div class="translation">
-                🇬🇧 Hello! How are you today?
-            </div>
+    <textarea
+      id="input"
+      placeholder="Schreib etwas auf Deutsch..."
+    ></textarea>
 
-        </div>
+    <div class="button-row">
 
-    </div>
+      <button
+        id="sendButton"
+      >
+        Senden
+      </button>
 
-
-    <button id="speakButton">
+      <button
+        id="speakButton"
+        class="success"
+      >
         🎙️ Sprechen
-    </button>
+      </button>
 
+      <button
+        id="handsFreeButton"
+        class="secondary"
+      >
+        🔄 Freisprechen: Aus
+      </button>
 
-    <div id="status">
-        Bereit
     </div>
+
+    <div
+      id="status"
+      class="status"
+    >
+      Bereit
+    </div>
+
+    <div
+      id="error"
+      class="error hidden"
+    ></div>
+
+  </div>
+
+
+  <!-- PROGRESS -->
+
+  <div class="card">
+
+    <h2>📈 Lernfortschritt</h2>
+
+    <div class="stats">
+
+      <div class="stat">
+        <div
+          id="sessionCount"
+          class="stat-number"
+        >0</div>
+        <div class="stat-label">
+          Antworten
+        </div>
+      </div>
+
+      <div class="stat">
+        <div
+          id="correctionCount"
+          class="stat-number"
+        >0</div>
+        <div class="stat-label">
+          Korrekturen
+        </div>
+      </div>
+
+      <div class="stat">
+        <div
+          id="vocabCount"
+          class="stat-number"
+        >0</div>
+        <div class="stat-label">
+          Wörter
+        </div>
+      </div>
+
+      <div class="stat">
+        <div
+          id="streakCount"
+          class="stat-number"
+        >0</div>
+        <div class="stat-label">
+          Lerntage
+        </div>
+      </div>
+
+    </div>
+
+  </div>
+
+
+  <!-- VOCABULARY -->
+
+  <div class="card">
+
+    <h2>📚 Meine Wörter</h2>
+
+    <div
+      id="vocabularyList"
+    ></div>
+
+    <div
+      id="noVocabulary"
+      class="small"
+    >
+      Noch keine Wörter gespeichert.
+    </div>
+
+  </div>
+
+
+  <!-- MISTAKES -->
+
+  <div class="card">
+
+    <h2>🧠 Meine Fehler</h2>
+
+    <div
+      id="mistakeList"
+    ></div>
+
+    <div
+      id="noMistakes"
+      class="small"
+    >
+      Noch keine Fehler gespeichert.
+    </div>
+
+  </div>
+
+
+  <!-- DATA -->
+
+  <div class="card">
+
+    <h2>💾 Lerndaten</h2>
+
+    <p class="small">
+      Deine Lernfortschritte werden nur in
+      diesem Browser gespeichert.
+    </p>
+
+    <div class="button-row">
+
+      <button
+        id="exportButton"
+        class="secondary"
+      >
+        Daten exportieren
+      </button>
+
+      <button
+        id="importButton"
+        class="secondary"
+      >
+        Daten importieren
+      </button>
+
+      <button
+        id="resetButton"
+        class="danger"
+      >
+        Alles löschen
+      </button>
+
+    </div>
+
+    <input
+      id="importFile"
+      type="file"
+      accept=".json,application/json"
+      class="hidden"
+    >
+
+  </div>
 
 </div>
 
 
 <script>
 
-const speakButton =
-    document.getElementById("speakButton");
-
-const status =
-    document.getElementById("status");
-
-const conversation =
-    document.getElementById("conversation");
-
-const levelSelect =
-    document.getElementById("levelSelect");
-
-const levelDescription =
-    document.getElementById("levelDescription");
-
-
-/*
- * Cloudflare Worker
- */
-
 const API_URL =
-    "https://deutsch-coach-api.gutenmorgantoyou.workers.dev";
+  "https://deutsch-coach-api.gutenmorgantoyou.workers.dev";
 
 
-/*
- * Current German level.
- */
-
-let currentLevel =
-    localStorage.getItem(
-        "deutschCoachLevel"
-    ) || "A1";
+const STORAGE_KEY =
+  "deutschCoachDataV4";
 
 
-levelSelect.value =
-    currentLevel;
+const LEVEL_DESCRIPTIONS = {
 
+  A1:
+    "Einfache Wörter und kurze Sätze.",
 
-/*
- * Level descriptions.
- */
+  A2:
+    "Einfache Gespräche mit etwas mehr Wortschatz.",
 
-const descriptions = {
+  B1:
+    "Normale Gespräche mit etwas komplexeren Sätzen.",
 
-    A1:
-        "Einfache Wörter und kurze Sätze.",
+  B2:
+    "Flüssige Gespräche mit komplexerer Sprache.",
 
-    A2:
-        "Einfache Gespräche über Alltag und bekannte Themen.",
+  C1:
+    "Anspruchsvolle Gespräche mit komplexem Deutsch.",
 
-    B1:
-        "Normale Gespräche mit etwas komplexeren Sätzen.",
-
-    B2:
-        "Natürlichere Gespräche mit vielfältigem Wortschatz.",
-
-    C1:
-        "Anspruchsvolle Gespräche mit komplexerem Deutsch.",
-
-    C2:
-        "Sehr fortgeschrittenes, nahezu muttersprachliches Deutsch."
+  C2:
+    "Nahezu muttersprachliche Gespräche."
 
 };
 
 
-levelDescription.textContent =
-    descriptions[currentLevel];
+const defaultData = {
+
+  level: "A1",
+
+  topic: "",
+
+  messages: [],
+
+  vocabulary: [],
+
+  mistakes: [],
+
+  sessions: 0,
+
+  corrections: 0,
+
+  streak: 0,
+
+  lastStudyDate: "",
+
+  handsFree: false
+
+};
 
 
-/*
- * Conversation memory.
- *
- * IMPORTANT:
- * Only German conversation goes here.
- * English translations are NOT stored.
- */
+let data =
+  loadData();
 
-const messages = [
 
-    {
-        role: "assistant",
-        content:
-            "Hallo! Wie geht es dir heute?"
+let recognition =
+  null;
+
+
+let isListening =
+  false;
+
+
+let isSending =
+  false;
+
+
+let selectedTopic =
+  data.topic || "";
+
+
+const level =
+  document.getElementById("level");
+
+
+const levelDescription =
+  document.getElementById(
+    "levelDescription"
+  );
+
+
+const conversation =
+  document.getElementById(
+    "conversation"
+  );
+
+
+const input =
+  document.getElementById(
+    "input"
+  );
+
+
+const sendButton =
+  document.getElementById(
+    "sendButton"
+  );
+
+
+const speakButton =
+  document.getElementById(
+    "speakButton"
+  );
+
+
+const handsFreeButton =
+  document.getElementById(
+    "handsFreeButton"
+  );
+
+
+const status =
+  document.getElementById(
+    "status"
+  );
+
+
+const errorBox =
+  document.getElementById(
+    "error"
+  );
+
+
+function loadData() {
+
+  try {
+
+    const saved =
+      localStorage.getItem(
+        STORAGE_KEY
+      );
+
+    if (!saved) {
+      return {
+        ...defaultData
+      };
     }
 
-];
+    const parsed =
+      JSON.parse(saved);
 
-
-/*
- * Change level.
- */
-
-levelSelect.onchange =
-    () => {
-
-        currentLevel =
-            levelSelect.value;
-
-
-        localStorage.setItem(
-            "deutschCoachLevel",
-            currentLevel
-        );
-
-
-        levelDescription.textContent =
-            descriptions[currentLevel];
-
-
-        status.textContent =
-            "Niveau " +
-            currentLevel +
-            " ausgewählt.";
-
+    return {
+      ...defaultData,
+      ...parsed
     };
 
+  } catch {
 
-/*
- * Add visible message.
- */
-
-function addMessage(
-    speaker,
-    text,
-    type,
-    translation = "",
-    correction = ""
-) {
-
-    const message =
-        document.createElement("div");
-
-    message.className =
-        "message " + type;
+    return {
+      ...defaultData
+    };
+  }
+}
 
 
-    const speakerElement =
-        document.createElement("div");
+function saveData() {
 
-    speakerElement.className =
-        "speaker";
-
-    speakerElement.textContent =
-        speaker;
-
-
-    const bubble =
-        document.createElement("div");
-
-    bubble.className =
-        "bubble";
-
-    bubble.textContent =
-        text;
+  localStorage.setItem(
+    STORAGE_KEY,
+    JSON.stringify(data)
+  );
+}
 
 
-    message.appendChild(
-        speakerElement
+function escapeHtml(value) {
+
+  return String(value)
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#039;");
+}
+
+
+function updateLevelDescription() {
+
+  const selected =
+    level.value;
+
+  levelDescription.textContent =
+    LEVEL_DESCRIPTIONS[selected] ||
+    "";
+}
+
+
+function updateStats() {
+
+  document.getElementById(
+    "sessionCount"
+  ).textContent =
+    data.sessions;
+
+  document.getElementById(
+    "correctionCount"
+  ).textContent =
+    data.corrections;
+
+  document.getElementById(
+    "vocabCount"
+  ).textContent =
+    data.vocabulary.length;
+
+  document.getElementById(
+    "streakCount"
+  ).textContent =
+    data.streak;
+}
+
+
+function renderVocabulary() {
+
+  const list =
+    document.getElementById(
+      "vocabularyList"
     );
 
-    message.appendChild(
-        bubble
+  const empty =
+    document.getElementById(
+      "noVocabulary"
+    );
+
+  if (
+    !data.vocabulary ||
+    data.vocabulary.length === 0
+  ) {
+
+    list.innerHTML = "";
+
+    empty.classList.remove(
+      "hidden"
+    );
+
+    return;
+  }
+
+
+  empty.classList.add(
+    "hidden"
+  );
+
+
+  const now =
+    Date.now();
+
+
+  const due =
+    data.vocabulary
+      .filter(item =>
+        !item.nextReview ||
+        item.nextReview <= now
+      )
+      .slice(0, 10);
+
+
+  list.innerHTML =
+    due.length
+      ? due.map(item => `
+
+        <div class="word-card">
+
+          <div>
+
+            <div class="word">
+              ${escapeHtml(item.word)}
+            </div>
+
+            <div class="meaning">
+              ${escapeHtml(item.meaning)}
+            </div>
+
+          </div>
+
+          <button
+            class="review-button"
+            data-review="${escapeHtml(item.word)}"
+          >
+            Gelernt
+          </button>
+
+        </div>
+
+      `).join("")
+
+      : `
+        <div class="small">
+          Keine Wörter zur Wiederholung.
+        </div>
+      `;
+
+
+  document
+    .querySelectorAll(
+      "[data-review]"
+    )
+    .forEach(button => {
+
+      button.addEventListener(
+        "click",
+        () => {
+
+          reviewWord(
+            button.dataset.review
+          );
+
+        }
+      );
+
+    });
+}
+
+
+function reviewWord(word) {
+
+  const item =
+    data.vocabulary.find(
+      entry =>
+        entry.word === word
+    );
+
+  if (!item) {
+    return;
+  }
+
+
+  item.reviewCount =
+    (item.reviewCount || 0) + 1;
+
+
+  const days =
+    Math.min(
+      30,
+      Math.pow(
+        2,
+        Math.min(
+          item.reviewCount,
+          5
+        )
+      )
     );
 
 
-    /*
-     * English translation.
-     */
+  item.nextReview =
+    Date.now() +
+    days *
+    24 *
+    60 *
+    60 *
+    1000;
 
-    if (translation) {
 
-        const translationElement =
-            document.createElement("div");
+  saveData();
 
-        translationElement.className =
-            "translation";
+  renderVocabulary();
 
-        translationElement.textContent =
-            "🇬🇧 " + translation;
+  updateStats();
+}
 
-        message.appendChild(
-            translationElement
-        );
 
+function renderMistakes() {
+
+  const list =
+    document.getElementById(
+      "mistakeList"
+    );
+
+  const empty =
+    document.getElementById(
+      "noMistakes"
+    );
+
+
+  if (
+    !data.mistakes ||
+    data.mistakes.length === 0
+  ) {
+
+    list.innerHTML = "";
+
+    empty.classList.remove(
+      "hidden"
+    );
+
+    return;
+  }
+
+
+  empty.classList.add(
+    "hidden"
+  );
+
+
+  list.innerHTML =
+    data.mistakes
+      .slice()
+      .sort(
+        (a, b) =>
+          (b.count || 0) -
+          (a.count || 0)
+      )
+      .slice(0, 10)
+      .map(item => `
+
+        <div class="word-card">
+
+          <div>
+
+            <div class="word">
+              ${escapeHtml(item.corrected)}
+            </div>
+
+            <div class="meaning">
+              ${escapeHtml(item.original)}
+            </div>
+
+          </div>
+
+          <div class="small">
+            ${item.count || 1}×
+          </div>
+
+        </div>
+
+      `)
+      .join("");
+}
+
+
+function updateStreak() {
+
+  const today =
+    new Date()
+      .toISOString()
+      .slice(0, 10);
+
+
+  if (
+    data.lastStudyDate ===
+    today
+  ) {
+    return;
+  }
+
+
+  const yesterday =
+    new Date(
+      Date.now() -
+      24 * 60 * 60 * 1000
+    )
+      .toISOString()
+      .slice(0, 10);
+
+
+  if (
+    data.lastStudyDate ===
+    yesterday
+  ) {
+
+    data.streak += 1;
+
+  } else {
+
+    data.streak = 1;
+  }
+
+
+  data.lastStudyDate =
+    today;
+
+  saveData();
+}
+
+
+function buildMemory() {
+
+  const vocabulary =
+    data.vocabulary
+      .slice(0, 20)
+      .map(
+        item =>
+          `${item.word} = ${item.meaning}`
+      )
+      .join("; ");
+
+
+  const mistakes =
+    data.mistakes
+      .slice()
+      .sort(
+        (a, b) =>
+          (b.count || 0) -
+          (a.count || 0)
+      )
+      .slice(0, 10)
+      .map(
+        item =>
+          `${item.original} → ${item.corrected}`
+      )
+      .join("; ");
+
+
+  return `
+Level: ${data.level}
+
+Known vocabulary:
+${vocabulary || "None yet"}
+
+Recurring mistakes:
+${mistakes || "None yet"}
+
+The learner is practicing German
+through natural conversation.
+`;
+}
+
+
+function addVocabulary(items) {
+
+  if (!Array.isArray(items)) {
+    return;
+  }
+
+
+  items.forEach(item => {
+
+    if (
+      !item ||
+      !item.word ||
+      !item.meaning
+    ) {
+      return;
     }
 
 
-    /*
-     * Optional correction.
-     */
+    const existing =
+      data.vocabulary.find(
+        entry =>
+          entry.word
+            .toLowerCase() ===
+          item.word
+            .toLowerCase()
+      );
 
-    if (correction) {
 
-        const correctionElement =
-            document.createElement("div");
+    if (existing) {
 
-        correctionElement.className =
-            "correction";
+      existing.meaning =
+        item.meaning;
 
-        correctionElement.innerHTML =
-            "<strong>✏️ Korrektur:</strong> " +
-            escapeHtml(correction);
-
-        message.appendChild(
-            correctionElement
-        );
-
+      return;
     }
 
 
-    conversation.appendChild(
-        message
-    );
+    data.vocabulary.unshift({
 
+      word:
+        item.word,
 
-    window.scrollTo({
+      meaning:
+        item.meaning,
 
-        top:
-            document.body.scrollHeight,
+      addedAt:
+        Date.now(),
 
-        behavior:
-            "smooth"
+      reviewCount:
+        0,
+
+      nextReview:
+        Date.now()
 
     });
 
+  });
+
+
+  data.vocabulary =
+    data.vocabulary.slice(
+      0,
+      100
+    );
 }
 
 
-/*
- * Protect displayed correction text.
- */
+function addMistake(
+  original,
+  corrected
+) {
 
-function escapeHtml(text) {
-
-    const div =
-        document.createElement("div");
-
-    div.textContent =
-        text;
-
-    return div.innerHTML;
-
-}
+  if (
+    !original ||
+    !corrected
+  ) {
+    return;
+  }
 
 
-/*
- * Translate German to English.
- */
-
-async function translateToEnglish(text) {
-
-    try {
-
-        const response =
-            await fetch(API_URL, {
-
-                method: "POST",
-
-                headers: {
-
-                    "Content-Type":
-                        "application/json"
-
-                },
-
-                body: JSON.stringify({
-
-                    translate:
-                        true,
-
-                    text:
-                        text
-
-                })
-
-            });
+  if (
+    original.trim()
+      .toLowerCase() ===
+    corrected.trim()
+      .toLowerCase()
+  ) {
+    return;
+  }
 
 
-        const data =
-            await response.json();
-
-
-        if (!response.ok) {
-
-            throw new Error(
-                data.error ||
-                "Translation error"
-            );
-
-        }
-
-
-        return (
-            data.translation ||
-            "Translation unavailable."
-        ).trim();
-
-
-    } catch (error) {
-
-        console.error(
-            "Translation error:",
-            error
-        );
-
-        return "Translation unavailable.";
-
-    }
-
-}
-
-
-/*
- * Speak German.
- */
-
-function speakGerman(text) {
-
-    if (
-        !("speechSynthesis" in window)
-    ) {
-
-        return;
-
-    }
-
-
-    window.speechSynthesis.cancel();
-
-
-    const speech =
-        new SpeechSynthesisUtterance(
-            text
-        );
-
-
-    speech.lang =
-        "de-DE";
-
-    speech.rate =
-        0.9;
-
-    speech.pitch =
-        1;
-
-
-    window.speechSynthesis.speak(
-        speech
+  const existing =
+    data.mistakes.find(
+      item =>
+        item.original
+          .toLowerCase() ===
+        original
+          .toLowerCase()
     );
 
+
+  if (existing) {
+
+    existing.corrected =
+      corrected;
+
+    existing.count =
+      (existing.count || 0) + 1;
+
+    existing.lastSeen =
+      Date.now();
+
+  } else {
+
+    data.mistakes.unshift({
+
+      original,
+
+      corrected,
+
+      count: 1,
+
+      lastSeen:
+        Date.now()
+
+    });
+
+  }
+
+
+  data.mistakes =
+    data.mistakes.slice(
+      0,
+      100
+    );
 }
 
 
-/*
- * Ask Coach.
- */
+function renderConversation() {
 
-async function askCoach() {
+  if (
+    data.messages.length === 0
+  ) {
 
-    status.textContent =
-        "🤔 Ich denke...";
+    conversation.innerHTML = `
 
-    speakButton.disabled =
-        true;
+      <div class="message coach">
 
+        <div class="message-label">
+          Deutsch Coach
+        </div>
 
-    try {
+        Hallo! Wie geht es dir heute?
 
-        const response =
-            await fetch(API_URL, {
+        <div class="translation">
+          🇬🇧 Hello! How are you today?
+        </div>
 
-                method: "POST",
+      </div>
 
-                headers: {
+    `;
 
-                    "Content-Type":
-                        "application/json"
-
-                },
-
-                body: JSON.stringify({
-
-                    messages:
-                        messages,
-
-                    level:
-                        currentLevel
-
-                })
-
-            });
+    return;
+  }
 
 
-        const data =
-            await response.json();
+  conversation.innerHTML =
+    data.messages
+      .map(message => {
+
+        const roleClass =
+          message.role ===
+          "assistant"
+            ? "coach"
+            : "user";
 
 
-        if (!response.ok) {
+        const label =
+          message.role ===
+          "assistant"
+            ? "Deutsch Coach"
+            : "Du";
 
-            throw new Error(
-                data.error ||
-                "Server error"
-            );
+
+        let html = `
+
+          <div class="message ${roleClass}">
+
+            <div class="message-label">
+              ${label}
+            </div>
+
+            ${escapeHtml(
+              message.content
+            )
+              .replace(
+                /\n/g,
+                "<br>"
+              )}
+
+        `;
+
+
+        if (
+          message.translation
+        ) {
+
+          html += `
+
+            <div class="translation">
+              🇬🇧 ${escapeHtml(
+                message.translation
+              )}
+            </div>
+
+          `;
 
         }
 
 
-        if (!data.reply) {
+        if (
+          message.correction
+        ) {
 
-            throw new Error(
-                "Keine Antwort vom Coach."
-            );
+          html += `
+
+            <div class="correction">
+
+              <strong>
+                ✏️ Korrektur
+              </strong>
+
+              <div>
+                ${escapeHtml(
+                  message.correction
+                )}
+              </div>
+
+              ${
+                message.correctionExplanation
+                  ? `
+                    <div class="small">
+                      ${escapeHtml(
+                        message.correctionExplanation
+                      )}
+                    </div>
+                  `
+                  : ""
+              }
+
+            </div>
+
+          `;
 
         }
 
 
-        /*
-         * Store ONLY the German AI response.
-         */
+        if (
+          message.vocabulary &&
+          message.vocabulary.length
+        ) {
 
-        messages.push({
+          html += `
 
-            role:
-                "assistant",
+            <div class="vocab">
 
-            content:
-                data.reply
+              <strong>
+                📚 Neue Wörter
+              </strong>
 
-        });
+              ${message.vocabulary
+                .map(item => `
 
+                  <div class="vocab-item">
 
-        /*
-         * Translate the AI response.
-         */
+                    <b>
+                      ${escapeHtml(
+                        item.word
+                      )}
+                    </b>
 
-        const translation =
-            await translateToEnglish(
-                data.reply
-            );
+                    —
+                    ${escapeHtml(
+                      item.meaning
+                    )}
 
+                  </div>
 
-        /*
-         * Display AI response.
-         */
+                `)
+                .join("")}
 
-        addMessage(
+            </div>
 
-            "Deutsch Coach",
+          `;
 
-            data.reply,
-
-            "coach",
-
-            translation,
-
-            data.correction || ""
-
-        );
+        }
 
 
-        /*
-         * Speak German.
-         */
-
-        speakGerman(
-            data.reply
-        );
+        html += `
+          </div>
+        `;
 
 
-        status.textContent =
-            "Bereit";
+        return html;
+
+      })
+      .join("");
 
 
-    } catch (error) {
-
-        console.error(error);
-
-
-        status.textContent =
-            "Fehler: " +
-            error.message;
-
-
-    } finally {
-
-        speakButton.disabled =
-            false;
-
-    }
-
+  window.scrollTo({
+    top:
+      document.body.scrollHeight,
+    behavior:
+      "smooth"
+  });
 }
 
 
-/*
- * Speech recognition.
- */
+function speakText(text) {
 
-const SpeechRecognition =
+  if (
+    !("speechSynthesis" in window)
+  ) {
+    return;
+  }
+
+
+  window.speechSynthesis.cancel();
+
+
+  const utterance =
+    new SpeechSynthesisUtterance(
+      text
+    );
+
+
+  utterance.lang =
+    "de-DE";
+
+
+  utterance.rate =
+    data.level === "A1"
+      ? 0.85
+      : 0.95;
+
+
+  utterance.pitch =
+    1;
+
+
+  window.speechSynthesis.speak(
+    utterance
+  );
+}
+
+
+function setupRecognition() {
+
+  const SpeechRecognition =
     window.SpeechRecognition ||
     window.webkitSpeechRecognition;
 
 
-if (!SpeechRecognition) {
-
-    status.textContent =
-        "Spracherkennung wird von diesem Browser nicht unterstützt.";
+  if (!SpeechRecognition) {
 
     speakButton.disabled =
-        true;
+      true;
+
+    handsFreeButton.disabled =
+      true;
+
+    status.textContent =
+      "Spracherkennung wird von diesem Browser nicht unterstützt.";
+
+    return;
+  }
 
 
-} else {
-
-    const recognition =
-        new SpeechRecognition();
+  recognition =
+    new SpeechRecognition();
 
 
-    recognition.lang =
-        "de-DE";
+  recognition.lang =
+    "de-DE";
 
 
-    recognition.continuous =
-        false;
+  recognition.continuous =
+    false;
 
 
-    recognition.interimResults =
-        false;
+  recognition.interimResults =
+    false;
 
 
-    recognition.maxAlternatives =
-        1;
+  recognition.maxAlternatives =
+    1;
+
+
+  recognition.onstart =
+    () => {
+
+      isListening = true;
+
+      speakButton.textContent =
+        "🛑 Zuhören...";
+
+      status.textContent =
+        "Ich höre zu...";
+
+    };
+
+
+  recognition.onend =
+    () => {
+
+      isListening = false;
+
+      speakButton.textContent =
+        "🎙️ Sprechen";
+
+      if (!isSending) {
+
+        status.textContent =
+          "Bereit";
+
+      }
+
+    };
+
+
+  recognition.onerror =
+    event => {
+
+      isListening = false;
+
+      speakButton.textContent =
+        "🎙️ Sprechen";
+
+      status.textContent =
+        "Sprachfehler: " +
+        event.error;
+
+    };
+
+
+  recognition.onresult =
+    event => {
+
+      const result =
+        event.results[
+          event.results.length - 1
+        ][0].transcript;
+
+
+      input.value =
+        result;
+
+
+      if (
+        data.handsFree ||
+        result.trim()
+      ) {
+
+        sendMessage();
+
+      }
+
+    };
+}
+
+
+function startListening() {
+
+  if (!recognition) {
+    return;
+  }
+
+
+  if (isListening) {
+
+    recognition.stop();
+
+    return;
+  }
+
+
+  errorBox.classList.add(
+    "hidden"
+  );
+
+
+  try {
+
+    recognition.start();
+
+  } catch {
+
+    status.textContent =
+      "Bitte erneut versuchen.";
+
+  }
+}
+
+
+async function sendMessage() {
+
+  if (isSending) {
+    return;
+  }
+
+
+  const text =
+    input.value.trim();
+
+
+  if (!text) {
+    return;
+  }
+
+
+  isSending = true;
+
+  sendButton.disabled =
+    true;
+
+  speakButton.disabled =
+    true;
+
+
+  errorBox.classList.add(
+    "hidden"
+  );
+
+
+  status.textContent =
+    "Deutsch Coach denkt nach...";
+
+
+  updateStreak();
+
+
+  /*
+   * Add user message locally.
+   */
+  data.messages.push({
+
+    role:
+      "user",
+
+    content:
+      text
+
+  });
+
+
+  input.value = "";
+
+
+  renderConversation();
+
+
+  try {
+
+    const response =
+      await fetch(
+        API_URL,
+        {
+
+          method:
+            "POST",
+
+          headers: {
+            "Content-Type":
+              "application/json"
+          },
+
+          body:
+            JSON.stringify({
+
+              level:
+                data.level,
+
+              topic:
+                selectedTopic,
+
+              memory:
+                buildMemory(),
+
+              messages:
+                data.messages.map(
+                  message => ({
+                    role:
+                      message.role,
+
+                    content:
+                      message.content
+                  })
+                )
+
+            })
+
+        }
+      );
+
+
+    const result =
+      await response.json();
+
+
+    if (!response.ok) {
+
+      throw new Error(
+        result.error ||
+        "AI request failed."
+      );
+    }
 
 
     /*
-     * Start listening.
+     * Store assistant message.
      */
+    data.messages.push({
 
-    speakButton.onclick =
+      role:
+        "assistant",
+
+      content:
+        result.reply,
+
+      translation:
+        result.translation,
+
+      correction:
+        result.correction,
+
+      correctionExplanation:
+        result.correctionExplanation,
+
+      vocabulary:
+        result.vocabulary || []
+
+    });
+
+
+    data.sessions += 1;
+
+
+    if (
+      result.correction
+    ) {
+
+      data.corrections += 1;
+
+
+      addMistake(
+        text,
+        result.correction
+      );
+
+    }
+
+
+    addVocabulary(
+      result.vocabulary
+    );
+
+
+    /*
+     * Keep conversation history manageable.
+     */
+    if (
+      data.messages.length > 60
+    ) {
+
+      data.messages =
+        data.messages.slice(
+          -60
+        );
+
+    }
+
+
+    saveData();
+
+
+    renderConversation();
+
+    renderVocabulary();
+
+    renderMistakes();
+
+    updateStats();
+
+
+    status.textContent =
+      "Bereit";
+
+
+    /*
+     * Hands-free mode:
+     * speak the answer and then listen again.
+     */
+    if (
+      data.handsFree &&
+      result.reply
+    ) {
+
+      speakText(
+        result.reply
+      );
+
+
+      setTimeout(
         () => {
+
+          if (
+            data.handsFree &&
+            recognition &&
+            !isSending
+          ) {
 
             try {
+              recognition.start();
+            } catch {}
+          }
 
-                window.speechSynthesis.cancel();
+        },
+
+        Math.max(
+          1500,
+          result.reply.length *
+          55
+        )
+      );
+
+    } else if (
+      result.reply
+    ) {
+
+      speakText(
+        result.reply
+      );
+    }
 
 
-                recognition.start();
-
-
-                speakButton.classList.add(
-                    "listening"
-                );
-
-
-                speakButton.textContent =
-                    "🎙️ Zuhören...";
-
-
-                status.textContent =
-                    "Ich höre zu...";
-
-
-            } catch (error) {
-
-                console.error(error);
-
-            }
-
-        };
-
+  } catch (error) {
 
     /*
-     * Speech recognized.
+     * Remove the unsent user message
+     * if the request failed.
      */
-
-    recognition.onresult =
-        async (event) => {
-
-            const text =
-                event
-                    .results[0][0]
-                    .transcript
-                    .trim();
-
-
-            if (!text) {
-
-                return;
-
-            }
+    data.messages =
+      data.messages.filter(
+        (message, index) =>
+          !(
+            index ===
+            data.messages.length - 1 &&
+            message.role === "user" &&
+            message.content === text
+          )
+      );
 
 
-            /*
-             * Store learner's German.
-             *
-             * English translation is NOT stored.
-             */
-
-            messages.push({
-
-                role:
-                    "user",
-
-                content:
-                    text
-
-            });
+    renderConversation();
 
 
-            /*
-             * Translate learner message.
-             */
-
-            const translation =
-                await translateToEnglish(
-                    text
-                );
+    errorBox.textContent =
+      "Fehler: " +
+      (
+        error.message ||
+        "Unbekannter Fehler."
+      );
 
 
-            /*
-             * Show learner message.
-             */
-
-            addMessage(
-
-                "Du",
-
-                text,
-
-                "user",
-
-                translation
-
-            );
+    errorBox.classList.remove(
+      "hidden"
+    );
 
 
-            /*
-             * Ask AI.
-             */
+    status.textContent =
+      "Fehler";
 
-            await askCoach();
+  } finally {
 
-        };
+    isSending =
+      false;
 
+    sendButton.disabled =
+      false;
 
-    /*
-     * Recognition errors.
-     */
+    speakButton.disabled =
+      false;
 
-    recognition.onerror =
-        (event) => {
-
-            console.log(
-                "Speech error:",
-                event.error
-            );
-
-
-            if (
-                event.error ===
-                "not-allowed"
-            ) {
-
-                status.textContent =
-                    "Mikrofonzugriff wurde verweigert.";
-
-            } else if (
-                event.error ===
-                "no-speech"
-            ) {
-
-                status.textContent =
-                    "Ich habe nichts gehört.";
-
-            } else {
-
-                status.textContent =
-                    "Fehler: " +
-                    event.error;
-
-            }
-
-        };
-
-
-    /*
-     * Recognition ended.
-     */
-
-    recognition.onend =
-        () => {
-
-            speakButton.classList.remove(
-                "listening"
-            );
-
-
-            speakButton.textContent =
-                "🎙️ Sprechen";
-
-        };
-
+  }
 }
+
+
+function toggleHandsFree() {
+
+  data.handsFree =
+    !data.handsFree;
+
+
+  saveData();
+
+
+  handsFreeButton.textContent =
+    data.handsFree
+      ? "🔄 Freisprechen: An"
+      : "🔄 Freisprechen: Aus";
+
+
+  if (data.handsFree) {
+
+    status.textContent =
+      "Freisprechen aktiviert.";
+
+  } else {
+
+    status.textContent =
+      "Freisprechen deaktiviert.";
+
+  }
+}
+
+
+function exportData() {
+
+  const json =
+    JSON.stringify(
+      data,
+      null,
+      2
+    );
+
+
+  const blob =
+    new Blob(
+      [json],
+      {
+        type:
+          "application/json"
+      }
+    );
+
+
+  const url =
+    URL.createObjectURL(
+      blob
+    );
+
+
+  const link =
+    document.createElement(
+      "a"
+    );
+
+
+  link.href =
+    url;
+
+  link.download =
+    "deutsch-coach-backup.json";
+
+
+  link.click();
+
+
+  URL.revokeObjectURL(
+    url
+  );
+}
+
+
+function importDataFile(
+  event
+) {
+
+  const file =
+    event.target.files[0];
+
+
+  if (!file) {
+    return;
+  }
+
+
+  const reader =
+    new FileReader();
+
+
+  reader.onload =
+    () => {
+
+      try {
+
+        const imported =
+          JSON.parse(
+            reader.result
+          );
+
+
+        if (
+          !imported ||
+          typeof imported !==
+          "object"
+        ) {
+
+          throw new Error(
+            "Invalid file."
+          );
+        }
+
+
+        data = {
+          ...defaultData,
+          ...imported
+        };
+
+
+        selectedTopic =
+          data.topic || "";
+
+
+        level.value =
+          data.level || "A1";
+
+
+        saveData();
+
+
+        updateLevelDescription();
+
+        renderConversation();
+
+        renderVocabulary();
+
+        renderMistakes();
+
+        updateStats();
+
+
+        alert(
+          "Lerndaten erfolgreich importiert."
+        );
+
+      } catch {
+
+        alert(
+          "Die Datei konnte nicht importiert werden."
+        );
+
+      }
+
+    };
+
+
+  reader.readAsText(
+    file
+  );
+}
+
+
+function resetData() {
+
+  const confirmed =
+    confirm(
+      "Wirklich alle Lernfortschritte löschen?"
+    );
+
+
+  if (!confirmed) {
+    return;
+  }
+
+
+  data = {
+    ...defaultData
+  };
+
+
+  selectedTopic =
+    "";
+
+
+  level.value =
+    "A1";
+
+
+  saveData();
+
+
+  updateLevelDescription();
+
+  renderConversation();
+
+  renderVocabulary();
+
+  renderMistakes();
+
+  updateStats();
+
+
+  document
+    .querySelectorAll(
+      ".topic"
+    )
+    .forEach(button => {
+
+      button.classList.toggle(
+        "active",
+        button.dataset.topic === ""
+      );
+
+    });
+
+
+  status.textContent =
+    "Lernfortschritt gelöscht.";
+}
+
+
+/*
+ * Level changes.
+ */
+level.addEventListener(
+  "change",
+  () => {
+
+    data.level =
+      level.value;
+
+    saveData();
+
+    updateLevelDescription();
+
+  }
+);
+
+
+/*
+ * Send with Enter.
+ */
+input.addEventListener(
+  "keydown",
+  event => {
+
+    if (
+      event.key === "Enter" &&
+      !event.shiftKey
+    ) {
+
+      event.preventDefault();
+
+      sendMessage();
+
+    }
+
+  }
+);
+
+
+/*
+ * Topic selection.
+ */
+document
+  .querySelectorAll(
+    ".topic"
+  )
+  .forEach(button => {
+
+    button.addEventListener(
+      "click",
+      () => {
+
+        document
+          .querySelectorAll(
+            ".topic"
+          )
+          .forEach(
+            other =>
+              other.classList.remove(
+                "active"
+              )
+          );
+
+
+        button.classList.add(
+          "active"
+        );
+
+
+        selectedTopic =
+          button.dataset.topic ||
+          "";
+
+
+        data.topic =
+          selectedTopic;
+
+
+        saveData();
+
+      }
+    );
+
+  });
+
+
+sendButton.addEventListener(
+  "click",
+  sendMessage
+);
+
+
+speakButton.addEventListener(
+  "click",
+  startListening
+);
+
+
+handsFreeButton.addEventListener(
+  "click",
+  toggleHandsFree
+);
+
+
+document
+  .getElementById(
+    "exportButton"
+  )
+  .addEventListener(
+    "click",
+    exportData
+  );
+
+
+document
+  .getElementById(
+    "importButton"
+  )
+  .addEventListener(
+    "click",
+    () => {
+
+      document
+        .getElementById(
+          "importFile"
+        )
+        .click();
+
+    }
+  );
+
+
+document
+  .getElementById(
+    "importFile"
+  )
+  .addEventListener(
+    "change",
+    importDataFile
+  );
+
+
+document
+  .getElementById(
+    "resetButton"
+  )
+  .addEventListener(
+    "click",
+    resetData
+  );
+
+
+/*
+ * Restore saved level/topic.
+ */
+level.value =
+  data.level || "A1";
+
+
+document
+  .querySelectorAll(
+    ".topic"
+  )
+  .forEach(button => {
+
+    button.classList.toggle(
+      "active",
+      button.dataset.topic ===
+      selectedTopic
+    );
+
+  });
+
+
+handsFreeButton.textContent =
+  data.handsFree
+    ? "🔄 Freisprechen: An"
+    : "🔄 Freisprechen: Aus";
+
+
+updateLevelDescription();
+
+renderConversation();
+
+renderVocabulary();
+
+renderMistakes();
+
+updateStats();
+
+setupRecognition();
 
 </script>
 
 </body>
+
 </html>
