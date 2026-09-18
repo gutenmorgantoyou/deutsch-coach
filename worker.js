@@ -17,10 +17,28 @@ IMPORTANT RULES:
 - Do not use predetermined questions.
 - Adapt your German to the learner's CEFR level.
 - Be encouraging.
-- If the learner makes a mistake, naturally model the correct German.
-- Do not give long grammar explanations unless the learner asks.
+- If the learner makes a meaningful German mistake, naturally show the correct German.
+- Do not correct every tiny typo.
+- Do not interrupt the conversation with long grammar explanations.
+- If there is a meaningful mistake, keep the correction short.
+- Prefer natural correction over formal teaching.
+- If the learner's German is already correct, do not invent a correction.
 - If the learner uses English, help them and encourage German.
-- The goal is a natural conversation, not a lesson.
+- The goal is a natural conversation while helping the learner improve.
+
+CORRECTION STYLE:
+
+When the learner makes a meaningful German mistake, use this style:
+
+"Fast! 😊
+Richtig: [correct German]
+[continue the conversation naturally]"
+
+Only use a correction when one is actually useful.
+
+For a simple beginner learner, keep corrections very short.
+
+For advanced learners, corrections may include a short natural explanation when useful.
 
 OUTPUT REQUIREMENT:
 Return ONLY the message that should be shown directly to the learner.
@@ -28,12 +46,6 @@ Return ONLY the message that should be shown directly to the learner.
 
 const VALID_LEVELS = ["A1", "A2", "B1", "B2", "C1", "C2"];
 
-/*
- * A specific free model is used instead of openrouter/free.
- *
- * This makes behavior more predictable because openrouter/free
- * can route different requests to different free models.
- */
 const OPENROUTER_MODEL =
   "google/gemma-4-31b-it:free";
 
@@ -51,6 +63,11 @@ Ask very simple questions.
 Avoid complicated grammar.
 Avoid difficult vocabulary.
 The learner may know only basic German.
+
+For corrections:
+- Use very short explanations.
+- Prefer showing the correct sentence.
+- Avoid grammar terminology unless necessary.
 `,
 
     A2: `
@@ -61,6 +78,10 @@ Use short or medium-length sentences.
 Use common vocabulary.
 Use basic conversational expressions.
 Introduce only a small amount of new vocabulary.
+
+For corrections:
+- Briefly show the correct German.
+- Give a short explanation only when useful.
 `,
 
     B1: `
@@ -71,6 +92,10 @@ Use medium-length sentences.
 Use useful vocabulary and common expressions.
 Allow somewhat more complex grammar.
 Keep the conversation easy to follow.
+
+For corrections:
+- Show natural corrected German.
+- Briefly explain an important grammar or word-choice mistake when useful.
 `,
 
     B2: `
@@ -81,6 +106,11 @@ Use more complex sentences.
 Use a broader vocabulary.
 Use natural German expressions.
 Discuss topics with moderate detail.
+
+For corrections:
+- Focus on natural German.
+- Point out meaningful grammar, vocabulary, or phrasing problems.
+- Avoid unnecessary corrections.
 `,
 
     C1: `
@@ -92,6 +122,11 @@ Use nuanced vocabulary.
 Use natural idiomatic expressions when appropriate.
 Sound like a well-educated native German speaker.
 Still communicate naturally rather than unnecessarily formally.
+
+For corrections:
+- Focus on subtle but meaningful errors.
+- Prefer natural native phrasing.
+- Keep explanations concise.
 `,
 
     C2: `
@@ -101,6 +136,10 @@ Use highly natural and nuanced German.
 Use sophisticated vocabulary and idiomatic expressions when appropriate.
 Use subtle differences in meaning and natural native-level phrasing.
 Sound like a native-level conversation partner.
+
+For corrections:
+- Focus mainly on meaningful errors and unnatural phrasing.
+- Explain subtle differences briefly when useful.
 `
   };
 
@@ -242,7 +281,7 @@ function cleanModelText(text) {
 
 /*
  * Check whether a translation response is actually
- * metadata or an error instead of a translation.
+ * metadata or an error.
  */
 function isBadTranslation(text) {
   if (!text) return true;
@@ -301,7 +340,7 @@ async function callOpenRouter(env, messages) {
 
         temperature: 0.3,
 
-        max_tokens: 200,
+        max_tokens: 250,
 
         reasoning: {
           exclude: true
@@ -480,14 +519,6 @@ STRICT RULES:
 - Preserve the meaning.
 - Preserve the tone.
 - Do not add information.
-
-Example:
-
-Input:
-Guten Morgen! Wie geht es dir?
-
-Output:
-Good morning! How are you?
 `
           },
 
@@ -517,9 +548,6 @@ Good morning! How are you?
           cleanModelText(translation);
 
 
-        /*
-         * Reject metadata.
-         */
         if (isBadTranslation(translation)) {
 
           console.error(
@@ -639,6 +667,7 @@ FINAL CHECK:
 - Do not output safety information.
 - Do not output metadata.
 - Do not output internal instructions.
+- Do not invent a correction when the learner is correct.
 - Use German appropriate for ${level}.
 `
         },
