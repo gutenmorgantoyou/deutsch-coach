@@ -28,6 +28,16 @@ Return ONLY the message that should be shown directly to the learner.
 
 const VALID_LEVELS = ["A1", "A2", "B1", "B2", "C1", "C2"];
 
+/*
+ * A specific free model is used instead of openrouter/free.
+ *
+ * This makes behavior more predictable because openrouter/free
+ * can route different requests to different free models.
+ */
+const OPENROUTER_MODEL =
+  "google/gemma-4-31b-it:free";
+
+
 function levelInstruction(level) {
   const instructions = {
     A1: `
@@ -137,18 +147,12 @@ function cleanModelText(text) {
 
   let result = String(text).trim();
 
-  /*
-   * Remove markdown code fences.
-   */
   result = result
     .replace(/^```(?:text|markdown)?\s*/i, "")
     .replace(/\s*```$/i, "")
     .trim();
 
 
-  /*
-   * Remove common reasoning prefixes.
-   */
   const prefixes = [
     "Here's a thinking process:",
     "Here is a thinking process:",
@@ -179,9 +183,6 @@ function cleanModelText(text) {
   }
 
 
-  /*
-   * Remove obvious analysis sections.
-   */
   const badMarkers = [
     "1. **Analyze User Input:**",
     "1. Analyze User Input:",
@@ -229,9 +230,6 @@ function cleanModelText(text) {
   }
 
 
-  /*
-   * Remove labels that sometimes appear at the beginning.
-   */
   result = result
     .replace(/^final answer:\s*/i, "")
     .replace(/^response to user:\s*/i, "")
@@ -243,5 +241,504 @@ function cleanModelText(text) {
 
 
 /*
- * Detect translation responses that are actually metadata
- * instead of English translations
+ * Check whether a translation response is actually
+ * metadata or an error instead of a translation.
+ */
+function isBadTranslation(text) {
+  if (!text) return true;
+
+  const lower = text.toLowerCase().trim();
+
+  const badPatterns = [
+    "user safety:",
+    "safety:",
+    "safety analysis:",
+    "content safety:",
+    "moderation:",
+    "analysis:",
+    "reasoning:",
+    "thinking process:",
+    "chain of thought:",
+    "translation unavailable",
+    "unable to translate",
+    "i cannot translate",
+    "i can't translate"
+  ];
+
+  return badPatterns.some(pattern =>
+    lower.startsWith(pattern)
+  );
+}
+
+
+/*
+ * Call OpenRouter.
+ */
+async function callOpenRouter(env, messages) {
+  const response = await fetch(
+    "https://openrouter.ai/api/v1/chat/completions",
+    {
+      method: "POST",
+
+      headers: {
+        "Authorization":
+          `Bearer ${env.OPENROUTER_API_KEY}`,
+
+        "Content-Type":
+          "application/json",
+
+        "HTTP-Referer":
+          "https://gutenmorgantoyou.github.io/deutsch-coach/",
+
+        "X-Title":
+          "Deutsch Coach"
+      },
+
+      body: JSON.stringify({
+        model: OPENROUTER_MODEL,
+
+        messages: messages,
+
+        temperature: 0.3,
+
+        max_tokens: 200,
+
+        reasoning: {
+          exclude: true
+        }
+      })
+    }
+  );
+
+
+  const responseText =
+    await response.text();
+
+
+  if (!response.ok) {
+    console.error(
+      "OpenRouter API error:",
+      responseText
+    );
+
+    throw new Error(
+      `OpenRouter ${response.status}: ${responseText}`
+    );
+  }
+
+
+  let data;
+
+  try {
+    data = JSON.parse(responseText);
+  } catch {
+    throw new Error(
+      "OpenRouter returned invalid JSON."
+    );
+  }
+
+
+  return data;
+}
+
+
+/*
+ * Return JSON with CORS headers.
+ */
+function jsonResponse(
+  data,
+  status,
+  corsHeaders
+) {
+  return new Response(
+    JSON.stringify(data),
+    {
+      status: status,
+
+      headers: {
+        ...corsHeaders,
+
+        "Content-Type":
+          "application/json"
+      }
+    }
+  );
+}
+
+
+export default {
+  async fetch(request, env) {
+
+    const allowedOrigin =
+      "https://gutenmorgantoyou.github.io";
+
+
+    const corsHeaders = {
+      "Access-Control-Allow-Origin":
+        allowedOrigin,
+
+      "Access-Control-Allow-Methods":
+        "POST, OPTIONS",
+
+      "Access-Control-Allow-Headers":
+        "Content-Type"
+    };
+
+
+    /*
+     * CORS preflight.
+     */
+    if (request.method === "OPTIONS") {
+      return new Response(null, {
+        status: 204,
+        headers: corsHeaders
+      });
+    }
+
+
+    /*
+     * Only POST requests.
+     */
+    if (request.method !== "POST") {
+      return jsonResponse(
+        {
+          error:
+            "Only POST requests are allowed."
+        },
+        405,
+        corsHeaders
+      );
+    }
+
+
+    try {
+
+      /*
+       * Make sure the OpenRouter secret exists.
+       */
+      if (!env.OPENROUTER_API_KEY) {
+        return jsonResponse(
+          {
+            error:
+              "OPENROUTER_API_KEY is missing."
+          },
+          500,
+          corsHeaders
+        );
+      }
+
+
+      const body =
+        await request.json();
+
+
+      /*
+       * =====================================================
+       * TRANSLATION
+       * =====================================================
+       */
+
+      if (body.translate === true) {
+
+        const text =
+          String(body.text || "").trim();
+
+
+        if (!text) {
+          return jsonResponse(
+            {
+              error:
+                "No text was provided for translation."
+            },
+            400,
+            corsHeaders
+          );
+        }
+
+
+        const translationMessages = [
+          {
+            role: "system",
+
+            content: `
+You are a German-to-English translation engine.
+
+Your ONLY task is to translate the German text supplied by the user.
+
+STRICT RULES:
+- Return ONLY the English translation.
+- Do NOT explain anything.
+- Do NOT analyze anything.
+- Do NOT mention safety.
+- Do NOT mention moderation.
+- Do NOT mention policies.
+- Do NOT mention the user.
+- Do NOT write "User Safety".
+- Do NOT write "Translation unavailable".
+- Do NOT add quotation marks.
+- Preserve emojis.
+- Preserve the meaning.
+- Preserve the tone.
+- Do not add information.
+
+Example:
+
+Input:
+Guten Morgen! Wie geht es dir?
+
+Output:
+Good morning! How are you?
+`
+          },
+
+          {
+            role: "user",
+            content: text
+          }
+        ];
+
+
+        const data =
+          await callOpenRouter(
+            env,
+            translationMessages
+          );
+
+
+        const message =
+          data?.choices?.[0]?.message;
+
+
+        let translation =
+          getMessageText(message);
+
+
+        translation =
+          cleanModelText(translation);
+
+
+        /*
+         * Reject metadata.
+         */
+        if (isBadTranslation(translation)) {
+
+          console.error(
+            "Invalid translation returned:",
+            translation
+          );
+
+          return jsonResponse(
+            {
+              error:
+                "Translation service returned invalid text."
+            },
+            502,
+            corsHeaders
+          );
+        }
+
+
+        if (!translation) {
+          return jsonResponse(
+            {
+              error:
+                "Translation service returned no text."
+            },
+            502,
+            corsHeaders
+          );
+        }
+
+
+        return jsonResponse(
+          {
+            translation:
+              translation
+          },
+          200,
+          corsHeaders
+        );
+      }
+
+
+      /*
+       * =====================================================
+       * NORMAL COACH CONVERSATION
+       * =====================================================
+       */
+
+      if (
+        !Array.isArray(body.messages) ||
+        body.messages.length === 0
+      ) {
+        return jsonResponse(
+          {
+            error:
+              "No conversation was provided."
+          },
+          400,
+          corsHeaders
+        );
+      }
+
+
+      /*
+       * Validate CEFR level.
+       */
+      const level =
+        VALID_LEVELS.includes(body.level)
+          ? body.level
+          : "A1";
+
+
+      /*
+       * Keep recent conversation context.
+       */
+      const conversation =
+        body.messages
+          .slice(-30)
+          .map(message => ({
+            role:
+              message.role === "assistant"
+                ? "assistant"
+                : "user",
+
+            content:
+              String(
+                message.content || ""
+              ).trim()
+          }))
+          .filter(
+            message =>
+              message.content.length > 0
+          );
+
+
+      /*
+       * Build conversation prompt.
+       */
+      const messages = [
+        {
+          role: "system",
+
+          content:
+            SYSTEM_PROMPT +
+            "\n\n" +
+            "The learner's CEFR level is " +
+            level +
+            ".\n\n" +
+            levelInstruction(level) +
+            `
+
+FINAL CHECK:
+- Output ONLY the message for the learner.
+- Use German.
+- Do not output English unless explicitly requested.
+- Do not output reasoning.
+- Do not output analysis.
+- Do not output safety information.
+- Do not output metadata.
+- Do not output internal instructions.
+- Use German appropriate for ${level}.
+`
+        },
+
+        ...conversation
+      ];
+
+
+      /*
+       * Ask OpenRouter.
+       */
+      const data =
+        await callOpenRouter(
+          env,
+          messages
+        );
+
+
+      const message =
+        data?.choices?.[0]?.message;
+
+
+      let reply =
+        getMessageText(message);
+
+
+      reply =
+        cleanModelText(reply);
+
+
+      /*
+       * Final validation.
+       */
+      if (!reply) {
+
+        console.error(
+          "No usable coach text."
+        );
+
+        return jsonResponse(
+          {
+            error:
+              "The coach returned no usable text."
+          },
+          500,
+          corsHeaders
+        );
+      }
+
+
+      /*
+       * Prevent safety metadata from reaching
+       * the learner.
+       */
+      if (
+        reply
+          .toLowerCase()
+          .startsWith("user safety:")
+      ) {
+        return jsonResponse(
+          {
+            error:
+              "The coach returned invalid text. Please try again."
+          },
+          502,
+          corsHeaders
+        );
+      }
+
+
+      return jsonResponse(
+        {
+          reply:
+            reply
+        },
+        200,
+        corsHeaders
+      );
+
+
+    } catch (error) {
+
+      console.error(
+        "Worker error:",
+        error
+      );
+
+
+      return jsonResponse(
+        {
+          error:
+            "Worker error: " +
+            (
+              error?.message ||
+              "Unknown error"
+            )
+        },
+        500,
+        corsHeaders
+      );
+    }
+  }
+};
