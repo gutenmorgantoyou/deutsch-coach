@@ -6,8 +6,8 @@ The learner is practicing German through natural conversation.
 Rules:
 - Respond primarily in German.
 - Respond ONLY with the final answer to the learner.
-- NEVER reveal your reasoning, chain of thought, analysis, or internal process.
-- NEVER say things like "thinking process", "analysis", "reasoning", or "step 1".
+- NEVER reveal reasoning, chain of thought, analysis, or internal process.
+- NEVER write "thinking process", "reasoning", "analysis", or similar internal text.
 - Keep responses short and conversational.
 - Follow the topic the learner introduces.
 - Ask natural follow-up questions when appropriate.
@@ -73,7 +73,6 @@ function cleanModelText(text) {
 
   let result = String(text).trim();
 
-  // Remove common reasoning prefixes if a model accidentally includes them.
   const markers = [
     "Here's a thinking process:",
     "Here is a thinking process:",
@@ -84,10 +83,14 @@ function cleanModelText(text) {
   ];
 
   for (const marker of markers) {
-    const index = result.toLowerCase().indexOf(marker.toLowerCase());
-
-    if (index === 0) {
-      result = result.slice(marker.length).trim();
+    if (
+      result
+        .toLowerCase()
+        .startsWith(marker.toLowerCase())
+    ) {
+      result = result
+        .slice(marker.length)
+        .trim();
     }
   }
 
@@ -104,7 +107,9 @@ function getMessageText(message) {
   if (Array.isArray(message.content)) {
     return message.content
       .map(part => {
-        if (typeof part === "string") return part;
+        if (typeof part === "string") {
+          return part;
+        }
 
         if (
           part &&
@@ -145,13 +150,12 @@ async function callOpenRouter(env, messages) {
       body: JSON.stringify({
         model: "openrouter/free",
 
-        messages,
+        messages: messages,
 
         temperature: 0.7,
 
         max_tokens: 300,
 
-        // Ask OpenRouter to keep reasoning out of the returned answer.
         reasoning: {
           exclude: true
         }
@@ -159,7 +163,8 @@ async function callOpenRouter(env, messages) {
     }
   );
 
-  const responseText = await response.text();
+  const responseText =
+    await response.text();
 
   if (!response.ok) {
     console.error(
@@ -190,14 +195,19 @@ async function callOpenRouter(env, messages) {
   return data;
 }
 
-function jsonResponse(data, status, corsHeaders) {
+function jsonResponse(
+  data,
+  status,
+  corsHeaders
+) {
   return new Response(
     JSON.stringify(data),
     {
-      status,
+      status: status,
 
       headers: {
         ...corsHeaders,
+
         "Content-Type":
           "application/json"
       }
@@ -257,9 +267,7 @@ export default {
         await request.json();
 
       /*
-       * ==========================================
-       * TRANSLATION REQUEST
-       * ==========================================
+       * TRANSLATION
        */
 
       if (body.translate === true) {
@@ -285,8 +293,7 @@ export default {
             content: `
 You are a German-to-English translator.
 
-Translate the supplied German text into natural,
-clear English.
+Translate the supplied German text into natural, clear English.
 
 Rules:
 - Return ONLY the English translation.
@@ -326,7 +333,7 @@ Rules:
 
         return jsonResponse(
           {
-            translation
+            translation: translation
           },
           200,
           corsHeaders
@@ -334,9 +341,7 @@ Rules:
       }
 
       /*
-       * ==========================================
-       * NORMAL COACH REQUEST
-       * ==========================================
+       * NORMAL COACH CONVERSATION
        */
 
       if (
@@ -357,12 +362,6 @@ Rules:
         VALID_LEVELS.includes(body.level)
           ? body.level
           : "A1";
-
-      /*
-       * Keep conversation context.
-       * The UI can display German-only history,
-       * while the Worker receives the conversation.
-       */
 
       const conversation =
         body.messages
@@ -432,7 +431,7 @@ Rules:
 
       return jsonResponse(
         {
-          reply
+          reply: reply
         },
         200,
         corsHeaders
@@ -449,8 +448,10 @@ Rules:
         {
           error:
             "Worker error: " +
-            (error?.message ||
-              "Unknown error")
+            (
+              error?.message ||
+              "Unknown error"
+            )
         },
         500,
         corsHeaders
