@@ -4,82 +4,148 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
+  <meta
+    name="theme-color"
+    content="#111111"
+  >
+
   <title>Deutsch Coach 🇩🇪</title>
 
   <style>
+    * {
+      box-sizing: border-box;
+    }
+
     body {
-      font-family: Arial, sans-serif;
-      background: #f5f5f5;
       margin: 0;
+      font-family:
+        Arial,
+        Helvetica,
+        sans-serif;
+      background: #f5f5f5;
       color: #222;
     }
 
+    button,
+    textarea,
+    select {
+      font-family: inherit;
+    }
+
+    button {
+      touch-action: manipulation;
+    }
+
     .app {
-      max-width: 600px;
-      margin: auto;
-      padding: 20px;
+      width: 100%;
+      max-width: 680px;
+      margin: 0 auto;
+      padding: 16px;
     }
 
-    h1 {
-      margin-bottom: 5px;
+    .header {
+      padding: 8px 4px 18px;
     }
 
-    .subtitle {
+    .header h1 {
+      margin: 0;
+      font-size: 28px;
+    }
+
+    .header p {
+      margin: 6px 0 0;
       color: #666;
-      margin-top: 0;
     }
 
     .card {
-      background: white;
+      background: #fff;
       border-radius: 16px;
-      padding: 20px;
-      margin-bottom: 16px;
-      box-shadow: 0 3px 12px rgba(0,0,0,0.06);
+      padding: 18px;
+      margin-bottom: 14px;
+      box-shadow:
+        0 3px 14px rgba(0, 0, 0, 0.06);
+    }
+
+    h2,
+    h3 {
+      margin-top: 0;
+    }
+
+    h3 {
+      margin-bottom: 12px;
     }
 
     label {
       display: block;
-      font-weight: bold;
-      margin-bottom: 8px;
+      font-weight: 700;
+      margin-bottom: 7px;
     }
 
     select,
-    textarea,
+    textarea {
+      width: 100%;
+      border: 1px solid #d9d9d9;
+      border-radius: 11px;
+      background: #fff;
+      padding: 12px;
+      font-size: 16px;
+      outline: none;
+    }
+
+    select:focus,
+    textarea:focus {
+      border-color: #888;
+    }
+
+    textarea {
+      min-height: 95px;
+      resize: vertical;
+      line-height: 1.5;
+    }
+
+    .field {
+      margin-bottom: 15px;
+    }
+
+    .level-description {
+      color: #666;
+      font-size: 14px;
+      margin-top: 8px;
+      line-height: 1.45;
+    }
+
+    .topic-description {
+      color: #777;
+      font-size: 13px;
+      margin-top: 7px;
+    }
+
     button {
       width: 100%;
-      box-sizing: border-box;
-      font-size: 16px;
-      border-radius: 10px;
-    }
-
-    select,
-    textarea {
-      border: 1px solid #ddd;
-      padding: 12px;
-      background: white;
-    }
-
-    textarea {
-      min-height: 90px;
-      resize: vertical;
-    }
-
-    button {
-      border: none;
-      padding: 13px;
-      margin-top: 10px;
-      cursor: pointer;
+      border: 0;
+      border-radius: 11px;
+      padding: 13px 14px;
+      margin-top: 9px;
       background: #222;
       color: white;
+      font-size: 16px;
+      font-weight: 600;
+      cursor: pointer;
     }
 
     button.secondary {
-      background: #eee;
+      background: #ededed;
       color: #222;
+    }
+
+    button.positive {
+      background: #e8f5e9;
+      color: #1b5e20;
     }
 
     button.danger {
       background: #b00020;
+      color: #fff;
     }
 
     button:disabled {
@@ -87,72 +153,133 @@
       cursor: not-allowed;
     }
 
+    .button-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px;
+    }
+
     .chat {
-      max-height: 520px;
+      max-height: 560px;
       overflow-y: auto;
+      padding-right: 2px;
+    }
+
+    .empty-chat {
+      text-align: center;
+      color: #777;
+      padding: 30px 10px;
+      line-height: 1.6;
     }
 
     .message {
-      margin-bottom: 14px;
+      margin-bottom: 13px;
       padding: 13px;
-      border-radius: 12px;
-      white-space: pre-wrap;
+      border-radius: 14px;
+      line-height: 1.5;
+      overflow-wrap: anywhere;
     }
 
-    .user {
+    .message.user {
       background: #e8f0fe;
     }
 
-    .assistant {
+    .message.assistant {
       background: #f1f1f1;
     }
 
     .message-label {
       font-size: 12px;
-      font-weight: bold;
+      font-weight: 700;
       color: #666;
-      margin-bottom: 5px;
+      margin-bottom: 6px;
+    }
+
+    .message-text {
+      white-space: pre-wrap;
     }
 
     .translation,
     .correction,
-    .vocabulary {
-      margin-top: 10px;
+    .vocabulary-box,
+    .learning-box {
+      margin-top: 11px;
       padding-top: 10px;
       border-top: 1px solid #ddd;
       font-size: 14px;
     }
 
+    .translation {
+      color: #555;
+    }
+
+    .correction {
+      color: #333;
+    }
+
+    .learning-box {
+      color: #555;
+    }
+
     .word {
-      margin: 6px 0;
+      padding: 5px 0;
+    }
+
+    .status {
+      min-height: 21px;
+      margin-top: 8px;
+      color: #666;
+      font-size: 14px;
+      line-height: 1.4;
+    }
+
+    .status.error {
+      color: #b00020;
+    }
+
+    .status.success {
+      color: #1b5e20;
     }
 
     .stats {
       display: grid;
-      grid-template-columns: repeat(4, 1fr);
+      grid-template-columns:
+        repeat(4, 1fr);
       gap: 8px;
     }
 
     .stat {
       background: #f5f5f5;
+      border-radius: 11px;
       padding: 12px 5px;
-      border-radius: 10px;
       text-align: center;
     }
 
     .stat-number {
       font-size: 22px;
-      font-weight: bold;
+      font-weight: 700;
     }
 
     .stat-label {
-      font-size: 11px;
       color: #666;
+      font-size: 11px;
+      margin-top: 3px;
+    }
+
+    .progress-note {
+      margin-top: 12px;
+      color: #666;
+      font-size: 13px;
     }
 
     .list-item {
-      padding: 9px 0;
+      padding: 10px 0;
       border-bottom: 1px solid #eee;
+      line-height: 1.45;
+    }
+
+    .list-item:last-child {
+      border-bottom: 0;
     }
 
     .small {
@@ -160,31 +287,102 @@
       font-size: 13px;
     }
 
-    .status {
-      margin-top: 8px;
+    .empty-list {
+      color: #777;
       font-size: 14px;
-      color: #666;
-      min-height: 20px;
+      padding: 8px 0;
     }
 
-    .level-description {
-      margin-top: 8px;
-      color: #666;
-      font-size: 14px;
-    }
-
-    .skill-status {
+    .skill-badge {
       display: inline-block;
-      font-size: 11px;
+      margin-left: 5px;
       padding: 3px 7px;
       border-radius: 8px;
       background: #eee;
-      margin-left: 5px;
+      color: #555;
+      font-size: 11px;
+      vertical-align: middle;
     }
 
-    @media (max-width: 450px) {
+    .skill-badge.weak {
+      background: #fff0f0;
+      color: #a00000;
+    }
+
+    .skill-badge.developing {
+      background: #fff8df;
+      color: #765900;
+    }
+
+    .skill-badge.mastered {
+      background: #e9f7ec;
+      color: #216b2a;
+    }
+
+    .memory-summary {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px;
+      margin-top: 10px;
+    }
+
+    .memory-item {
+      background: #f7f7f7;
+      border-radius: 10px;
+      padding: 10px;
+    }
+
+    .memory-number {
+      font-size: 20px;
+      font-weight: 700;
+    }
+
+    .memory-label {
+      font-size: 12px;
+      color: #666;
+    }
+
+    .voice-indicator {
+      display: none;
+      margin-top: 9px;
+      padding: 10px;
+      border-radius: 10px;
+      background: #f0f0f0;
+      text-align: center;
+      font-size: 14px;
+    }
+
+    .voice-indicator.active {
+      display: block;
+    }
+
+    .footer-note {
+      text-align: center;
+      color: #888;
+      font-size: 12px;
+      padding: 5px 0 20px;
+    }
+
+    @media (max-width: 480px) {
+      .app {
+        padding: 11px;
+      }
+
+      .card {
+        padding: 15px;
+      }
+
+      .header h1 {
+        font-size: 25px;
+      }
+
       .stats {
-        grid-template-columns: repeat(2, 1fr);
+        grid-template-columns:
+          repeat(2, 1fr);
+      }
+
+      .button-row {
+        grid-template-columns: 1fr;
       }
     }
   </style>
@@ -194,63 +392,138 @@
 
 <div class="app">
 
-  <div class="card">
+  <div class="header">
     <h1>🇩🇪 Deutsch Coach</h1>
-    <p class="subtitle">Dein persönlicher Deutsch-Coach</p>
-
-    <label for="level">Dein Deutsch-Niveau</label>
-
-    <select id="level">
-      <option value="A1">A1 – Anfänger</option>
-      <option value="A2">A2 – Grundkenntnisse</option>
-      <option value="B1">B1 – Mittelstufe</option>
-      <option value="B2">B2 – Gute Mittelstufe</option>
-      <option value="C1">C1 – Fortgeschritten</option>
-      <option value="C2">C2 – Sehr fortgeschritten</option>
-    </select>
-
-    <div id="levelDescription" class="level-description"></div>
+    <p>Dein persönlicher Deutsch-Coach</p>
   </div>
 
 
+  <!-- LEVEL -->
   <div class="card">
 
-    <label for="topic">Thema</label>
+    <div class="field">
 
-    <select id="topic">
-      <option value="">Freies Gespräch</option>
-      <option value="Alltag">Alltag</option>
-      <option value="Reisen">Reisen</option>
-      <option value="Essen">Essen</option>
-      <option value="Arbeit">Arbeit</option>
-      <option value="Hobbys">Hobbys</option>
-      <option value="Familie">Familie</option>
-      <option value="Deutschland">Deutschland</option>
-    </select>
+      <label for="level">
+        🎯 Dein Deutsch-Niveau
+      </label>
+
+      <select id="level">
+
+        <option value="A1">
+          A1 – Anfänger
+        </option>
+
+        <option value="A2">
+          A2 – Grundkenntnisse
+        </option>
+
+        <option value="B1">
+          B1 – Mittelstufe
+        </option>
+
+        <option value="B2">
+          B2 – Gute Mittelstufe
+        </option>
+
+        <option value="C1">
+          C1 – Fortgeschritten
+        </option>
+
+        <option value="C2">
+          C2 – Sehr fortgeschritten
+        </option>
+
+      </select>
+
+      <div
+        id="levelDescription"
+        class="level-description"
+      ></div>
+
+    </div>
+
+
+    <div class="field">
+
+      <label for="topic">
+        💬 Thema
+      </label>
+
+      <select id="topic">
+
+        <option value="">
+          Freies Gespräch
+        </option>
+
+        <option value="Alltag">
+          Alltag
+        </option>
+
+        <option value="Reisen">
+          Reisen
+        </option>
+
+        <option value="Essen">
+          Essen
+        </option>
+
+        <option value="Arbeit">
+          Arbeit
+        </option>
+
+        <option value="Hobbys">
+          Hobbys
+        </option>
+
+        <option value="Familie">
+          Familie
+        </option>
+
+        <option value="Deutschland">
+          Deutschland
+        </option>
+
+      </select>
+
+    </div>
 
   </div>
 
 
+  <!-- CHAT -->
   <div class="card">
 
-    <div id="chat" class="chat"></div>
+    <div
+      id="chat"
+      class="chat"
+    ></div>
 
     <textarea
       id="messageInput"
       placeholder="Schreibe etwas auf Deutsch..."
+      autocomplete="off"
     ></textarea>
 
-    <button id="sendButton" onclick="sendMessage()">
-      Senden
-    </button>
 
-    <button
-      id="speakButton"
-      class="secondary"
-      onclick="startSpeaking()"
-    >
-      🎙️ Sprechen
-    </button>
+    <div class="button-row">
+
+      <button
+        id="sendButton"
+        onclick="sendMessage()"
+      >
+        Senden
+      </button>
+
+      <button
+        id="speakButton"
+        class="secondary"
+        onclick="startSpeaking()"
+      >
+        🎙️ Sprechen
+      </button>
+
+    </div>
+
 
     <button
       id="handsFreeButton"
@@ -260,11 +533,32 @@
       🔄 Freisprechen: Aus
     </button>
 
-    <div id="status" class="status"></div>
+
+    <button
+      class="secondary"
+      onclick="startNewConversation()"
+    >
+      🆕 Neues Gespräch
+    </button>
+
+
+    <div
+      id="voiceIndicator"
+      class="voice-indicator"
+    >
+      🎙️ Ich höre...
+    </div>
+
+
+    <div
+      id="status"
+      class="status"
+    ></div>
 
   </div>
 
 
+  <!-- PROGRESS -->
   <div class="card">
 
     <h3>📊 Dein Fortschritt</h3>
@@ -272,87 +566,153 @@
     <div class="stats">
 
       <div class="stat">
-        <div id="answersCount" class="stat-number">0</div>
-        <div class="stat-label">Antworten</div>
+        <div
+          id="answersCount"
+          class="stat-number"
+        >
+          0
+        </div>
+
+        <div class="stat-label">
+          Antworten
+        </div>
       </div>
 
-      <div class="stat">
-        <div id="correctionsCount" class="stat-number">0</div>
-        <div class="stat-label">Korrekturen</div>
-      </div>
 
       <div class="stat">
-        <div id="wordsCount" class="stat-number">0</div>
-        <div class="stat-label">Wörter</div>
+        <div
+          id="correctionsCount"
+          class="stat-number"
+        >
+          0
+        </div>
+
+        <div class="stat-label">
+          Korrekturen
+        </div>
       </div>
 
+
       <div class="stat">
-        <div id="streakCount" class="stat-number">0</div>
-        <div class="stat-label">Lerntage</div>
+        <div
+          id="wordsCount"
+          class="stat-number"
+        >
+          0
+        </div>
+
+        <div class="stat-label">
+          Wörter
+        </div>
+      </div>
+
+
+      <div class="stat">
+        <div
+          id="streakCount"
+          class="stat-number"
+        >
+          0
+        </div>
+
+        <div class="stat-label">
+          Lerntage
+        </div>
       </div>
 
     </div>
 
+
+    <div
+      id="progressNote"
+      class="progress-note"
+    ></div>
+
   </div>
 
 
+  <!-- VOCABULARY -->
   <div class="card">
 
     <h3>📚 Meine Wörter</h3>
 
-    <div id="vocabularyList"></div>
+    <div
+      id="vocabularyList"
+    ></div>
 
   </div>
 
 
+  <!-- MISTAKES -->
   <div class="card">
 
     <h3>⚠️ Meine Fehler</h3>
 
-    <div id="mistakesList"></div>
+    <div
+      id="mistakesList"
+    ></div>
 
   </div>
 
 
+  <!-- LEARNING PROFILE -->
   <div class="card">
 
-    <h3>🧠 Meine Lernfähigkeiten</h3>
+    <h3>🧠 Mein Lernprofil</h3>
 
-    <div id="skillsList"></div>
+    <div
+      id="memorySummary"
+      class="memory-summary"
+    ></div>
+
+    <div
+      id="skillsList"
+    ></div>
 
   </div>
 
 
+  <!-- DATA -->
   <div class="card">
 
     <h3>💾 Meine Daten</h3>
 
-    <button onclick="exportData()">
-      Daten exportieren
+    <button
+      onclick="exportData()"
+    >
+      📤 Daten exportieren
     </button>
+
 
     <button
       class="secondary"
       onclick="document.getElementById('importFile').click()"
     >
-      Daten importieren
+      📥 Daten importieren
     </button>
+
 
     <input
       id="importFile"
       type="file"
-      accept=".json"
+      accept=".json,application/json"
       style="display:none"
       onchange="importData(event)"
     >
+
 
     <button
       class="danger"
       onclick="deleteData()"
     >
-      Alle Daten löschen
+      🗑️ Alle Daten löschen
     </button>
 
+  </div>
+
+
+  <div class="footer-note">
+    Deutsch Coach · Persönliches Lernen im Browser
   </div>
 
 </div>
@@ -370,22 +730,22 @@ const STORAGE_KEY =
 const LEVEL_DESCRIPTIONS = {
 
   A1:
-    "Sehr einfache Gespräche mit kurzen Sätzen.",
+    "Sehr einfache Gespräche mit kurzen Sätzen und häufigen Wörtern.",
 
   A2:
-    "Einfache Gespräche über Alltag und bekannte Themen.",
+    "Einfache Gespräche über Alltag, bekannte Situationen und Erfahrungen.",
 
   B1:
-    "Normale Gespräche mit etwas komplexeren Sätzen.",
+    "Normale Gespräche mit längeren Sätzen, Erklärungen und Meinungen.",
 
   B2:
-    "Flüssigere Gespräche mit differenzierterem Deutsch.",
+    "Flüssigere Gespräche mit differenziertem Wortschatz und verschiedenen Satzstrukturen.",
 
   C1:
-    "Anspruchsvolle Gespräche mit komplexem Deutsch.",
+    "Anspruchsvolle Gespräche mit komplexem und natürlichem Deutsch.",
 
   C2:
-    "Sehr anspruchsvolle Gespräche mit präzisem und natürlichem Deutsch."
+    "Sehr anspruchsvolle Gespräche mit präzisem, flexiblem und natürlichem Deutsch."
 
 };
 
@@ -398,4 +758,2708 @@ const DEFAULT_DATA = {
 
   messages: [],
 
+  vocabulary: [],
+
+  mistakes: [],
+
+  sessions: 0,
+
+  corrections: 0,
+
+  streak: 0,
+
+  lastStudyDate: "",
+
+  handsFree: false,
+
+  learningProfile: {
+
+    skills: {},
+
+    recentTopics: [],
+
+    recentQuestions: []
+
+  }
+
+};
+
+
+function cloneDefaultData() {
+
+  return JSON.parse(
+    JSON.stringify(DEFAULT_DATA)
+  );
+
+}
+
+
+function loadData() {
+
+  try {
+
+    const saved =
+      localStorage.getItem(
+        STORAGE_KEY
+      );
+
+
+    if (!saved) {
+
+      return cloneDefaultData();
+
+    }
+
+
+    const parsed =
+      JSON.parse(saved);
+
+
+    const result =
+      cloneDefaultData();
+
+
+    Object.assign(
+      result,
+      parsed
+    );
+
+
+    if (
+      !Array.isArray(
+        result.messages
+      )
+    ) {
+
+      result.messages = [];
+
+    }
+
+
+    if (
+      !Array.isArray(
+        result.vocabulary
+      )
+    ) {
+
+      result.vocabulary = [];
+
+    }
+
+
+    if (
+      !Array.isArray(
+        result.mistakes
+      )
+    ) {
+
+      result.mistakes = [];
+
+    }
+
+
+    if (
+      !result.learningProfile ||
+      typeof result.learningProfile !== "object"
+    ) {
+
+      result.learningProfile = {
+        skills: {},
+        recentTopics: [],
+        recentQuestions: []
+      };
+
+    }
+
+
+    if (
+      !result.learningProfile.skills ||
+      typeof result.learningProfile.skills !== "object"
+    ) {
+
+      result.learningProfile.skills = {};
+
+    }
+
+
+    if (
+      !Array.isArray(
+        result.learningProfile.recentTopics
+      )
+    ) {
+
+      result.learningProfile.recentTopics = [];
+
+    }
+
+
+    if (
+      !Array.isArray(
+        result.learningProfile.recentQuestions
+      )
+    ) {
+
+      result.learningProfile.recentQuestions = [];
+
+    }
+
+
+    return result;
+
+  } catch (error) {
+
+    console.error(
+      "Data loading failed:",
+      error
+    );
+
+    return cloneDefaultData();
+
+  }
+
+}
+
+
+let data =
+  loadData();
+
+
+let recognition =
+  null;
+
+let recognitionActive =
+  false;
+
+let waitingForHandsFree =
+  false;
+
+
+const levelSelect =
+  document.getElementById(
+    "level"
+  );
+
+const topicSelect =
+  document.getElementById(
+    "topic"
+  );
+
+const messageInput =
+  document.getElementById(
+    "messageInput"
+  );
+
+const chat =
+  document.getElementById(
+    "chat"
+  );
+
+const statusElement =
+  document.getElementById(
+    "status"
+  );
+
+const voiceIndicator =
+  document.getElementById(
+    "voiceIndicator"
+  );
+
+
+function saveData() {
+
+  try {
+
+    localStorage.setItem(
+      STORAGE_KEY,
+      JSON.stringify(data)
+    );
+
+  } catch (error) {
+
+    console.error(
+      "Could not save data:",
+      error
+    );
+
+  }
+
+}
+
+
+function escapeHtml(text) {
+
+  const div =
+    document.createElement(
+      "div"
+    );
+
+  div.textContent =
+    text || "";
+
+  return div.innerHTML;
+
+}
+
+
+function updateLevelDescription() {
+
+  const level =
+    levelSelect.value;
+
+  document.getElementById(
+    "levelDescription"
+  ).textContent =
+    LEVEL_DESCRIPTIONS[level] || "";
+
+}
+
+
+function updateTopic() {
+
+  data.topic =
+    topicSelect.value;
+
+  saveData();
+
+}
+
+
+levelSelect.value =
+  data.level || "A1";
+
+topicSelect.value =
+  data.topic || "";
+
+
+levelSelect.addEventListener(
+  "change",
+  () => {
+
+    data.level =
+      levelSelect.value;
+
+    saveData();
+
+    updateLevelDescription();
+
+  }
+);
+
+
+topicSelect.addEventListener(
+  "change",
+  updateTopic
+);
+
+
+updateLevelDescription();
+
+
+function renderChat() {
+
+  chat.innerHTML = "";
+
+
+  if (
+    !data.messages.length
+  ) {
+
+    chat.innerHTML = `
+      <div class="empty-chat">
+        <strong>Hallo! 👋</strong><br>
+        Beginne dein Gespräch auf Deutsch.
+      </div>
+    `;
+
+    return;
+
+  }
+
+
+  data.messages.forEach(
+    (message, index) => {
+
+      const wrapper =
+        document.createElement(
+          "div"
+        );
+
+
+      wrapper.className =
+        "message " +
+        (
+          message.role === "user"
+            ? "user"
+            : "assistant"
+        );
+
+
+      const label =
+        document.createElement(
+          "div"
+        );
+
+
+      label.className =
+        "message-label";
+
+
+      label.textContent =
+        message.role === "user"
+          ? "Du"
+          : "🇩🇪 Deutsch Coach";
+
+
+      wrapper.appendChild(
+        label
+      );
+
+
+      const content =
+        document.createElement(
+          "div"
+        );
+
+
+      content.className =
+        "message-text";
+
+
+      content.textContent =
+        message.content || "";
+
+
+      wrapper.appendChild(
+        content
+      );
+
+
+      if (
+        message.translation
+      ) {
+
+        const translation =
+          document.createElement(
+            "div"
+          );
+
+
+        translation.className =
+          "translation";
+
+
+        translation.innerHTML =
+          "<strong>English:</strong><br>" +
+          escapeHtml(
+            message.translation
+          );
+
+
+        wrapper.appendChild(
+          translation
+        );
+
+      }
+
+
+      if (
+        message.correction
+      ) {
+
+        const correction =
+          document.createElement(
+            "div"
+          );
+
+
+        correction.className =
+          "correction";
+
+
+        correction.innerHTML =
+          "<strong>✏️ Korrektur:</strong><br>" +
+          escapeHtml(
+            message.correction
+          );
+
+
+        if (
+          message.correctionExplanation
+        ) {
+
+          correction.innerHTML +=
+            "<br><span class='small'>" +
+            escapeHtml(
+              message.correctionExplanation
+            ) +
+            "</span>";
+
+        }
+
+
+        wrapper.appendChild(
+          correction
+        );
+
+      }
+
+
+      if (
+        Array.isArray(
+          message.vocabulary
+        ) &&
+        message.vocabulary.length
+      ) {
+
+        const box =
+          document.createElement(
+            "div"
+          );
+
+
+        box.className =
+          "vocabulary-box";
+
+
+        box.innerHTML =
+          "<strong>📚 Neue Wörter:</strong>";
+
+
+        message.vocabulary.forEach(
+          item => {
+
+            const word =
+              document.createElement(
+                "div"
+              );
+
+
+            word.className =
+              "word";
+
+
+            word.textContent =
+              `${item.word} — ${item.meaning}`;
+
+
+            box.appendChild(
+              word
+            );
+
+          }
+        );
+
+
+        wrapper.appendChild(
+          box
+        );
+
+      }
+
+
+      if (
+        message.learning &&
+        message.learning.label &&
+        message.learning.outcome !== "none"
+      ) {
+
+        const box =
+          document.createElement(
+            "div"
+          );
+
+
+        box.className =
+          "learning-box";
+
+
+        const outcomeText =
+          message.learning.outcome === "mistake"
+            ? "Lernpunkt erkannt"
+            : "Richtig angewendet";
+
+
+        box.innerHTML =
+          "<strong>🧠 " +
+          escapeHtml(
+            outcomeText
+          ) +
+          "</strong><br>" +
+          "<span class='small'>" +
+          escapeHtml(
+            message.learning.label
+          ) +
+          "</span>";
+
+
+        wrapper.appendChild(
+          box
+        );
+
+      }
+
+
+      chat.appendChild(
+        wrapper
+      );
+
+    }
+  );
+
+
+  chat.scrollTop =
+    chat.scrollHeight;
+
+}
+
+
+function renderProgress() {
+
+  document.getElementById(
+    "answersCount"
+  ).textContent =
+    data.sessions || 0;
+
+
+  document.getElementById(
+    "correctionsCount"
+  ).textContent =
+    data.corrections || 0;
+
+
+  document.getElementById(
+    "wordsCount"
+  ).textContent =
+    data.vocabulary.length;
+
+
+  document.getElementById(
+    "streakCount"
+  ).textContent =
+    data.streak || 0;
+
+
+  const mastered =
+    Object.values(
+      data.learningProfile.skills
+    )
+    .filter(
+      skill =>
+        skill.status === "mastered"
+    )
+    .length;
+
+
+  const developing =
+    Object.values(
+      data.learningProfile.skills
+    )
+    .filter(
+      skill =>
+        skill.status === "developing" ||
+        skill.status === "weak"
+    )
+    .length;
+
+
+  document.getElementById(
+    "progressNote"
+  ).textContent =
+    mastered +
+    " Lernfähigkeiten beherrscht · " +
+    developing +
+    " brauchen noch Übung";
+
+}
+
+
+function renderVocabulary() {
+
+  const container =
+    document.getElementById(
+      "vocabularyList"
+    );
+
+
+  container.innerHTML = "";
+
+
+  if (
+    !data.vocabulary.length
+  ) {
+
+    container.innerHTML =
+      "<div class='empty-list'>" +
+      "Noch keine Wörter gespeichert." +
+      "</div>";
+
+    return;
+
+  }
+
+
+  [...data.vocabulary]
+    .reverse()
+    .slice(0, 100)
+    .forEach(
+      item => {
+
+        const div =
+          document.createElement(
+            "div"
+          );
+
+
+        div.className =
+          "list-item";
+
+
+        div.innerHTML =
+          "<strong>" +
+          escapeHtml(
+            item.word
+          ) +
+          "</strong><br>" +
+          "<span class='small'>" +
+          escapeHtml(
+            item.meaning
+          ) +
+          "</span>";
+
+
+        container.appendChild(
+          div
+        );
+
+      }
+    );
+
+}
+
+
+function renderMistakes() {
+
+  const container =
+    document.getElementById(
+      "mistakesList"
+    );
+
+
+  container.innerHTML = "";
+
+
+  if (
+    !data.mistakes.length
+  ) {
+
+    container.innerHTML =
+      "<div class='empty-list'>" +
+      "Noch keine Fehler gespeichert." +
+      "</div>";
+
+    return;
+
+  }
+
+
+  [...data.mistakes]
+    .reverse()
+    .slice(0, 50)
+    .forEach(
+      item => {
+
+        const div =
+          document.createElement(
+            "div"
+          );
+
+
+        div.className =
+          "list-item";
+
+
+        div.innerHTML =
+          "<strong>" +
+          escapeHtml(
+            item.corrected
+          ) +
+          "</strong><br>" +
+          "<span class='small'>" +
+          "Original: " +
+          escapeHtml(
+            item.original
+          ) +
+          " · " +
+          (item.count || 1) +
+          "×" +
+          "</span>";
+
+
+        container.appendChild(
+          div
+        );
+
+      }
+    );
+
+}
+
+
+function skillStatusText(
+  status
+) {
+
+  const labels = {
+
+    weak:
+      "Üben",
+
+    developing:
+      "Entwickelt sich",
+
+    mastered:
+      "Beherrscht",
+
+    new:
+      "Neu"
+
+  };
+
+
+  return (
+    labels[status] ||
+    "Neu"
+  );
+
+}
+
+
+function renderMemoryProfile() {
+
+  const summary =
+    document.getElementById(
+      "memorySummary"
+    );
+
+
+  const skills =
+    Object.values(
+      data.learningProfile.skills
+    );
+
+
+  const mastered =
+    skills.filter(
+      skill =>
+        skill.status === "mastered"
+    ).length;
+
+
+  const weak =
+    skills.filter(
+      skill =>
+        skill.status === "weak"
+    ).length;
+
+
+  summary.innerHTML = `
+
+    <div class="memory-item">
+      <div class="memory-number">
+        ${skills.length}
+      </div>
+      <div class="memory-label">
+        Lernfähigkeiten
+      </div>
+    </div>
+
+    <div class="memory-item">
+      <div class="memory-number">
+        ${mastered}
+      </div>
+      <div class="memory-label">
+        Beherrscht
+      </div>
+    </div>
+
+    <div class="memory-item">
+      <div class="memory-number">
+        ${weak}
+      </div>
+      <div class="memory-label">
+        Noch üben
+      </div>
+    </div>
+
+    <div class="memory-item">
+      <div class="memory-number">
+        ${data.vocabulary.length}
+      </div>
+      <div class="memory-label">
+        Wörter gelernt
+      </div>
+    </div>
+
+  `;
+
+
+  const container =
+    document.getElementById(
+      "skillsList"
+    );
+
+
+  container.innerHTML = "";
+
+
+  if (!skills.length) {
+
+    container.innerHTML =
+      "<div class='empty-list'>" +
+      "Dein persönliches Lernprofil wird während deiner Gespräche aufgebaut." +
+      "</div>";
+
+    return;
+
+  }
+
+
+  skills
+    .sort(
+      (a, b) => {
+
+        const statusWeight = {
+
+          weak: 4,
+
+          developing: 3,
+
+          new: 2,
+
+          mastered: 1
+
+        };
+
+
+        return (
+          (
+            statusWeight[b.status] ||
+            0
+          ) -
+          (
+            statusWeight[a.status] ||
+            0
+          )
+        );
+
+      }
+    )
+    .slice(0, 40)
+    .forEach(
+      skill => {
+
+        const div =
+          document.createElement(
+            "div"
+          );
+
+
+        div.className =
+          "list-item";
+
+
+        const status =
+          skill.status || "new";
+
+
+        div.innerHTML = `
+
+          <strong>
+            ${escapeHtml(
+              skill.label ||
+              skill.id
+            )}
+          </strong>
+
+          <span class="skill-badge ${status}">
+            ${escapeHtml(
+              skillStatusText(status)
+            )}
+          </span>
+
+          <br>
+
+          <span class="small">
+            Fehler:
+            ${skill.mistakes || 0}
+            · Richtig:
+            ${skill.correctUses || 0}
+          </span>
+
+        `;
+
+
+        container.appendChild(
+          div
+        );
+
+      }
+    );
+
+}
+
+
+function updateStreak() {
+
+  const today =
+    new Date()
+      .toISOString()
+      .slice(0, 10);
+
+
+  if (
+    data.lastStudyDate === today
+  ) {
+
+    return;
+
+  }
+
+
+  if (
+    !data.lastStudyDate
+  ) {
+
+    data.streak = 1;
+
+  } else {
+
+    const previous =
+      new Date(
+        data.lastStudyDate
+      );
+
+
+    const current =
+      new Date(
+        today
+      );
+
+
+    const difference =
+      Math.round(
+        (
+          current -
+          previous
+        ) /
+        (
+          1000 *
+          60 *
+          60 *
+          24
+        )
+      );
+
+
+    if (
+      difference === 1
+    ) {
+
+      data.streak += 1;
+
+    } else {
+
+      data.streak = 1;
+
+    }
+
+  }
+
+
+  data.lastStudyDate =
+    today;
+
+}
+
+
+function addVocabulary(
   vocabulary
+) {
+
+  if (
+    !Array.isArray(
+      vocabulary
+    )
+  ) {
+
+    return;
+
+  }
+
+
+  vocabulary.forEach(
+    item => {
+
+      if (
+        !item ||
+        !item.word
+      ) {
+
+        return;
+
+      }
+
+
+      const word =
+        String(
+          item.word
+        )
+        .trim();
+
+
+      const meaning =
+        String(
+          item.meaning || ""
+        )
+        .trim();
+
+
+      if (!word) {
+
+        return;
+
+      }
+
+
+      const existing =
+        data.vocabulary.find(
+          entry =>
+            String(
+              entry.word || ""
+            )
+            .toLowerCase() ===
+            word.toLowerCase()
+        );
+
+
+      if (
+        !existing
+      ) {
+
+        data.vocabulary.push({
+
+          word,
+
+          meaning
+
+        });
+
+      }
+
+    }
+  );
+
+
+  if (
+    data.vocabulary.length > 250
+  ) {
+
+    data.vocabulary =
+      data.vocabulary.slice(-250);
+
+  }
+
+}
+
+
+function addMistake(
+  original,
+  corrected
+) {
+
+  if (
+    !original ||
+    !corrected
+  ) {
+
+    return;
+
+  }
+
+
+  if (
+    original.trim() ===
+    corrected.trim()
+  ) {
+
+    return;
+
+  }
+
+
+  const existing =
+    data.mistakes.find(
+      item =>
+        item.original === original &&
+        item.corrected === corrected
+    );
+
+
+  if (
+    existing
+  ) {
+
+    existing.count =
+      (
+        existing.count ||
+        1
+      ) + 1;
+
+  } else {
+
+    data.mistakes.push({
+
+      original,
+
+      corrected,
+
+      count: 1
+
+    });
+
+  }
+
+
+  if (
+    data.mistakes.length > 100
+  ) {
+
+    data.mistakes =
+      data.mistakes.slice(-100);
+
+  }
+
+}
+
+
+function updateLearningProfile(
+  learning
+) {
+
+  if (
+    !learning ||
+    !learning.skillId
+  ) {
+
+    return;
+
+  }
+
+
+  const id =
+    String(
+      learning.skillId
+    )
+    .trim()
+    .slice(0, 100);
+
+
+  if (!id) {
+
+    return;
+
+  }
+
+
+  let skill =
+    data.learningProfile.skills[id];
+
+
+  if (!skill) {
+
+    skill = {
+
+      id,
+
+      label:
+        learning.label ||
+        id,
+
+      mistakes: 0,
+
+      correctUses: 0,
+
+      status: "new",
+
+      lastOutcome: "",
+
+      lastSeen: ""
+
+    };
+
+
+    data.learningProfile.skills[id] =
+      skill;
+
+  }
+
+
+  if (
+    learning.label
+  ) {
+
+    skill.label =
+      learning.label;
+
+  }
+
+
+  const outcome =
+    learning.outcome ||
+    "none";
+
+
+  if (
+    outcome === "mistake"
+  ) {
+
+    skill.mistakes =
+      (
+        skill.mistakes ||
+        0
+      ) + 1;
+
+
+    skill.lastOutcome =
+      "mistake";
+
+  }
+
+
+  if (
+    outcome === "correct"
+  ) {
+
+    skill.correctUses =
+      (
+        skill.correctUses ||
+        0
+      ) + 1;
+
+
+    skill.lastOutcome =
+      "correct";
+
+  }
+
+
+  skill.lastSeen =
+    new Date()
+      .toISOString();
+
+
+  /*
+    Mastery is deliberately conservative.
+
+    A learner needs several successful
+    uses after a real mistake.
+  */
+
+  if (
+    skill.mistakes >= 1 &&
+    skill.correctUses >= 3
+  ) {
+
+    skill.status =
+      "mastered";
+
+  } else if (
+    skill.mistakes >= 2
+  ) {
+
+    skill.status =
+      "weak";
+
+  } else if (
+    skill.mistakes >= 1
+  ) {
+
+    skill.status =
+      "developing";
+
+  } else {
+
+    skill.status =
+      "new";
+
+  }
+
+
+  const entries =
+    Object.entries(
+      data.learningProfile.skills
+    );
+
+
+  if (
+    entries.length > 100
+  ) {
+
+    entries
+      .sort(
+        (
+          [, a],
+          [, b]
+        ) =>
+          new Date(
+            a.lastSeen || 0
+          ) -
+          new Date(
+            b.lastSeen || 0
+          )
+      )
+      .slice(
+        0,
+        entries.length - 100
+      )
+      .forEach(
+        ([key]) => {
+
+          delete
+            data.learningProfile.skills[
+              key
+            ];
+
+        }
+      );
+
+  }
+
+}
+
+
+function updateRecentLearning(
+  topic,
+  reply
+) {
+
+  if (
+    topic
+  ) {
+
+    data.learningProfile.recentTopics.push(
+      topic
+    );
+
+
+    data.learningProfile.recentTopics =
+      data.learningProfile.recentTopics
+        .slice(-10);
+
+  }
+
+
+  if (
+    reply
+  ) {
+
+    const questions =
+      String(
+        reply
+      )
+      .match(
+        /[^.!?]*\?/g
+      );
+
+
+    if (
+      questions
+    ) {
+
+      questions.forEach(
+        question => {
+
+          const clean =
+            question.trim();
+
+
+          if (
+            clean
+          ) {
+
+            data.learningProfile.recentQuestions.push(
+              clean
+            );
+
+          }
+
+        }
+      );
+
+
+      data.learningProfile.recentQuestions =
+        data.learningProfile.recentQuestions
+          .slice(-10);
+
+    }
+
+  }
+
+}
+
+
+function buildMemory() {
+
+  const knownVocabulary =
+    data.vocabulary
+      .slice(-120)
+      .map(
+        item =>
+          item.word
+      );
+
+
+  const mistakes =
+    data.mistakes
+      .slice(-60)
+      .map(
+        item => ({
+
+          original:
+            item.original,
+
+          corrected:
+            item.corrected,
+
+          count:
+            item.count || 1
+
+        })
+      );
+
+
+  const skills =
+    Object.values(
+      data.learningProfile.skills
+    )
+    .slice(-60)
+    .map(
+      skill => ({
+
+        id:
+          skill.id,
+
+        label:
+          skill.label,
+
+        mistakes:
+          skill.mistakes || 0,
+
+        correctUses:
+          skill.correctUses || 0,
+
+        status:
+          skill.status || "new"
+
+      })
+    );
+
+
+  return {
+
+    knownVocabulary,
+
+    mistakes,
+
+    skills,
+
+    recentTopics:
+      data.learningProfile.recentTopics
+        .slice(-10),
+
+    recentQuestions:
+      data.learningProfile.recentQuestions
+        .slice(-10)
+
+  };
+
+}
+
+
+function setStatus(
+  text,
+  type = ""
+) {
+
+  statusElement.textContent =
+    text || "";
+
+
+  statusElement.className =
+    "status";
+
+
+  if (
+    type
+  ) {
+
+    statusElement.classList.add(
+      type
+    );
+
+  }
+
+}
+
+
+function setVoiceIndicator(
+  active
+) {
+
+  if (
+    active
+  ) {
+
+    voiceIndicator.classList.add(
+      "active"
+    );
+
+  } else {
+
+    voiceIndicator.classList.remove(
+      "active"
+    );
+
+  }
+
+}
+
+
+async function sendMessage() {
+
+  const text =
+    messageInput.value.trim();
+
+
+  if (!text) {
+
+    return;
+
+  }
+
+
+  if (
+    waitingForHandsFree
+  ) {
+
+    waitingForHandsFree =
+      false;
+
+  }
+
+
+  data.level =
+    levelSelect.value;
+
+
+  data.topic =
+    topicSelect.value;
+
+
+  data.messages.push({
+
+    role: "user",
+
+    content: text
+
+  });
+
+
+  messageInput.value =
+    "";
+
+
+  renderChat();
+
+
+  const sendButton =
+    document.getElementById(
+      "sendButton"
+    );
+
+
+  sendButton.disabled =
+    true;
+
+
+  setStatus(
+    "🤔 Deutsch Coach denkt..."
+  );
+
+
+  try {
+
+    const response =
+      await fetch(
+        API_URL,
+        {
+
+          method: "POST",
+
+          headers: {
+            "Content-Type":
+              "application/json"
+          },
+
+          body:
+            JSON.stringify({
+
+              level:
+                data.level,
+
+              topic:
+                data.topic,
+
+              memory:
+                buildMemory(),
+
+              messages:
+                data.messages
+                  .map(
+                    message => ({
+
+                      role:
+                        message.role,
+
+                      content:
+                        message.content
+
+                    })
+                  )
+
+            })
+
+        }
+      );
+
+
+    const responseText =
+      await response.text();
+
+
+    if (
+      !response.ok
+    ) {
+
+      let message =
+        "The AI service returned an error.";
+
+
+      try {
+
+        const errorData =
+          JSON.parse(
+            responseText
+          );
+
+
+        if (
+          errorData.error
+        ) {
+
+          message =
+            errorData.error;
+
+        }
+
+      } catch {
+
+        if (
+          responseText
+        ) {
+
+          message =
+            responseText;
+
+        }
+
+      }
+
+
+      throw new Error(
+        message
+      );
+
+    }
+
+
+    let result;
+
+
+    try {
+
+      result =
+        JSON.parse(
+          responseText
+        );
+
+    } catch {
+
+      throw new Error(
+        "The AI returned invalid data."
+      );
+
+    }
+
+
+    if (
+      !result.reply
+    ) {
+
+      throw new Error(
+        "The AI returned an empty reply."
+      );
+
+    }
+
+
+    const assistantMessage = {
+
+      role:
+        "assistant",
+
+      content:
+        result.reply,
+
+      translation:
+        result.translation || "",
+
+      correction:
+        result.correction || "",
+
+      correctionExplanation:
+        result.correctionExplanation || "",
+
+      correctionType:
+        result.correctionType || "",
+
+      vocabulary:
+        Array.isArray(
+          result.vocabulary
+        )
+          ? result.vocabulary
+          : [],
+
+      learning:
+        result.learning || null
+
+    };
+
+
+    data.messages.push(
+      assistantMessage
+    );
+
+
+    data.sessions =
+      (
+        data.sessions ||
+        0
+      ) + 1;
+
+
+    if (
+      result.correction
+    ) {
+
+      data.corrections =
+        (
+          data.corrections ||
+          0
+        ) + 1;
+
+
+      addMistake(
+        text,
+        result.correction
+      );
+
+    }
+
+
+    addVocabulary(
+      result.vocabulary
+    );
+
+
+    updateLearningProfile(
+      result.learning
+    );
+
+
+    updateRecentLearning(
+      data.topic,
+      result.reply
+    );
+
+
+    updateStreak();
+
+
+    saveData();
+
+
+    renderChat();
+
+    renderProgress();
+
+    renderVocabulary();
+
+    renderMistakes();
+
+    renderMemoryProfile();
+
+
+    setStatus(
+      ""
+    );
+
+
+    if (
+      data.handsFree
+    ) {
+
+      speakText(
+        result.reply
+      );
+
+    }
+
+  } catch (error) {
+
+    console.error(
+      error
+    );
+
+
+    setStatus(
+      "Fehler: " +
+      (
+        error.message ||
+        "Unbekannter Fehler."
+      ),
+      "error"
+    );
+
+  } finally {
+
+    sendButton.disabled =
+      false;
+
+  }
+
+}
+
+
+messageInput.addEventListener(
+  "keydown",
+  event => {
+
+    if (
+      event.key === "Enter" &&
+      !event.shiftKey
+    ) {
+
+      event.preventDefault();
+
+      sendMessage();
+
+    }
+
+  }
+);
+
+
+function speakText(
+  text
+) {
+
+  if (
+    !(
+      "speechSynthesis" in
+      window
+    )
+  ) {
+
+    return;
+
+  }
+
+
+  window.speechSynthesis.cancel();
+
+
+  const utterance =
+    new SpeechSynthesisUtterance(
+      text
+    );
+
+
+  utterance.lang =
+    "de-DE";
+
+
+  utterance.rate =
+    0.94;
+
+
+  utterance.pitch =
+    1;
+
+
+  utterance.onstart =
+    () => {
+
+      setStatus(
+        "🔊 Deutsch Coach spricht..."
+      );
+
+    };
+
+
+  utterance.onend =
+    () => {
+
+      setStatus(
+        ""
+      );
+
+
+      if (
+        data.handsFree &&
+        !waitingForHandsFree
+      ) {
+
+        waitingForHandsFree =
+          true;
+
+
+        setTimeout(
+          () => {
+
+            if (
+              data.handsFree &&
+              waitingForHandsFree
+            ) {
+
+              startSpeaking();
+
+            }
+
+          },
+          500
+        );
+
+      }
+
+    };
+
+
+  utterance.onerror =
+    () => {
+
+      setStatus(
+        ""
+      );
+
+    };
+
+
+  window.speechSynthesis.speak(
+    utterance
+  );
+
+}
+
+
+function createRecognition() {
+
+  const SpeechRecognition =
+    window.SpeechRecognition ||
+    window.webkitSpeechRecognition;
+
+
+  if (
+    !SpeechRecognition
+  ) {
+
+    return null;
+
+  }
+
+
+  const recognizer =
+    new SpeechRecognition();
+
+
+  recognizer.lang =
+    "de-DE";
+
+
+  recognizer.interimResults =
+    false;
+
+
+  recognizer.continuous =
+    false;
+
+
+  recognizer.maxAlternatives =
+    1;
+
+
+  recognizer.onstart =
+    () => {
+
+      recognitionActive =
+        true;
+
+
+      setVoiceIndicator(
+        true
+      );
+
+
+      setStatus(
+        "🎙️ Ich höre..."
+      );
+
+    };
+
+
+  recognizer.onresult =
+    event => {
+
+      const transcript =
+        event.results
+          ?.[
+            0
+          ]
+          ?.[
+            0
+          ]
+          ?.transcript;
+
+
+      if (
+        transcript
+      ) {
+
+        messageInput.value =
+          transcript;
+
+
+        waitingForHandsFree =
+          false;
+
+
+        sendMessage();
+
+      }
+
+    };
+
+
+  recognizer.onerror =
+    event => {
+
+      console.error(
+        "Speech recognition error:",
+        event.error
+      );
+
+
+      recognitionActive =
+        false;
+
+
+      setVoiceIndicator(
+        false
+      );
+
+
+      if (
+        event.error ===
+        "not-allowed"
+      ) {
+
+        setStatus(
+          "🎙️ Mikrofonzugriff wurde nicht erlaubt.",
+          "error"
+        );
+
+      } else if (
+        event.error !==
+        "aborted"
+      ) {
+
+        setStatus(
+          "🎙️ Sprachfehler: " +
+          event.error,
+          "error"
+        );
+
+      }
+
+    };
+
+
+  recognizer.onend =
+    () => {
+
+      recognitionActive =
+        false;
+
+
+      setVoiceIndicator(
+        false
+      );
+
+    };
+
+
+  return recognizer;
+
+}
+
+
+function startSpeaking() {
+
+  if (
+    !recognition
+  ) {
+
+    recognition =
+      createRecognition();
+
+  }
+
+
+  if (
+    !recognition
+  ) {
+
+    setStatus(
+      "Spracherkennung wird von diesem Browser nicht unterstützt.",
+      "error"
+    );
+
+    return;
+
+  }
+
+
+  if (
+    recognitionActive
+  ) {
+
+    return;
+
+  }
+
+
+  try {
+
+    recognition.start();
+
+  } catch (error) {
+
+    console.log(
+      "Recognition start failed:",
+      error
+    );
+
+  }
+
+}
+
+
+function toggleHandsFree() {
+
+  data.handsFree =
+    !data.handsFree;
+
+
+  const button =
+    document.getElementById(
+      "handsFreeButton"
+    );
+
+
+  if (
+    data.handsFree
+  ) {
+
+    button.textContent =
+      "🔄 Freisprechen: An";
+
+
+    waitingForHandsFree =
+      false;
+
+
+    setStatus(
+      "🎙️ Freisprechen aktiviert."
+    );
+
+  } else {
+
+    button.textContent =
+      "🔄 Freisprechen: Aus";
+
+
+    waitingForHandsFree =
+      false;
+
+
+    if (
+      recognitionActive &&
+      recognition
+    ) {
+
+      try {
+
+        recognition.stop();
+
+      } catch {}
+
+    }
+
+
+    if (
+      "speechSynthesis" in
+      window
+    ) {
+
+      window.speechSynthesis.cancel();
+
+    }
+
+
+    setStatus(
+      ""
+    );
+
+  }
+
+
+  saveData();
+
+}
+
+
+function startNewConversation() {
+
+  const confirmed =
+    confirm(
+      "Neues Gespräch starten? Dein Lernprofil und deine Wörter bleiben erhalten."
+    );
+
+
+  if (
+    !confirmed
+  ) {
+
+    return;
+
+  }
+
+
+  data.messages =
+    [];
+
+
+  data.topic =
+    topicSelect.value;
+
+
+  saveData();
+
+
+  renderChat();
+
+
+  setStatus(
+    "🆕 Neues Gespräch gestartet.",
+    "success"
+  );
+
+}
+
+
+function exportData() {
+
+  const exportObject = {
+
+    ...data,
+
+    exportedAt:
+      new Date()
+        .toISOString(),
+
+    app:
+      "Deutsch Coach"
+
+  };
+
+
+  const json =
+    JSON.stringify(
+      exportObject,
+      null,
+      2
+    );
+
+
+  const blob =
+    new Blob(
+      [json],
+      {
+        type:
+          "application/json"
+      }
+    );
+
+
+  const url =
+    URL.createObjectURL(
+      blob
+    );
+
+
+  const link =
+    document.createElement(
+      "a"
+    );
+
+
+  link.href =
+    url;
+
+
+  link.download =
+    "deutsch-coach-backup.json";
+
+
+  document.body.appendChild(
+    link
+  );
+
+
+  link.click();
+
+
+  link.remove();
+
+
+  setTimeout(
+    () => {
+
+      URL.revokeObjectURL(
+        url
+      );
+
+    },
+    1000
+  );
+
+
+  setStatus(
+    "📤 Daten exportiert.",
+    "success"
+  );
+
+}
+
+
+function importData(event) {
+
+  const file =
+    event.target.files?.[0];
+
+
+  if (
+    !file
+  ) {
+
+    return;
+
+  }
+
+
+  const reader =
+    new FileReader();
+
+
+  reader.onload =
+    () => {
+
+      try {
+
+        const imported =
+          JSON.parse(
+            reader.result
+          );
+
+
+        if (
+          !imported ||
+          typeof imported !== "object"
+        ) {
+
+          throw new Error(
+            "Invalid data"
+          );
+
+        }
+
+
+        const importedData =
+          cloneDefaultData();
+
+
+        Object.assign(
+          importedData,
+          imported
+        );
+
+
+        if (
+          !Array.isArray(
+            importedData.messages
+          )
+        ) {
+
+          importedData.messages = [];
+
+        }
+
+
+        if (
+          !Array.isArray(
+            importedData.vocabulary
+          )
+        ) {
+
+          importedData.vocabulary = [];
+
+        }
+
+
+        if (
+          !Array.isArray(
+            importedData.mistakes
+          )
+        ) {
+
+          importedData.mistakes = [];
+
+        }
+
+
+        if (
+          !importedData.learningProfile ||
+          typeof importedData.learningProfile !== "object"
+        ) {
+
+          importedData.learningProfile = {
+
+            skills: {},
+
+            recentTopics: [],
+
+            recentQuestions: []
+
+          };
+
+        }
+
+
+        if (
+          !importedData.learningProfile.skills
+        ) {
+
+          importedData.learningProfile.skills = {};
+
+        }
+
+
+        if (
+          !Array.isArray(
+            importedData.learningProfile.recentTopics
+          )
+        ) {
+
+          importedData.learningProfile.recentTopics = [];
+
+        }
+
+
+        if (
+          !Array.isArray(
+            importedData.learningProfile.recentQuestions
+          )
+        ) {
+
+          importedData.learningProfile.recentQuestions = [];
+
+        }
+
+
+        data =
+          importedData;
+
+
+        levelSelect.value =
+          data.level || "A1";
+
+
+        topicSelect.value =
+          data.topic || "";
+
+
+        updateLevelDescription();
+
+        saveData();
+
+        renderChat();
+
+        renderProgress();
+
+        renderVocabulary();
+
+        renderMistakes();
+
+        renderMemoryProfile();
+
+
+        setStatus(
+          "📥 Daten erfolgreich importiert.",
+          "success"
+        );
+
+      } catch (error) {
+
+        console.error(
+          error
+        );
+
+
+        setStatus(
+          "Import fehlgeschlagen.",
+          "error"
+        );
+
+      }
+
+
+      event.target.value =
+        "";
+
+    };
+
+
+  reader.readAsText(
+    file
+  );
+
+}
+
+
+function deleteData() {
+
+  const confirmed =
+    confirm(
+      "Möchtest du wirklich ALLE Deutsch-Coach-Daten löschen?"
+    );
+
+
+  if (
+    !confirmed
+  ) {
+
+    return;
+
+  }
+
+
+  localStorage.removeItem(
+    STORAGE_KEY
+  );
+
+
+  data =
+    cloneDefaultData();
+
+
+  levelSelect.value =
+    data.level;
+
+
+  topicSelect.value =
+    data.topic;
+
+
+  updateLevelDescription();
+
+  renderChat();
+
+  renderProgress();
+
+  renderVocabulary();
+
+  renderMistakes();
+
+  renderMemoryProfile();
+
+
+  document.getElementById(
+    "handsFreeButton"
+  ).textContent =
+    "🔄 Freisprechen: Aus";
+
+
+  setStatus(
+    "Alle Daten wurden gelöscht.",
+    "success"
+  );
+
+}
+
+
+if (
+  data.handsFree
+) {
+
+  document.getElementById(
+    "handsFreeButton"
+  ).textContent =
+    "🔄 Freisprechen: An";
+
+}
+
+
+renderChat();
+
+renderProgress();
+
+renderVocabulary();
+
+renderMistakes();
+
+renderMemoryProfile();
+
+</script>
+
+</body>
+</html>
