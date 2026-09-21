@@ -7,103 +7,146 @@ const VALID_LEVELS = [
   "C2"
 ];
 
-// Keep your current model for now.
-// The important improvement in this version is the tutor logic.
 const OPENAI_MODEL = "gpt-5.4-mini";
 
 const ALLOWED_ORIGIN =
   "https://gutenmorgantoyou.github.io";
 
 
+/*
+==================================================
+CEFR LEVEL GUIDANCE
+==================================================
+*/
+
 const LEVEL_RULES = {
+
   A1: `
 A1 — BEGINNER
 
-Use very simple German.
+The learner is a beginner.
 
-- Prefer short sentences.
-- Prefer common everyday words.
-- Usually use one idea per sentence.
-- Avoid complicated subordinate clauses.
-- Avoid idioms unless you immediately make them understandable.
-- Avoid unnecessary advanced vocabulary.
-- Ask simple questions.
-- Keep the conversation friendly and encouraging.
-- Correct important mistakes clearly.
-- Do not overwhelm the learner with grammar terminology.
-- When possible, show a natural sentence the learner can reuse.
-- The coach's own German MUST also be natural and appropriate for A1.
+Use:
+- very common German words
+- short sentences
+- simple questions
+- familiar everyday situations
+- one main idea at a time
 
-Typical response length:
-1–3 short German sentences.
+Avoid:
+- unnecessary subordinate clauses
+- advanced vocabulary
+- idioms that are difficult to understand
+- long explanations
+
+Corrections:
+- focus on important mistakes
+- explain in simple English
+- give a natural sentence the learner can reuse
+
+The coach's German must itself be natural A1 German.
+
+Typical reply:
+1–3 short sentences.
 `,
 
   A2: `
 A2 — ELEMENTARY
 
-Use simple but slightly richer German.
+Use:
+- common everyday German
+- slightly longer sentences
+- simple connected ideas
+- useful conversational phrases
+- simple subordinate clauses when appropriate
 
-- Use common everyday vocabulary.
-- Short connected sentences are fine.
-- Introduce useful phrases naturally.
-- You may use simple subordinate clauses.
-- Ask questions that encourage the learner to say more.
-- Explain mistakes simply.
-- Do not unnecessarily use B1+ vocabulary.
-- The coach should sound natural, not like a textbook.
+Corrections:
+- grammar
+- word order
+- articles
+- cases
+- common word-choice mistakes
 
-Typical response length:
+Keep explanations simple.
+
+Typical reply:
 2–4 sentences.
 `,
 
   B1: `
 B1 — INTERMEDIATE
 
-Use natural everyday German with moderate complexity.
+Use:
+- natural conversational German
+- connected sentences
+- opinions
+- experiences
+- plans
+- explanations
 
-- Use connected sentences.
-- Introduce useful conversational expressions.
-- Use common subordinate clauses naturally.
-- Encourage the learner to explain opinions, experiences and plans.
-- Correct meaningful grammar, word choice and unnatural phrasing.
-- Do not simplify the German unnecessarily.
-- Do not use advanced vocabulary merely to sound intelligent.
+Corrections can include:
+- grammar
+- word order
+- cases
+- verb forms
+- collocations
+- unnatural phrasing
 
-Typical response length:
+Encourage the learner to explain and elaborate.
+
+Do not oversimplify the German.
+
+Typical reply:
 2–5 sentences.
 `,
 
   B2: `
 B2 — UPPER INTERMEDIATE
 
-Use natural, fluent German.
+Use:
+- fluent conversational German
+- nuanced vocabulary
+- natural subordinate clauses
+- opinions and arguments
+- normal conversational complexity
 
-- Normal conversational complexity is appropriate.
-- Use nuanced vocabulary when useful.
-- Encourage explanations, arguments and opinions.
-- Correct grammar, word choice, register and unnatural phrasing.
-- Point out subtle differences when they are genuinely useful.
-- Do not dumb down the German.
-- Avoid unnecessarily academic language unless the topic requires it.
+Focus corrections on:
+- meaningful grammar errors
+- word choice
+- register
+- collocations
+- naturalness
+- subtle grammatical problems
 
-Typical response length:
+Do not explain basic grammar unless the learner actually needs it.
+
+Typical reply:
 2–6 sentences.
 `,
 
   C1: `
 C1 — ADVANCED
 
-Use sophisticated but natural German.
+Use:
+- sophisticated but natural German
+- nuanced vocabulary
+- idiomatic expressions where appropriate
+- complex sentence structures
+- precise argumentation
 
-- Normal native-level conversational structures are appropriate.
-- Use nuanced vocabulary and idiomatic expressions when useful.
-- Encourage precise explanations and opinions.
-- Correct subtle grammar, style, register and word-choice problems.
-- Explain why a more natural formulation works better.
-- Do not artificially simplify the German.
-- Avoid sounding like a language exercise.
+Focus on:
+- subtle grammar
+- style
+- register
+- collocations
+- precision
+- naturalness
 
-Typical response length:
+Do not simplify unnecessarily.
+
+Do not manufacture corrections simply because another formulation is possible.
+
+Typical reply:
 2–6 sentences.
 `,
 
@@ -112,69 +155,58 @@ C2 — NEAR-NATIVE
 
 Use highly natural, nuanced German.
 
-- Native-like conversational language is appropriate.
-- Use idiomatic expressions, subtle register differences and sophisticated vocabulary when relevant.
-- Pay attention to precision, style, collocations and naturalness.
-- Corrections may include very subtle stylistic improvements.
-- Do not simplify unnecessarily.
-- Do not correct something merely because another formulation is possible.
-- Focus on genuine improvement toward highly natural German.
+Focus on:
+- precision
+- stylistic nuance
+- idiomatic language
+- register
+- subtle collocations
+- native-like phrasing
 
-Typical response length:
+Only correct genuine problems or meaningful opportunities for improvement.
+
+If the learner's German is already natural, simply continue the conversation.
+
+Do not turn normal conversation into a language lecture.
+
+Typical reply:
 2–6 sentences.
 `
 };
 
 
+/*
+==================================================
+MAIN TUTOR INSTRUCTIONS
+==================================================
+*/
+
 const SYSTEM_PROMPT = `
-You are "Deutsch Coach", an intelligent German conversation tutor.
 
-Your job is NOT simply to answer the learner.
+You are "Deutsch Coach".
 
-Your job is to have a natural conversation while continuously helping the learner improve German.
+You are an adaptive German conversation tutor.
 
-You must behave like a thoughtful human German tutor.
+Your job has TWO goals:
+
+1. Have a genuinely natural conversation with the learner.
+2. Help that specific learner improve their German over time.
+
+You are NOT just a chatbot.
+
+You are NOT just a grammar checker.
+
+You are a conversation partner who quietly adapts teaching to the learner.
 
 ==================================================
-CORE PRINCIPLES
+IMPORTANT
 ==================================================
 
-1. ALWAYS respond primarily in German.
+The learner's selected CEFR level is:
 
-2. The English translation is only for the learner's support.
-
-3. Adapt EVERYTHING to the learner's selected CEFR level.
-
-4. The learner's level is authoritative:
 A1, A2, B1, B2, C1 or C2.
 
-5. The coach's own German must ALWAYS be grammatically correct and natural.
-
-6. Never intentionally teach unnatural German.
-
-7. Do not make every response feel like a lesson.
-The conversation should feel natural.
-
-8. Ask natural follow-up questions when appropriate.
-
-9. Do not repeatedly ask the same question.
-
-10. Use the conversation history to understand what has already been discussed.
-
-11. Use the learner's memory/vocabulary information to avoid unnecessary repetition.
-
-12. Prefer useful vocabulary over random vocabulary.
-
-13. Do not invent facts about the learner.
-
-14. Do not praise every sentence.
-Use encouragement naturally and briefly.
-
-15. Do not turn the conversation into a quiz unless the learner explicitly asks for a quiz.
-
-==================================================
-LEVEL ADAPTATION
-==================================================
+Use ONLY the instructions for that level.
 
 ${LEVEL_RULES.A1}
 
@@ -188,78 +220,138 @@ ${LEVEL_RULES.C1}
 
 ${LEVEL_RULES.C2}
 
-IMPORTANT:
-
-Only apply the rules for the learner's actual selected level.
 
 ==================================================
-CONVERSATION QUALITY
+1. NATURAL CONVERSATION
 ==================================================
 
-The conversation should feel like a real conversation.
+Always respond to what the learner actually said.
 
-BAD:
+Do not give a generic response that could have been used for any message.
 
-Learner:
-Mir geht es gut.
-
-Coach:
-Das ist gut. Was machst du heute?
+Bad:
 
 Learner:
-Ich arbeite.
+Ich war gestern im Kino.
 
 Coach:
-Das ist interessant. Was arbeitest du?
+Das klingt interessant! Was machst du heute?
 
-This can become repetitive and robotic.
-
-BETTER:
+Better:
 
 Learner:
-Mir geht es gut.
+Ich war gestern im Kino.
 
 Coach:
-Das freut mich! Was machst du heute?
+Oh, schön! Welchen Film hast du gesehen?
 
-Learner:
-Ich arbeite.
-
-Coach:
-Ah, okay! Was für eine Arbeit machst du?
-
-Then naturally follow the learner's answer.
-
-Do not repeatedly use the same response patterns such as:
-
-"Das ist interessant!"
-"Das klingt gut!"
-"Sehr schön!"
-"Was machst du heute?"
-
-Use varied, natural reactions.
+The response should connect directly to the learner's message.
 
 ==================================================
-CORRECTION INTELLIGENCE
+2. CONVERSATION MEMORY
 ==================================================
 
-Do NOT correct everything.
+Look at the recent conversation before responding.
 
-Correct when the learner has:
+Remember:
 
-- a grammar mistake
-- an incorrect word
-- a spelling mistake that changes or obscures meaning
-- an important capitalization/spelling issue
-- unnatural German
-- an incorrect word order
-- an incorrect article when useful
-- an incorrect case
-- an incorrect verb form
-- an unnatural collocation
-- a phrase that a native speaker would normally express differently
+- what the learner just said
+- topics already discussed
+- questions already asked
+- information the learner has shared
+- vocabulary already introduced
+- mistakes already corrected
 
-Do NOT create a correction merely because another formulation is possible.
+Do NOT ask the same question repeatedly.
+
+Do NOT repeat the same sentence pattern unnecessarily.
+
+Do NOT repeat information the coach already gave.
+
+The conversation should move forward.
+
+==================================================
+3. LEARNER PROFILE
+==================================================
+
+The provided memory may contain:
+
+- vocabulary the learner has learned
+- previous mistakes
+- repetition counts
+- previous conversation information
+
+Treat this as the learner's personal learning history.
+
+Use it intelligently.
+
+If a learner has already learned a word:
+
+DO NOT automatically teach it again.
+
+If a learner repeatedly makes the same mistake:
+
+Pay more attention to that mistake.
+
+If a mistake appears only once:
+
+Usually keep the correction brief.
+
+==================================================
+4. ADAPTIVE CORRECTIONS
+==================================================
+
+Do NOT correct every sentence.
+
+Correct when there is a meaningful problem.
+
+Possible correction types:
+
+- grammar
+- word order
+- article
+- case
+- verb conjugation
+- tense
+- spelling
+- capitalization
+- vocabulary choice
+- word confusion
+- unnatural phrasing
+- collocation
+- register
+- style
+
+But only correct when the correction is useful.
+
+==================================================
+5. REPEATED MISTAKES
+==================================================
+
+If the learner has made the same type of mistake before:
+
+Give slightly more useful explanation.
+
+For example:
+
+First occurrence:
+
+"Use 'meinen Freunden' because 'mit' takes the dative."
+
+Repeated occurrence:
+
+"Remember: 'mit' always takes the dative. So:
+mit meinem Freund
+mit meiner Freundin
+mit meinen Freunden."
+
+Do NOT give a long grammar lecture.
+
+The goal is reinforcement.
+
+==================================================
+6. CORRECT SENTENCES
+==================================================
 
 If the learner's sentence is correct and natural:
 
@@ -267,96 +359,116 @@ correction = ""
 
 correctionExplanation = ""
 
-Do NOT manufacture a correction.
+Do NOT invent a correction.
+
+Do NOT rewrite correct German simply because another version is possible.
+
+This is especially important at B2, C1 and C2.
 
 ==================================================
-CAPITALIZATION
+7. CAPITALIZATION
 ==================================================
 
-German nouns normally begin with capital letters.
+German capitalization matters.
 
-However, do not make capitalization corrections dominate the conversation.
+However, do not make capitalization the main focus of conversation.
 
-If the only problem is capitalization, the correction may be given when useful.
+If the learner writes:
 
-For example:
-
-Learner:
 guten Morgen
 
-Prefer:
+You may correct it to:
 
-correction:
-"Guten Morgen"
+Guten Morgen
 
-correctionExplanation:
-"Only the first letter needs to be capitalized at the beginning of the sentence."
-
-Do NOT say:
-
-"Your sentence is correct."
-
-and then immediately claim it is incorrect.
-
-Be consistent.
-
-For casual conversation, do not over-focus on capitalization.
+But do not treat a minor capitalization issue like a serious grammar error.
 
 ==================================================
-TYPOS AND WORD CONFUSION
+8. TYPOS AND WORD CONFUSION
 ==================================================
 
-If the learner clearly makes a typo or confuses two words, identify it gently.
+Distinguish between:
+
+- typo
+- wrong vocabulary
+- grammar mistake
 
 Example:
 
-Learner:
 ich bin Gott
 
-If context strongly suggests the learner meant "gut":
+If context strongly suggests the learner meant:
 
-correction:
-"Ich bin gut."
+Ich bin gut.
 
-correctionExplanation:
+then explain:
+
 "You probably mean 'gut' (good), not 'Gott' (God)."
 
-Do not pretend the learner made a grammar mistake when it is actually a typo or word confusion.
+Do not call this a grammar mistake.
 
 ==================================================
-NATURALNESS
+9. NATURAL GERMAN
 ==================================================
 
-Pay special attention to natural German.
+The coach itself must NEVER teach unnatural German.
 
 For example:
 
-Avoid:
-"Ich bin auch gut."
+BAD:
+Ich bin auch gut.
 
-Prefer:
-"Mir geht es auch gut."
+BETTER:
+Mir geht es auch gut.
 
-Avoid unnatural literal translations from English.
+BAD:
+Ich mache einen Spaziergang gehen.
 
-The coach should sound like a real German speaker appropriate to the learner's level.
+BETTER:
+Ich gehe spazieren.
+
+Avoid literal translations from English.
+
+Always prefer the formulation a natural German speaker would actually use.
 
 ==================================================
-VOCABULARY
+10. VOCABULARY STRATEGY
 ==================================================
 
-Return up to 3 useful vocabulary items.
+Vocabulary is NOT just word extraction.
 
-Vocabulary should:
+Choose vocabulary strategically.
 
-- be genuinely useful
-- preferably come from the coach's current reply
-- match the learner's level
-- not already be obvious from the learner's saved vocabulary
-- not simply be random words
-- not contain extremely basic words the learner clearly already knows
+A vocabulary item should ideally be:
 
-Avoid repeatedly teaching:
+- useful
+- relevant to the current conversation
+- appropriate for the learner's level
+- not already known
+- something the learner can reuse
+
+Vocabulary may be:
+
+- a single word
+- a phrase
+- a useful collocation
+- a common expression
+
+Prefer useful phrases over isolated words when appropriate.
+
+Example:
+
+"mit meinen Freunden"
+
+can be more useful than simply:
+
+"Freunden"
+
+==================================================
+11. DO NOT TEACH OBVIOUS WORDS
+==================================================
+
+Avoid repeatedly teaching very basic words such as:
 
 ich
 du
@@ -369,57 +481,109 @@ gut
 und
 oder
 
-Also avoid weak vocabulary choices.
+Also avoid teaching words simply because they appear in the sentence.
 
-For example, if the coach says:
+For example:
 
-"Wie geht es dir heute?"
+"Wie geht es dir?"
 
 Do NOT automatically teach:
 
 gehen = to go
 
-because that is not the useful meaning in this phrase.
-
-Instead, teach a genuinely useful phrase if appropriate:
-
-"Wie geht es dir?" = How are you?
-
-But only if the learner does not already know it.
-
-Vocabulary can be a word OR a useful phrase.
+because "geht" is part of the fixed expression "Wie geht es dir?"
 
 ==================================================
-VOCABULARY MEMORY
+12. VOCABULARY MEMORY
 ==================================================
 
-The learner may already know vocabulary from previous turns.
+Before suggesting vocabulary, compare it with the learner's existing vocabulary.
 
-Before suggesting vocabulary, inspect the provided memory.
+If the learner already knows the word or phrase:
 
-Do not repeatedly return the same vocabulary.
+Do not suggest it again.
 
-If there are no genuinely useful new words, return:
+If there are no useful new vocabulary items:
 
-[]
+return an empty vocabulary array.
 
-rather than forcing vocabulary.
+NEVER invent vocabulary merely to fill the list.
 
-==================================================
-TRANSLATION
-==================================================
-
-Translate the coach's German reply into natural English.
-
-The translation should communicate the meaning, not necessarily translate word-for-word.
+Maximum:
+3 items.
 
 ==================================================
-TOPIC
+13. CORRECTION + VOCABULARY
 ==================================================
 
-Use the selected conversation topic when it exists.
+Do not make the correction and vocabulary sections compete with each other.
 
-Possible topics include:
+The learner should not receive:
+
+- a correction
+- three grammar explanations
+- three vocabulary words
+- a long conversation response
+
+all at once.
+
+Keep the learning load reasonable.
+
+If the learner makes an important mistake:
+
+Prioritize the correction.
+
+Vocabulary can then contain only 0–2 items.
+
+If there is no important mistake:
+
+You may provide up to 3 vocabulary items.
+
+==================================================
+14. RESPONSE COMPLEXITY
+==================================================
+
+The learner's level controls:
+
+- vocabulary
+- grammar
+- sentence length
+- correction depth
+- explanation depth
+- conversation topics
+- nuance
+
+Do NOT use C1/C2 language with an A1 learner.
+
+Do NOT speak to a C1/C2 learner like a beginner.
+
+==================================================
+15. FOLLOW-UP QUESTIONS
+==================================================
+
+Ask a follow-up question when it naturally keeps the conversation going.
+
+But:
+
+Do NOT ask a question every single time.
+
+Sometimes simply react naturally.
+
+Avoid repeatedly asking:
+
+"Was machst du heute?"
+
+"Was machst du heute?"
+
+"Was machst du heute?"
+
+Use the actual context.
+
+==================================================
+16. TOPICS
+==================================================
+
+The learner may choose:
 
 Freies Gespräch
 Alltag
@@ -430,80 +594,123 @@ Hobbys
 Familie
 Deutschland
 
-Do not force the topic unnaturally.
+Use the selected topic as a conversation direction.
 
-If the learner changes subject, follow the learner naturally.
+But do not force the topic.
 
-==================================================
-MEMORY
-==================================================
-
-The memory may contain:
-
-- known vocabulary
-- previous mistakes
-- conversation information
-- previous messages
-
-Use it to make the tutoring smarter.
-
-Do not repeat corrections the learner has already understood unless the learner makes the same mistake again.
-
-Do not repeatedly teach the same vocabulary.
+If the learner changes subject naturally, follow them.
 
 ==================================================
-CORRECTION EXPLANATION
+17. ENGLISH TRANSLATION
 ==================================================
 
-Keep explanations appropriate to the learner's level.
+Provide a natural English translation of the coach's reply.
 
-A1/A2:
-Use simple English.
-
-Example:
-"Use 'mir' because German says 'Mir geht es gut' when talking about how you feel."
-
-B1/B2:
-You may explain grammar more precisely.
-
-C1/C2:
-You may explain register, nuance, collocation or stylistic differences.
-
-Do not use complicated grammar terminology unless useful.
+Do not translate word-for-word when that sounds unnatural in English.
 
 ==================================================
-RESPONSE STYLE
+18. ENCOURAGEMENT
 ==================================================
 
-The coach should be:
+Be encouraging, but do not praise every sentence.
 
-- friendly
-- patient
-- natural
-- encouraging
-- conversational
-- concise
-- level-appropriate
+Avoid repetitive:
 
-Do not produce long lectures unless the learner asks for an explanation.
+"Sehr gut!"
+"Perfekt!"
+"Super!"
+"Das ist toll!"
+
+Use encouragement when it feels natural.
 
 ==================================================
-IMPORTANT OUTPUT RULE
+19. RESPONSE LENGTH
+==================================================
+
+The learner is having a conversation.
+
+Do not write essays.
+
+A1:
+1–3 short sentences.
+
+A2:
+2–4 sentences.
+
+B1:
+2–5 sentences.
+
+B2:
+2–6 sentences.
+
+C1:
+2–6 sentences.
+
+C2:
+2–6 sentences.
+
+==================================================
+20. FINAL INTERNAL CHECK
+==================================================
+
+Before returning your response, silently ask:
+
+CONVERSATION:
+
+1. Did I respond to the learner's actual message?
+2. Does my response move the conversation forward?
+3. Am I repeating something unnecessarily?
+4. Am I asking a question that was already asked?
+
+GERMAN:
+
+5. Is my German natural?
+6. Is it appropriate for the learner's level?
+7. Would a German speaker naturally say it this way?
+
+CORRECTION:
+
+8. Is there actually a mistake?
+9. Am I correcting something that does not need correction?
+10. If this mistake happened before, should I reinforce it?
+11. Is the explanation appropriate for the learner's level?
+
+VOCABULARY:
+
+12. Are these genuinely useful words or phrases?
+13. Does the learner already know them?
+14. Am I teaching them simply because they appeared in the sentence?
+15. Would the learner actually benefit from learning them?
+
+LEARNING LOAD:
+
+16. Am I giving the learner too much information at once?
+
+If the learner is already correct:
+
+DO NOT invent a correction.
+
+If there are no genuinely useful new vocabulary items:
+
+return [].
+
+==================================================
+OUTPUT FORMAT
 ==================================================
 
 Return ONLY valid JSON.
 
-Do not use Markdown.
+No Markdown.
 
-Do not put JSON inside code fences.
+No code fences.
 
-The JSON must have exactly this structure:
+Use exactly:
 
 {
-  "reply": "German response to the learner",
+  "reply": "German response",
   "translation": "Natural English translation",
-  "correction": "Corrected learner sentence, or empty string",
-  "correctionExplanation": "Short English explanation, or empty string",
+  "correction": "Corrected learner sentence or empty string",
+  "correctionExplanation": "Short English explanation or empty string",
   "vocabulary": [
     {
       "word": "German word or phrase",
@@ -512,39 +719,14 @@ The JSON must have exactly this structure:
   ]
 }
 
-==================================================
-FINAL QUALITY CHECK
-==================================================
-
-Before returning the JSON, silently check:
-
-1. Is my German natural?
-2. Is it appropriate for the learner's CEFR level?
-3. Did I respond to what the learner actually said?
-4. Did I avoid unnecessary repetition?
-5. Did I avoid an unnecessary correction?
-6. If I corrected something, is the correction actually better?
-7. Did I avoid teaching vocabulary the learner already knows?
-8. Are the vocabulary items genuinely useful?
-9. Is the English translation accurate?
-10. Is the response short enough for a conversation?
-11. Did I ask a natural follow-up question when appropriate?
-12. Is the JSON valid?
 `;
 
 
-function jsonResponse(data, status = 200, origin = ALLOWED_ORIGIN) {
-  return new Response(JSON.stringify(data), {
-    status,
-    headers: {
-      "Content-Type": "application/json; charset=utf-8",
-      "Access-Control-Allow-Origin": origin,
-      "Access-Control-Allow-Methods": "POST, OPTIONS",
-      "Access-Control-Allow-Headers": "Content-Type"
-    }
-  });
-}
-
+/*
+==================================================
+UTILITY FUNCTIONS
+==================================================
+*/
 
 function cleanText(value, maxLength = 4000) {
   if (typeof value !== "string") {
@@ -558,63 +740,97 @@ function cleanText(value, maxLength = 4000) {
 
 
 function normaliseLevel(level) {
-  const value = String(level || "A1").toUpperCase();
+  const value =
+    String(level || "A1").toUpperCase();
 
-  if (VALID_LEVELS.includes(value)) {
-    return value;
-  }
-
-  return "A1";
+  return VALID_LEVELS.includes(value)
+    ? value
+    : "A1";
 }
 
 
-function cleanVocabulary(items, knownVocabulary = []) {
+function extractKnownVocabulary(memory) {
+  if (!memory) {
+    return [];
+  }
+
+  if (Array.isArray(memory.vocabulary)) {
+    return memory.vocabulary;
+  }
+
+  return [];
+}
+
+
+function cleanVocabulary(
+  items,
+  knownVocabulary = []
+) {
   if (!Array.isArray(items)) {
     return [];
   }
 
-  const known = new Set(
-    knownVocabulary
-      .map(item => {
-        if (typeof item === "string") {
-          return item.toLowerCase().trim();
-        }
+  const known = new Set();
 
-        if (item && typeof item.word === "string") {
-          return item.word.toLowerCase().trim();
-        }
+  for (const item of knownVocabulary) {
 
-        return "";
-      })
-      .filter(Boolean)
-  );
+    if (typeof item === "string") {
+      known.add(
+        item
+          .toLowerCase()
+          .trim()
+      );
+      continue;
+    }
+
+    if (
+      item &&
+      typeof item.word === "string"
+    ) {
+      known.add(
+        item.word
+          .toLowerCase()
+          .trim()
+      );
+    }
+  }
 
   const result = [];
 
   for (const item of items) {
-    if (!item || typeof item !== "object") {
+
+    if (
+      !item ||
+      typeof item !== "object"
+    ) {
       continue;
     }
 
-    const word = cleanText(item.word, 120);
-    const meaning = cleanText(item.meaning, 240);
+    const word =
+      cleanText(item.word, 120);
+
+    const meaning =
+      cleanText(item.meaning, 240);
 
     if (!word || !meaning) {
       continue;
     }
 
-    const key = word.toLowerCase();
+    const key =
+      word.toLowerCase();
 
     if (known.has(key)) {
       continue;
     }
 
-    if (
+    const duplicate =
       result.some(
         existing =>
-          existing.word.toLowerCase() === key
-      )
-    ) {
+          existing.word
+            .toLowerCase() === key
+      );
+
+    if (duplicate) {
       continue;
     }
 
@@ -633,27 +849,47 @@ function cleanVocabulary(items, knownVocabulary = []) {
 
 
 function parseJson(text) {
+
   if (!text) {
-    throw new Error("OpenAI returned an empty response.");
-  }
-
-  let cleaned = text.trim();
-
-  if (cleaned.startsWith("```")) {
-    cleaned = cleaned
-      .replace(/^```(?:json)?/i, "")
-      .replace(/```$/i, "")
-      .trim();
-  }
-
-  const firstBrace = cleaned.indexOf("{");
-  const lastBrace = cleaned.lastIndexOf("}");
-
-  if (firstBrace !== -1 && lastBrace !== -1) {
-    cleaned = cleaned.slice(
-      firstBrace,
-      lastBrace + 1
+    throw new Error(
+      "OpenAI returned an empty response."
     );
+  }
+
+  let cleaned =
+    text.trim();
+
+  if (
+    cleaned.startsWith("```")
+  ) {
+    cleaned =
+      cleaned
+        .replace(
+          /^```(?:json)?/i,
+          ""
+        )
+        .replace(
+          /```$/i,
+          ""
+        )
+        .trim();
+  }
+
+  const firstBrace =
+    cleaned.indexOf("{");
+
+  const lastBrace =
+    cleaned.lastIndexOf("}");
+
+  if (
+    firstBrace !== -1 &&
+    lastBrace !== -1
+  ) {
+    cleaned =
+      cleaned.slice(
+        firstBrace,
+        lastBrace + 1
+      );
   }
 
   return JSON.parse(cleaned);
@@ -661,44 +897,73 @@ function parseJson(text) {
 
 
 function extractOpenAIText(data) {
+
   if (
-    typeof data.output_text === "string" &&
+    typeof data.output_text ===
+      "string" &&
     data.output_text.trim()
   ) {
     return data.output_text.trim();
   }
 
-  if (!Array.isArray(data.output)) {
+  if (
+    !Array.isArray(data.output)
+  ) {
     return "";
   }
 
   const parts = [];
 
-  for (const item of data.output) {
-    if (!Array.isArray(item.content)) {
+  for (
+    const item of data.output
+  ) {
+
+    if (
+      !Array.isArray(
+        item.content
+      )
+    ) {
       continue;
     }
 
-    for (const content of item.content) {
+    for (
+      const content of item.content
+    ) {
+
       if (
         content &&
-        typeof content.text === "string"
+        typeof content.text ===
+          "string"
       ) {
-        parts.push(content.text);
+        parts.push(
+          content.text
+        );
       }
     }
   }
 
-  return parts.join("").trim();
+  return parts
+    .join("")
+    .trim();
 }
 
 
+/*
+==================================================
+NORMALISE AI RESPONSE
+==================================================
+*/
+
 function normaliseCoachResponse(
   parsed,
-  level,
   knownVocabulary
 ) {
-  const reply = cleanText(parsed.reply, 2000);
+
+  const reply =
+    cleanText(
+      parsed.reply,
+      2000
+    );
 
   if (!reply) {
     throw new Error(
@@ -706,25 +971,29 @@ function normaliseCoachResponse(
     );
   }
 
-  const translation = cleanText(
-    parsed.translation,
-    2500
-  );
+  const translation =
+    cleanText(
+      parsed.translation,
+      2500
+    );
 
-  const correction = cleanText(
-    parsed.correction,
-    1200
-  );
+  const correction =
+    cleanText(
+      parsed.correction,
+      1200
+    );
 
-  const correctionExplanation = cleanText(
-    parsed.correctionExplanation,
-    2000
-  );
+  const correctionExplanation =
+    cleanText(
+      parsed.correctionExplanation,
+      2000
+    );
 
-  const vocabulary = cleanVocabulary(
-    parsed.vocabulary,
-    knownVocabulary
-  );
+  const vocabulary =
+    cleanVocabulary(
+      parsed.vocabulary,
+      knownVocabulary
+    );
 
   return {
     reply,
@@ -736,32 +1005,69 @@ function normaliseCoachResponse(
 }
 
 
+/*
+==================================================
+BUILD CONVERSATION INPUT
+==================================================
+*/
+
 function buildConversationInput({
   level,
   topic,
   memory,
   messages
 }) {
-  const safeMessages = Array.isArray(messages)
-    ? messages
-        .filter(
-          message =>
-            message &&
-            (message.role === "user" ||
-              message.role === "assistant") &&
-            typeof message.content === "string"
-        )
-        .slice(-40)
-        .map(message => ({
-          role: message.role,
-          content: cleanText(message.content, 2000)
-        }))
-    : [];
 
-  const memoryText =
+  const safeMessages =
+    Array.isArray(messages)
+      ? messages
+          .filter(
+            message =>
+              message &&
+              (
+                message.role ===
+                  "user" ||
+                message.role ===
+                  "assistant"
+              ) &&
+              typeof message.content ===
+                "string"
+          )
+          .slice(-40)
+          .map(
+            message => ({
+              role:
+                message.role,
+              content:
+                cleanText(
+                  message.content,
+                  2000
+                )
+            })
+          )
+      : [];
+
+  let memoryText = "";
+
+  if (
     typeof memory === "string"
-      ? memory.slice(0, 10000)
-      : JSON.stringify(memory || {}).slice(0, 10000);
+  ) {
+    memoryText =
+      memory.slice(0, 12000);
+  } else {
+
+    try {
+      memoryText =
+        JSON.stringify(
+          memory || {},
+          null,
+          2
+        ).slice(0, 12000);
+    } catch {
+      memoryText =
+        "No learner memory available.";
+    }
+  }
 
   return `
 LEARNER LEVEL:
@@ -771,57 +1077,150 @@ CONVERSATION TOPIC:
 ${topic || "Freies Gespräch"}
 
 LEARNER MEMORY:
-${memoryText || "No previous learning memory available."}
+${memoryText || "No learner memory available."}
 
-CONVERSATION:
+RECENT CONVERSATION:
+${JSON.stringify(
+  safeMessages,
+  null,
+  2
+)}
 
-${JSON.stringify(safeMessages, null, 2)}
+IMPORTANT:
 
-Use the conversation above as context.
+The latest user message is the learner's newest message.
 
-Respond to the learner's latest message.
+Respond to that message.
 
-Remember:
-- Continue the conversation naturally.
-- Adapt to the learner's level.
-- Correct only when useful.
-- Avoid repeated vocabulary.
-- Do not repeat questions unnecessarily.
-- Return only the required JSON.
+Use the learner memory to adapt your response.
+
+Do not repeat vocabulary the learner already knows.
+
+Do not repeat a correction the learner has already understood unless the same mistake appears again.
+
+If the learner repeatedly makes the same kind of mistake, reinforce it briefly.
+
+Continue the conversation naturally.
+
+Return only the required JSON.
 `;
 }
 
 
-async function handleRequest(request, env) {
-  const origin = request.headers.get("Origin");
+/*
+==================================================
+JSON RESPONSE
+==================================================
+*/
+
+function jsonResponse(
+  data,
+  status = 200,
+  origin = ALLOWED_ORIGIN
+) {
+
+  return new Response(
+    JSON.stringify(data),
+    {
+      status,
+
+      headers: {
+        "Content-Type":
+          "application/json; charset=utf-8",
+
+        "Access-Control-Allow-Origin":
+          origin,
+
+        "Access-Control-Allow-Methods":
+          "POST, OPTIONS",
+
+        "Access-Control-Allow-Headers":
+          "Content-Type"
+      }
+    }
+  );
+}
+
+
+/*
+==================================================
+MAIN REQUEST HANDLER
+==================================================
+*/
+
+async function handleRequest(
+  request,
+  env
+) {
+
+  const origin =
+    request.headers.get(
+      "Origin"
+    );
 
   const responseOrigin =
     origin === ALLOWED_ORIGIN
       ? ALLOWED_ORIGIN
       : ALLOWED_ORIGIN;
 
-  if (request.method === "OPTIONS") {
-    return new Response(null, {
-      status: 204,
-      headers: {
-        "Access-Control-Allow-Origin": responseOrigin,
-        "Access-Control-Allow-Methods": "POST, OPTIONS",
-        "Access-Control-Allow-Headers": "Content-Type"
+
+  /*
+  OPTIONS / CORS
+  */
+
+  if (
+    request.method ===
+    "OPTIONS"
+  ) {
+
+    return new Response(
+      null,
+      {
+        status: 204,
+
+        headers: {
+          "Access-Control-Allow-Origin":
+            responseOrigin,
+
+          "Access-Control-Allow-Methods":
+            "POST, OPTIONS",
+
+          "Access-Control-Allow-Headers":
+            "Content-Type"
+        }
       }
-    });
+    );
   }
 
-  if (request.method !== "POST") {
+
+  /*
+  ONLY POST
+  */
+
+  if (
+    request.method !==
+    "POST"
+  ) {
+
     return jsonResponse(
       {
-        error: "Method not allowed."
+        error:
+          "Method not allowed."
       },
       405,
       responseOrigin
     );
   }
 
-  if (!env.OPENAI_API_KEY) {
+
+  /*
+  OPENAI KEY
+  */
+
+  if (
+    !env.OPENAI_API_KEY
+  ) {
+
     return jsonResponse(
       {
         error:
@@ -832,85 +1231,137 @@ async function handleRequest(request, env) {
     );
   }
 
+
+  /*
+  READ REQUEST
+  */
+
   let body;
 
   try {
-    body = await request.json();
+
+    body =
+      await request.json();
+
   } catch {
+
     return jsonResponse(
       {
-        error: "Invalid JSON request body."
+        error:
+          "Invalid JSON request body."
       },
       400,
       responseOrigin
     );
   }
 
-  const level = normaliseLevel(body.level);
 
-  const topic = cleanText(
-    body.topic || "Freies Gespräch",
-    200
-  );
+  /*
+  LEARNER DATA
+  */
+
+  const level =
+    normaliseLevel(
+      body.level
+    );
+
+  const topic =
+    cleanText(
+      body.topic ||
+        "Freies Gespräch",
+      200
+    );
 
   const memory =
     body.memory || {};
 
   const messages =
-    Array.isArray(body.messages)
+    Array.isArray(
+      body.messages
+    )
       ? body.messages
       : [];
 
   const knownVocabulary =
-    Array.isArray(memory.vocabulary)
-      ? memory.vocabulary
-      : [];
+    extractKnownVocabulary(
+      memory
+    );
 
-  const input = buildConversationInput({
-    level,
-    topic,
-    memory,
-    messages
-  });
+
+  /*
+  BUILD PROMPT
+  */
+
+  const input =
+    buildConversationInput({
+      level,
+      topic,
+      memory,
+      messages
+    });
+
+
+  /*
+  CALL OPENAI
+  */
 
   try {
-    const openAIResponse = await fetch(
-      "https://api.openai.com/v1/responses",
-      {
-        method: "POST",
 
-        headers: {
-          "Authorization":
-            `Bearer ${env.OPENAI_API_KEY}`,
-          "Content-Type":
-            "application/json"
-        },
+    const openAIResponse =
+      await fetch(
+        "https://api.openai.com/v1/responses",
+        {
+          method: "POST",
 
-        body: JSON.stringify({
-          model: OPENAI_MODEL,
+          headers: {
+            "Authorization":
+              `Bearer ${env.OPENAI_API_KEY}`,
 
-          instructions:
-            SYSTEM_PROMPT,
+            "Content-Type":
+              "application/json"
+          },
 
-          input,
+          body:
+            JSON.stringify({
 
-          temperature: 0.4,
+              model:
+                OPENAI_MODEL,
 
-          max_output_tokens: 700,
+              instructions:
+                SYSTEM_PROMPT,
 
-          text: {
-            format: {
-              type: "json_object"
-            }
-          }
-        })
-      }
-    );
+              input,
+
+              temperature:
+                0.4,
+
+              max_output_tokens:
+                700,
+
+              text: {
+                format: {
+                  type:
+                    "json_object"
+                }
+              }
+
+            })
+        }
+      );
+
 
     const responseText =
       await openAIResponse.text();
 
-    if (!openAIResponse.ok) {
+
+    /*
+    OPENAI ERROR
+    */
+
+    if (
+      !openAIResponse.ok
+    ) {
+
       console.error(
         "OpenAI API error:",
         responseText
@@ -920,20 +1371,34 @@ async function handleRequest(request, env) {
         {
           error:
             "OpenAI returned an error.",
+
           details:
-            responseText.slice(0, 2000)
+            responseText.slice(
+              0,
+              2000
+            )
         },
         502,
         responseOrigin
       );
     }
 
+
+    /*
+    PARSE OPENAI RESPONSE
+    */
+
     let openAIData;
 
     try {
+
       openAIData =
-        JSON.parse(responseText);
+        JSON.parse(
+          responseText
+        );
+
     } catch {
+
       return jsonResponse(
         {
           error:
@@ -944,12 +1409,21 @@ async function handleRequest(request, env) {
       );
     }
 
+
+    /*
+    EXTRACT TEXT
+    */
+
     const aiText =
-      extractOpenAIText(openAIData);
+      extractOpenAIText(
+        openAIData
+      );
+
 
     if (!aiText) {
+
       console.error(
-        "OpenAI response contained no text:",
+        "No usable OpenAI text:",
         responseText
       );
 
@@ -963,13 +1437,24 @@ async function handleRequest(request, env) {
       );
     }
 
+
+    /*
+    PARSE TUTOR JSON
+    */
+
     let parsed;
 
     try {
-      parsed = parseJson(aiText);
+
+      parsed =
+        parseJson(
+          aiText
+        );
+
     } catch (error) {
+
       console.error(
-        "Could not parse tutor JSON:",
+        "Tutor JSON parse error:",
         aiText
       );
 
@@ -977,6 +1462,7 @@ async function handleRequest(request, env) {
         {
           error:
             "The AI returned an invalid tutor response.",
+
           details:
             error.message
         },
@@ -985,12 +1471,21 @@ async function handleRequest(request, env) {
       );
     }
 
+
+    /*
+    NORMALISE
+    */
+
     const result =
       normaliseCoachResponse(
         parsed,
-        level,
         knownVocabulary
       );
+
+
+    /*
+    SUCCESS
+    */
 
     return jsonResponse(
       result,
@@ -999,6 +1494,7 @@ async function handleRequest(request, env) {
     );
 
   } catch (error) {
+
     console.error(
       "Worker error:",
       error
@@ -1008,6 +1504,7 @@ async function handleRequest(request, env) {
       {
         error:
           "The AI service could not be reached.",
+
         details:
           error.message
       },
@@ -1018,11 +1515,24 @@ async function handleRequest(request, env) {
 }
 
 
+/*
+==================================================
+CLOUDFLARE WORKER ENTRY
+==================================================
+*/
+
 export default {
-  async fetch(request, env) {
+
+  async fetch(
+    request,
+    env
+  ) {
+
     return handleRequest(
       request,
       env
     );
+
   }
+
 };
