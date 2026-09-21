@@ -18,49 +18,83 @@ const LEVEL_RULES = {
 
   A1: `
 Use very simple German.
-Short sentences.
-Common everyday vocabulary.
+
+Use short sentences.
+
+Use common everyday vocabulary.
+
 Ask simple questions.
-Avoid unnecessary grammar complexity.
+
+Avoid unnecessary grammatical complexity.
+
+Prioritize communication over perfect sophistication.
 `,
 
   A2: `
 Use simple but natural German.
+
 Use common everyday vocabulary.
-Introduce slightly longer sentences.
-Use basic past and future structures when appropriate.
+
+Use somewhat longer sentences.
+
+Use basic past and future structures when useful.
+
+Do not overwhelm the learner.
 `,
 
   B1: `
 Use natural conversational German.
+
 Use moderately complex sentences.
-Encourage the learner to explain opinions and experiences.
-Use common connectors and useful vocabulary.
+
+Encourage the learner to explain experiences and opinions.
+
+Use common connectors.
+
+Introduce useful vocabulary naturally.
 `,
 
   B2: `
 Use fluent natural German.
-Use more precise vocabulary and varied sentence structures.
+
+Use more precise vocabulary.
+
+Use varied sentence structures.
+
 Encourage explanations, comparisons and opinions.
+
 Avoid unnecessarily academic language.
 `,
 
   C1: `
 Use sophisticated but natural German.
-Use nuanced vocabulary and complex sentence structures.
+
+Use nuanced vocabulary.
+
+Use complex but natural sentence structures.
+
 Discuss abstract ideas when appropriate.
-Prioritize natural expression and precision.
+
+Prioritize precision and natural expression.
 `,
 
   C2: `
 Use highly natural and precise German.
-Allow sophisticated vocabulary, nuanced phrasing and complex structures.
+
+Allow sophisticated vocabulary and nuanced phrasing.
+
+Use complex structures naturally.
+
 Do not simplify unnecessarily unless the learner clearly needs help.
 `
+
 };
 
 
-function cleanText(value, maxLength = 5000) {
+function cleanText(
+  value,
+  maxLength = 5000
+) {
 
   if (
     typeof value !== "string"
@@ -70,29 +104,42 @@ function cleanText(value, maxLength = 5000) {
 
   }
 
+
   return value
     .replace(/\u0000/g, "")
     .trim()
-    .slice(0, maxLength);
+    .slice(
+      0,
+      maxLength
+    );
 
 }
 
 
-function normaliseLevel(level) {
+function normaliseLevel(
+  level
+) {
 
   const value =
-    String(level || "A1")
-      .toUpperCase()
-      .trim();
+    String(
+      level || "A1"
+    )
+    .toUpperCase()
+    .trim();
 
-  return VALID_LEVELS.includes(value)
+
+  return VALID_LEVELS.includes(
+    value
+  )
     ? value
     : "A1";
 
 }
 
 
-function extractKnownVocabulary(memory) {
+function extractKnownVocabulary(
+  memory
+) {
 
   if (
     !memory ||
@@ -105,6 +152,7 @@ function extractKnownVocabulary(memory) {
 
   }
 
+
   return memory.knownVocabulary
     .filter(
       item =>
@@ -115,7 +163,7 @@ function extractKnownVocabulary(memory) {
         item.trim()
     )
     .filter(Boolean)
-    .slice(-100);
+    .slice(-120);
 
 }
 
@@ -126,7 +174,9 @@ function cleanVocabulary(
 ) {
 
   if (
-    !Array.isArray(vocabulary)
+    !Array.isArray(
+      vocabulary
+    )
   ) {
 
     return [];
@@ -195,12 +245,16 @@ function cleanVocabulary(
     }
 
 
-    if (
+    const duplicate =
       output.some(
         existing =>
           existing.word.toLowerCase() ===
           word.toLowerCase()
-      )
+      );
+
+
+    if (
+      duplicate
     ) {
 
       continue;
@@ -247,25 +301,29 @@ function cleanLearning(
   }
 
 
-  const skillId =
+  const rawSkillId =
     cleanText(
       learning.skillId,
       100
-    )
-    .replace(
-      /[^a-zA-Z0-9_-]/g,
-      "_"
     );
 
 
-  if (!skillId) {
+  const skillId =
+    rawSkillId
+      .replace(
+        /[^a-zA-Z0-9_-]/g,
+        "_"
+      );
 
-    return null;
 
-  }
+  const label =
+    cleanText(
+      learning.label,
+      120
+    );
 
 
-  const allowedOutcomes = [
+  const validOutcomes = [
     "mistake",
     "correct",
     "none"
@@ -273,22 +331,27 @@ function cleanLearning(
 
 
   const outcome =
-    allowedOutcomes.includes(
+    validOutcomes.includes(
       learning.outcome
     )
       ? learning.outcome
       : "none";
 
 
+  if (
+    !skillId
+  ) {
+
+    return null;
+
+  }
+
+
   return {
 
     skillId,
 
-    label:
-      cleanText(
-        learning.label,
-        120
-      ),
+    label,
 
     outcome
 
@@ -297,24 +360,28 @@ function cleanLearning(
 }
 
 
-function parseJson(text) {
+function parseJson(
+  text
+) {
 
   const cleaned =
-    String(text || "")
-      .trim()
-      .replace(
-        /^```json/i,
-        ""
-      )
-      .replace(
-        /^```/i,
-        ""
-      )
-      .replace(
-        /```$/i,
-        ""
-      )
-      .trim();
+    String(
+      text || ""
+    )
+    .trim()
+    .replace(
+      /^```json/i,
+      ""
+    )
+    .replace(
+      /^```/i,
+      ""
+    )
+    .replace(
+      /```$/i,
+      ""
+    )
+    .trim();
 
 
   try {
@@ -326,10 +393,15 @@ function parseJson(text) {
   } catch {
 
     const start =
-      cleaned.indexOf("{");
+      cleaned.indexOf(
+        "{"
+      );
+
 
     const end =
-      cleaned.lastIndexOf("}");
+      cleaned.lastIndexOf(
+        "}"
+      );
 
 
     if (
@@ -348,7 +420,7 @@ function parseJson(text) {
 
 
     throw new Error(
-      "OpenAI returned invalid JSON."
+      "Invalid JSON returned by OpenAI."
     );
 
   }
@@ -356,10 +428,13 @@ function parseJson(text) {
 }
 
 
-function extractOpenAIText(data) {
+function extractOpenAIText(
+  data
+) {
 
   if (
-    typeof data.output_text === "string"
+    typeof data.output_text ===
+    "string"
   ) {
 
     return data.output_text;
@@ -368,54 +443,57 @@ function extractOpenAIText(data) {
 
 
   if (
-    Array.isArray(data.output)
+    !Array.isArray(
+      data.output
+    )
   ) {
 
-    const parts = [];
+    return "";
+
+  }
 
 
-    for (
-      const item of data.output
+  const parts = [];
+
+
+  for (
+    const item of data.output
+  ) {
+
+    if (
+      !Array.isArray(
+        item.content
+      )
     ) {
 
-      if (
-        !Array.isArray(item.content)
-      ) {
-
-        continue;
-
-      }
-
-
-      for (
-        const content of item.content
-      ) {
-
-        if (
-          typeof content.text === "string"
-        ) {
-
-          parts.push(
-            content.text
-          );
-
-        }
-
-      }
+      continue;
 
     }
 
 
-    if (parts.length) {
+    for (
+      const content of item.content
+    ) {
 
-      return parts.join("\n");
+      if (
+        typeof content.text ===
+        "string"
+      ) {
+
+        parts.push(
+          content.text
+        );
+
+      }
 
     }
 
   }
 
 
-  return "";
+  return parts.join(
+    "\n"
+  );
 
 }
 
@@ -425,24 +503,17 @@ function normaliseCoachResponse(
   knownVocabulary
 ) {
 
-  const vocabulary =
-    cleanVocabulary(
-      response.vocabulary,
-      knownVocabulary
-    );
-
-
   const correction =
     cleanText(
       response.correction,
-      1000
+      1200
     );
 
 
   const correctionExplanation =
     cleanText(
       response.correctionExplanation,
-      1000
+      1200
     );
 
 
@@ -464,13 +535,13 @@ function normaliseCoachResponse(
     reply:
       cleanText(
         response.reply,
-        3000
+        3500
       ),
 
     translation:
       cleanText(
         response.translation,
-        2000
+        2200
       ),
 
     correction,
@@ -479,7 +550,11 @@ function normaliseCoachResponse(
 
     correctionType,
 
-    vocabulary,
+    vocabulary:
+      cleanVocabulary(
+        response.vocabulary,
+        knownVocabulary
+      ),
 
     learning
 
@@ -500,11 +575,11 @@ function buildSystemPrompt(
     );
 
 
-  const previousMistakes =
+  const mistakes =
     Array.isArray(
       memory?.mistakes
     )
-      ? memory.mistakes
+      ? memory.mistakes.slice(-60)
       : [];
 
 
@@ -512,7 +587,7 @@ function buildSystemPrompt(
     Array.isArray(
       memory?.skills
     )
-      ? memory.skills
+      ? memory.skills.slice(-60)
       : [];
 
 
@@ -520,7 +595,7 @@ function buildSystemPrompt(
     Array.isArray(
       memory?.recentTopics
     )
-      ? memory.recentTopics
+      ? memory.recentTopics.slice(-10)
       : [];
 
 
@@ -528,7 +603,7 @@ function buildSystemPrompt(
     Array.isArray(
       memory?.recentQuestions
     )
-      ? memory.recentQuestions
+      ? memory.recentQuestions.slice(-10)
       : [];
 
 
@@ -539,139 +614,210 @@ The learner's selected CEFR level is ${level}.
 
 ${LEVEL_RULES[level]}
 
-Current conversation topic:
+Current topic:
 ${topic || "Free conversation"}
 
-Your job is to behave like a natural human-like German conversation partner AND an intelligent language tutor.
+Your primary goal is to make the learner better at German through natural conversation.
 
-IMPORTANT:
-The learner's selected level is the target difficulty.
-Do not suddenly use unnecessarily difficult language simply because higher-level rules exist elsewhere in this prompt.
+You are both:
+
+1. A natural conversation partner.
+2. An intelligent adaptive German tutor.
 
 ========================================
-CONVERSATION
+NATURAL CONVERSATION
 ========================================
 
 Respond directly to what the learner actually said.
 
-Do not always ask the same type of question.
+React to meaning before teaching grammar.
 
-Avoid repetitive:
+Do not turn every message into a lesson.
+
+Do not ask a question after every sentence automatically.
+
+Do not repeatedly ask:
+
 "Wie geht es dir?"
+
 "Was machst du heute?"
+
 "Warum?"
 
-Use natural follow-up questions only when they help the conversation.
+Use varied and natural follow-up questions.
 
-If the learner says something interesting, react to it.
+If the learner gives an opinion, engage with the opinion.
 
-Do not turn every message into a grammar lesson.
+If the learner tells a story, react to the story.
 
-The conversation should feel natural.
+If the learner asks a question, answer it.
+
+If the learner wants information, provide useful information.
+
+Keep the conversation alive without forcing it.
+
+Normally use 1–4 German sentences.
 
 ========================================
-CORRECTION INTELLIGENCE
+CORRECTION
 ========================================
 
-Correct meaningful mistakes.
+Correct meaningful errors.
 
-Possible mistake types include:
+Possible categories:
 
-- grammar
-- word order
-- article
-- case
-- verb form
-- spelling
-- capitalization
-- vocabulary
-- word confusion
-- unnatural phrasing
-- collocation
-- register/style
+grammar
 
-Do NOT correct a sentence that is already correct and natural.
+word order
 
-Do NOT invent mistakes.
+case
 
-Do not over-focus on capitalization.
+article
 
-Distinguish between:
+verb form
+
+vocabulary
+
+word confusion
+
+spelling
+
+capitalization
+
+naturalness
+
+collocation
+
+style/register
+
+Only correct when correction provides real learning value.
+
+Do NOT invent errors.
+
+Do NOT correct a sentence merely because another version is possible.
+
+If the sentence is correct and natural:
+
+correction = ""
+
+correctionExplanation = ""
+
+correctionType = "none"
+
+Do not repeatedly correct the same already-mastered structure.
+
+Capitalization should not dominate the lesson.
+
+========================================
+TYPO VS WORD CONFUSION
+========================================
+
+Distinguish:
 
 1. Typo
-2. Vocabulary/word confusion
+2. Wrong vocabulary
 3. Grammar error
-4. Unnatural but grammatically possible phrasing
+4. Unnatural expression
 
-If the learner's sentence is correct, leave correction empty.
+Example:
+
+"Ich bin Gott."
+
+If context strongly suggests the learner intended:
+
+"Ich bin gut."
+
+Treat this as likely word confusion/typo rather than inventing a strange grammar lesson.
 
 ========================================
-ADAPTIVE LEARNING
+PERSISTENT LEARNER MEMORY
 ========================================
 
 The learner has a persistent learning profile.
 
 Known vocabulary:
+
 ${JSON.stringify(
   knownVocabulary
 )}
 
 Previous mistakes:
+
 ${JSON.stringify(
-  previousMistakes
+  mistakes
 )}
 
-Tracked learning skills:
+Learning skills:
+
 ${JSON.stringify(
   skills
 )}
 
 Recent topics:
+
 ${JSON.stringify(
   recentTopics
 )}
 
-Recent questions asked by the coach:
+Recent coach questions:
+
 ${JSON.stringify(
   recentQuestions
 )}
 
-Use this information intelligently.
+Use this information.
 
-If the learner repeatedly makes the same type of mistake, recognize the pattern.
+The learner should NOT feel like they are starting from zero every conversation.
+
+========================================
+REPEATED MISTAKES
+========================================
+
+If the learner repeats the same type of mistake, reinforce the existing learning point.
 
 Example:
 
 First:
+
 "mit meine Freunde"
 
-Correct:
+Correction:
+
 "mit meinen Freunden"
 
 Later:
+
 "mit meine Eltern"
 
-The correction should reinforce the existing pattern instead of giving a completely unrelated explanation.
+Recognize the same underlying skill:
 
-For example:
+case_dative_after_mit
+
+A useful reinforcement might be:
+
 "Fast richtig: mit meinen Eltern. Remember: mit takes the dative."
 
-However, if the learner later correctly says:
-"mit meinen Freunden"
+Do not create a new unrelated skill ID for the same concept.
 
-do NOT correct it again.
+========================================
+CORRECT REINFORCEMENT
+========================================
 
-Instead, mark the related learning skill as a correct use.
+If the learner correctly uses a previously problematic structure, do NOT correct it.
+
+Instead mark that learning skill as:
+
+outcome = "correct"
 
 Do not claim mastery after one correct use.
 
-The frontend will track repeated success.
+The frontend tracks repeated successful uses.
 
 ========================================
-LEARNING SKILLS
+STABLE LEARNING SKILLS
 ========================================
 
-When a meaningful grammar or language skill is involved, identify ONE stable skill.
+Use stable skill IDs.
 
 Examples:
 
@@ -683,9 +829,11 @@ subordinate_clause_verb_position
 
 article_accusative_masculine
 
-past_tense_auxiliary
+article_dative
 
 verb_conjugation
+
+past_tense_auxiliary
 
 preposition_case
 
@@ -699,13 +847,15 @@ collocation
 
 natural_expression
 
-If no meaningful skill is involved, use:
+If there is no meaningful learning skill:
 
-skillId: ""
+skillId = ""
 
-outcome: "none"
+label = ""
 
-If the learner made a mistake involving the skill:
+outcome = "none"
+
+If the learner makes a mistake:
 
 outcome = "mistake"
 
@@ -717,56 +867,77 @@ Otherwise:
 
 outcome = "none"
 
-Use stable skill IDs.
-
-Do not create a different skill ID every time the same grammar concept appears.
+Only identify ONE main learning skill per message.
 
 ========================================
 VOCABULARY
 ========================================
 
-Suggest only useful vocabulary.
+Teach useful vocabulary naturally.
 
-Do not teach words the learner already knows.
+Do not teach vocabulary already known.
 
-Do not add obvious beginner words just because they appeared.
+Do not teach obvious words simply because they appeared.
 
-Useful vocabulary can include:
+Useful vocabulary can be:
 
-- individual words
-- phrases
-- collocations
-- natural expressions
+individual words
 
-Maximum 3 new vocabulary items.
+phrases
 
-If there is an important correction, vocabulary can be 0–2 items.
+collocations
+
+idiomatic expressions
+
+natural conversational expressions
+
+Maximum 3 items.
+
+If there is an important correction, use 0–2 vocabulary items.
 
 ========================================
 TRANSLATION
 ========================================
 
-Provide a natural English translation of your German reply.
+Provide a natural English translation of your German response.
 
-Do not translate word-for-word if that sounds unnatural.
-
-========================================
-RESPONSE STYLE
-========================================
-
-Keep replies concise enough for conversation.
-
-Normally respond with around 1–4 German sentences.
-
-Do not write essays unless the learner clearly asks for one.
+Translate meaning, not word-for-word structure.
 
 ========================================
-OUTPUT
+LEVEL ADAPTATION
+========================================
+
+The selected CEFR level is:
+
+${level}
+
+Follow that level.
+
+Do not use unnecessarily advanced language with A1 learners.
+
+Do not artificially simplify C1/C2 conversation.
+
+The learner's actual mistakes should influence explanations, not automatically lower the whole conversation level.
+
+========================================
+TOPIC ADAPTATION
+========================================
+
+Current topic:
+
+${topic || "Free conversation"}
+
+Use the topic as guidance, not as a rigid requirement.
+
+The learner may naturally change topics.
+
+========================================
+OUTPUT FORMAT
 ========================================
 
 Return ONLY valid JSON.
 
-Use exactly this structure:
+Use exactly:
 
 {
   "reply": "German response",
@@ -782,15 +953,16 @@ Use exactly this structure:
   ],
   "learning": {
     "skillId": "stable_skill_id_or_empty",
-    "label": "Short skill name or empty string",
+    "label": "Short human-readable skill name or empty string",
     "outcome": "mistake|correct|none"
   }
 }
 
-Do not include markdown.
+No markdown.
 
-Do not include comments outside JSON.
+No commentary outside JSON.
 `;
+
 }
 
 
@@ -798,13 +970,18 @@ function buildConversationInput(
   messages
 ) {
 
-  const safeMessages =
-    Array.isArray(messages)
-      ? messages
-      : [];
+  if (
+    !Array.isArray(
+      messages
+    )
+  ) {
+
+    return [];
+
+  }
 
 
-  return safeMessages
+  return messages
     .slice(-40)
     .map(
       message => {
@@ -828,6 +1005,10 @@ function buildConversationInput(
         };
 
       }
+    )
+    .filter(
+      message =>
+        message.content
     );
 
 }
@@ -839,7 +1020,9 @@ function jsonResponse(
 ) {
 
   return new Response(
-    JSON.stringify(body),
+    JSON.stringify(
+      body
+    ),
     {
 
       status,
@@ -872,7 +1055,8 @@ async function handleRequest(
 ) {
 
   if (
-    request.method === "OPTIONS"
+    request.method ===
+    "OPTIONS"
   ) {
 
     return new Response(
@@ -901,7 +1085,8 @@ async function handleRequest(
 
 
   if (
-    request.method !== "POST"
+    request.method !==
+    "POST"
   ) {
 
     return jsonResponse(
@@ -987,7 +1172,8 @@ async function handleRequest(
 
   const memory =
     body.memory &&
-    typeof body.memory === "object"
+    typeof body.memory ===
+      "object"
       ? body.memory
       : {};
 
@@ -1007,10 +1193,17 @@ async function handleRequest(
       role: "developer",
 
       content: [
+
         {
-          type: "input_text",
-          text: systemPrompt
+
+          type:
+            "input_text",
+
+          text:
+            systemPrompt
+
         }
+
       ]
 
     },
@@ -1026,7 +1219,8 @@ async function handleRequest(
           {
 
             type:
-              message.role === "user"
+              message.role ===
+              "user"
                 ? "input_text"
                 : "output_text",
 
@@ -1043,52 +1237,75 @@ async function handleRequest(
   ];
 
 
-  const openaiResponse =
-    await fetch(
-      "https://api.openai.com/v1/responses",
-      {
+  let openaiResponse;
 
-        method: "POST",
 
-        headers: {
+  try {
 
-          "Content-Type":
-            "application/json",
+    openaiResponse =
+      await fetch(
+        "https://api.openai.com/v1/responses",
+        {
 
-          "Authorization":
-            `Bearer ${env.OPENAI_API_KEY}`
+          method: "POST",
 
-        },
+          headers: {
 
-        body:
-          JSON.stringify({
+            "Content-Type":
+              "application/json",
 
-            model:
-              OPENAI_MODEL,
+            "Authorization":
+              `Bearer ${env.OPENAI_API_KEY}`
 
-            input,
+          },
 
-            temperature:
-              0.4,
+          body:
+            JSON.stringify({
 
-            max_output_tokens:
-              700,
+              model:
+                OPENAI_MODEL,
 
-            text: {
+              input,
 
-              format: {
+              temperature:
+                0.4,
 
-                type:
-                  "json_object"
+              max_output_tokens:
+                700,
+
+              text: {
+
+                format: {
+
+                  type:
+                    "json_object"
+
+                }
 
               }
 
-            }
+            })
 
-          })
+        }
+      );
 
-      }
+  } catch (error) {
+
+    console.error(
+      "OpenAI network error:",
+      error
     );
+
+
+    return jsonResponse(
+      {
+        error:
+          "Could not connect to the AI service."
+      },
+      502
+    );
+
+  }
 
 
   const raw =
@@ -1100,7 +1317,7 @@ async function handleRequest(
   ) {
 
     console.error(
-      "OpenAI error:",
+      "OpenAI API error:",
       raw
     );
 
@@ -1122,14 +1339,16 @@ async function handleRequest(
   try {
 
     openaiData =
-      JSON.parse(raw);
+      JSON.parse(
+        raw
+      );
 
   } catch {
 
     return jsonResponse(
       {
         error:
-          "Invalid response from AI service."
+          "The AI service returned invalid data."
       },
       502
     );
@@ -1143,7 +1362,9 @@ async function handleRequest(
     );
 
 
-  if (!outputText) {
+  if (
+    !outputText
+  ) {
 
     return jsonResponse(
       {
@@ -1156,12 +1377,12 @@ async function handleRequest(
   }
 
 
-  let coachResponse;
+  let parsed;
 
 
   try {
 
-    coachResponse =
+    parsed =
       parseJson(
         outputText
       );
@@ -1169,8 +1390,9 @@ async function handleRequest(
   } catch (error) {
 
     console.error(
-      "JSON parse error:",
-      error.message
+      "AI JSON parsing error:",
+      error.message,
+      outputText
     );
 
 
@@ -1193,9 +1415,24 @@ async function handleRequest(
 
   const result =
     normaliseCoachResponse(
-      coachResponse,
+      parsed,
       knownVocabulary
     );
+
+
+  if (
+    !result.reply
+  ) {
+
+    return jsonResponse(
+      {
+        error:
+          "The AI returned an empty reply."
+      },
+      502
+    );
+
+  }
 
 
   return jsonResponse(
@@ -1222,7 +1459,7 @@ export default {
     } catch (error) {
 
       console.error(
-        "Worker error:",
+        "Unhandled Worker error:",
         error
       );
 
