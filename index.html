@@ -1127,42 +1127,102 @@ through natural conversation.
 }
 
 
-function addVocabulary(items) {
+/*
+ * Return true when the learner
+ * already knows this word.
+ */
+function isKnownVocabulary(word) {
 
-  if (!Array.isArray(items)) {
-    return;
+  if (!word) {
+    return false;
   }
 
 
-  items.forEach(item => {
-
-    if (
-      !item ||
-      !item.word ||
-      !item.meaning
-    ) {
-      return;
-    }
+  const normalized =
+    String(word)
+      .trim()
+      .toLowerCase();
 
 
-    const existing =
-      data.vocabulary.find(
-        entry =>
-          entry.word
-            .toLowerCase() ===
-          item.word
-            .toLowerCase()
-      );
+  return data.vocabulary.some(
+    item =>
+      String(item.word)
+        .trim()
+        .toLowerCase() ===
+      normalized
+  );
+}
 
 
-    if (existing) {
+/*
+ * Remove vocabulary that the learner
+ * has already learned.
+ */
+function filterNewVocabulary(items) {
 
-      existing.meaning =
-        item.meaning;
+  if (!Array.isArray(items)) {
+    return [];
+  }
 
-      return;
-    }
 
+  const seen =
+    new Set();
+
+
+  return items
+    .filter(item => {
+
+      if (
+        !item ||
+        !item.word ||
+        !item.meaning
+      ) {
+        return false;
+      }
+
+
+      const word =
+        String(item.word)
+          .trim();
+
+
+      const normalized =
+        word.toLowerCase();
+
+
+      if (
+        !word ||
+        seen.has(normalized)
+      ) {
+        return false;
+      }
+
+
+      if (
+        isKnownVocabulary(word)
+      ) {
+        return false;
+      }
+
+
+      seen.add(normalized);
+
+      return true;
+
+    })
+    .slice(0, 3);
+}
+
+
+function addVocabulary(items) {
+
+  const newItems =
+    filterNewVocabulary(
+      items
+    );
+
+
+  newItems.forEach(item => {
 
     data.vocabulary.unshift({
 
@@ -1667,9 +1727,6 @@ async function sendMessage() {
   updateStreak();
 
 
-  /*
-   * Add user message locally.
-   */
   data.messages.push({
 
     role:
@@ -1745,8 +1802,17 @@ async function sendMessage() {
 
 
     /*
-     * Store assistant message.
+     * Only display genuinely new vocabulary.
+     *
+     * This prevents words such as "heute"
+     * from appearing again and again.
      */
+    const newVocabulary =
+      filterNewVocabulary(
+        result.vocabulary || []
+      );
+
+
     data.messages.push({
 
       role:
@@ -1765,7 +1831,7 @@ async function sendMessage() {
         result.correctionExplanation,
 
       vocabulary:
-        result.vocabulary || []
+        newVocabulary
 
     });
 
@@ -1789,13 +1855,10 @@ async function sendMessage() {
 
 
     addVocabulary(
-      result.vocabulary
+      newVocabulary
     );
 
 
-    /*
-     * Keep conversation history manageable.
-     */
     if (
       data.messages.length > 60
     ) {
@@ -1824,10 +1887,6 @@ async function sendMessage() {
       "Bereit";
 
 
-    /*
-     * Hands-free mode:
-     * speak the answer and then listen again.
-     */
     if (
       data.handsFree &&
       result.reply
@@ -1873,10 +1932,6 @@ async function sendMessage() {
 
   } catch (error) {
 
-    /*
-     * Remove the unsent user message
-     * if the request failed.
-     */
     data.messages =
       data.messages.filter(
         (message, index) =>
@@ -2148,9 +2203,6 @@ function resetData() {
 }
 
 
-/*
- * Level changes.
- */
 level.addEventListener(
   "change",
   () => {
@@ -2166,9 +2218,6 @@ level.addEventListener(
 );
 
 
-/*
- * Send with Enter.
- */
 input.addEventListener(
   "keydown",
   event => {
@@ -2188,9 +2237,6 @@ input.addEventListener(
 );
 
 
-/*
- * Topic selection.
- */
 document
   .querySelectorAll(
     ".topic"
@@ -2301,9 +2347,6 @@ document
   );
 
 
-/*
- * Restore saved level/topic.
- */
 level.value =
   data.level || "A1";
 
