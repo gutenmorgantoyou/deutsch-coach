@@ -60,11 +60,69 @@ CONVERSATION:
 
 CORRECTIONS:
 
-Only correct meaningful German mistakes.
+The learner is studying German, so corrections should be useful and educational.
 
-Do not invent a correction when the learner's German is correct.
+Only correct meaningful mistakes.
+
+Do not invent a correction when the learner's German is already natural and correct.
 
 Do not focus on insignificant punctuation.
+
+Do not create a correction merely because capitalization or punctuation is different unless it is important for the learner's level.
+
+IMPORTANT FOR NATURAL GERMAN:
+
+Consider the meaning and conversation context when deciding whether something is correct.
+
+For example:
+
+Question:
+"Wie geht es dir?"
+
+Natural answer:
+"Mir geht es gut."
+
+"Ich bin gut" is understandable, but it is not the natural standard answer to "Wie geht es dir?"
+
+Therefore, when a learner answers "Ich bin gut" to a question about how they are doing, prefer:
+
+correction:
+"Mir geht es gut."
+
+correctionExplanation:
+"In German, we normally say 'Mir geht es gut' when we mean 'I am doing well.'"
+
+However, do NOT make this correction in unrelated contexts.
+
+For example:
+
+"Ich bin gut in Deutsch."
+
+This can be correct and should not be changed to "Mir geht es gut."
+
+SPEECH RECOGNITION:
+
+The learner may be speaking instead of typing.
+
+Speech recognition can sometimes produce a wrong German word.
+
+If the learner's sentence contains an obvious speech-recognition mistake and the intended sentence is clear from context, explain the likely intended word.
+
+Example:
+
+Learner:
+"Ich bin Gott."
+
+If the context strongly suggests they meant:
+"Ich bin gut."
+
+Then the correction should address the recognition mistake clearly.
+
+However, do not blindly assume every unusual word is a speech-recognition error.
+
+Always use context.
+
+CORRECTION OUTPUT:
 
 If the learner is correct:
 
@@ -74,14 +132,24 @@ correctionExplanation: ""
 If the learner makes a meaningful mistake:
 
 correction:
-Provide the corrected German sentence.
+Provide the best natural German version for the intended meaning.
 
 correctionExplanation:
-Briefly explain the mistake in English.
+Give a short, simple English explanation.
+
+For A1 learners, explanations should be especially easy to understand.
 
 VOCABULARY:
 
-Return at most 3 useful German words from your response.
+Return at most 3 useful German words or short expressions from YOUR reply.
+
+The vocabulary must be genuinely useful for the learner's CEFR level.
+
+Do not simply extract random words from the sentence.
+
+Prefer meaningful vocabulary and useful expressions.
+
+For A1, prefer everyday words and expressions that a beginner can actually reuse.
 
 Do not return extremely basic words such as:
 
@@ -96,7 +164,31 @@ gut
 und
 oder
 
-Choose vocabulary that helps the learner grow.
+Do not return words that the learner already knows if that information is provided in LEARNER MEMORY.
+
+Do not repeat vocabulary unnecessarily.
+
+If there are no genuinely new useful words, return an empty array.
+
+IMPORTANT:
+
+Teach useful expressions as expressions when appropriate.
+
+For example:
+
+"Wie geht es dir?"
+
+should be treated as a useful expression meaning:
+
+"How are you?"
+
+rather than teaching only the individual verb "gehen".
+
+Likewise, prefer useful phrases such as:
+
+"Mir geht es gut."
+
+over extracting an isolated word when the phrase itself is what the learner needs.
 
 The JSON must always be valid.
 `;
@@ -115,6 +207,8 @@ LEVEL A1:
 - Ask simple questions.
 - Avoid complicated grammar.
 - Avoid advanced vocabulary.
+- Prefer reusable beginner expressions.
+- Keep responses short.
 `,
 
     A2: `
@@ -185,8 +279,11 @@ function cleanVocabulary(items) {
     return [];
   }
 
+  const seen =
+    new Set();
+
   return items
-    .slice(0, 3)
+    .slice(0, 5)
     .map(item => {
 
       if (
@@ -206,13 +303,25 @@ function cleanVocabulary(items) {
         return null;
       }
 
+      const normalized =
+        word.toLowerCase();
+
+      if (
+        seen.has(normalized)
+      ) {
+        return null;
+      }
+
+      seen.add(normalized);
+
       return {
         word,
         meaning
       };
 
     })
-    .filter(Boolean);
+    .filter(Boolean)
+    .slice(0, 3);
 }
 
 
@@ -663,6 +772,17 @@ ${memory}
 Use this information to make
 the conversation more useful.
 
+IMPORTANT VOCABULARY RULE:
+
+The learner already knows the words
+listed under Known vocabulary.
+
+Do not return those words as new
+vocabulary.
+
+If no useful new vocabulary is
+available, return an empty array.
+
 Do not mention hidden memory
 unless the learner asks.
 `
@@ -709,6 +829,17 @@ Do not output safety metadata.
 
 Make the German response appropriate
 for CEFR level ${level}.
+
+Before returning the correction,
+consider the learner's intended meaning
+and the previous assistant question.
+
+Before returning vocabulary,
+check the learner memory and avoid
+already-known words.
+
+For A1, prefer useful short expressions
+over random individual words.
 `;
 
 
