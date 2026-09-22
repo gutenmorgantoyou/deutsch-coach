@@ -1,3840 +1,2076 @@
 <!DOCTYPE html>
 <html lang="de">
-
 <head>
-<meta charset="UTF-8">
-
-<meta
-  name="viewport"
-  content="width=device-width, initial-scale=1.0, viewport-fit=cover"
->
-
-<meta
-  name="theme-color"
-  content="#f5f5f5"
->
-
-<title>Deutsch Coach 🇩🇪</title>
-
-<style>
-
-* {
-  box-sizing: border-box;
-}
-
-body {
-  margin: 0;
-  font-family: Arial, sans-serif;
-  background: #f5f5f5;
-  color: #222;
-}
-
-.app {
-  max-width: 700px;
-  margin: 0 auto;
-  padding: 16px;
-}
-
-h1 {
-  margin: 4px 0 20px;
-  font-size: 28px;
-}
-
-h2 {
-  font-size: 18px;
-  margin: 0 0 12px;
-}
-
-.card {
-  background: white;
-  border-radius: 16px;
-  padding: 18px;
-  margin-bottom: 16px;
-
-  box-shadow:
-    0 2px 12px rgba(0,0,0,.06);
-}
-
-select,
-textarea,
-button {
-  font: inherit;
-}
-
-select,
-textarea {
-  width: 100%;
-  padding: 12px;
-  border: 1px solid #ccc;
-  border-radius: 10px;
-  background: white;
-  font-size: 16px;
-}
-
-textarea {
-  min-height: 80px;
-  resize: vertical;
-}
-
-button {
-  border: none;
-  border-radius: 12px;
-  padding: 12px 15px;
-  background: #222;
-  color: white;
-  cursor: pointer;
-  min-height: 46px;
-}
-
-button.secondary {
-  background: #eee;
-  color: #222;
-}
-
-button.success {
-  background: #2e7d32;
-}
-
-button.danger {
-  background: #b3261e;
-}
-
-button.recording {
-  background: #b3261e;
-}
-
-button:disabled {
-  opacity: .5;
-  cursor: not-allowed;
-}
-
-.level-description,
-.small,
-.status {
-  font-size: 14px;
-  color: #666;
-}
-
-.level-description {
-  margin-top: 8px;
-}
-
-.topic-grid,
-.button-row,
-.stats {
-  display: grid;
-  gap: 8px;
-}
-
-.topic-grid {
-  grid-template-columns:
-    repeat(2, 1fr);
-}
-
-.button-row {
-  grid-template-columns:
-    repeat(2, minmax(0, 1fr));
-
-  margin-top: 10px;
-}
-
-.button-row.three {
-  grid-template-columns:
-    repeat(3, minmax(0, 1fr));
-}
-
-.topic {
-  background: #f2f2f2;
-  color: #222;
-}
-
-.topic.active {
-  background: #222;
-  color: white;
-}
-
-.message {
-  padding: 13px;
-  border-radius: 12px;
-  margin: 10px 0;
-
-  white-space: pre-wrap;
-  overflow-wrap: anywhere;
-}
-
-.coach {
-  background: #f1f1f1;
-}
-
-.user {
-  background: #e7f1ff;
-}
-
-.message-label {
-  font-weight: bold;
-  margin-bottom: 6px;
-}
-
-.translation {
-  color: #666;
-  font-size: 14px;
-  margin-top: 8px;
-}
-
-.correction {
-  background: #fff8df;
-  border-left: 4px solid #d59b00;
-
-  padding: 12px;
-  border-radius: 8px;
-
-  margin-top: 10px;
-}
-
-.correction strong {
-  display: block;
-  margin-bottom: 5px;
-}
-
-.vocab {
-  background: #eef8ee;
-  padding: 12px;
-  border-radius: 10px;
-  margin-top: 10px;
-}
-
-.vocab-item {
-  margin: 6px 0;
-}
-
-.status {
-  margin-top: 9px;
-  min-height: 20px;
-}
-
-.error {
-  color: #8a1c15;
-  background: #ffecec;
-  padding: 12px;
-  border-radius: 10px;
-  margin-top: 10px;
-}
-
-.stats {
-  grid-template-columns:
-    repeat(2, 1fr);
-}
-
-.stat {
-  background: #f5f5f5;
-  border-radius: 12px;
-  padding: 14px;
-  text-align: center;
-}
-
-.stat-number {
-  font-size: 25px;
-  font-weight: bold;
-}
-
-.stat-label {
-  font-size: 12px;
-  color: #666;
-  margin-top: 4px;
-}
-
-.word-card {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  gap: 10px;
-
-  padding: 10px 0;
-  border-bottom: 1px solid #eee;
-}
-
-.word-card:last-child {
-  border-bottom: none;
-}
-
-.word {
-  font-weight: bold;
-}
-
-.meaning {
-  color: #666;
-  font-size: 14px;
-}
-
-.review-button {
-  margin: 0;
-  padding: 8px 10px;
-  min-height: 40px;
-  font-size: 13px;
-}
-
-.skill {
-  padding: 10px 0;
-  border-bottom: 1px solid #eee;
-}
-
-.skill:last-child {
-  border-bottom: none;
-}
-
-.badge {
-  display: inline-block;
-  font-size: 12px;
-  border-radius: 999px;
-  padding: 4px 8px;
-  background: #eee;
-  margin-top: 5px;
-}
-
-.badge.weak {
-  background: #ffecec;
-}
-
-.badge.developing {
-  background: #fff8df;
-}
-
-.badge.mastered {
-  background: #eaf7ea;
-}
-
-.recording-panel {
-  display: none;
-
-  margin-top: 10px;
-  padding: 12px;
-
-  border-radius: 12px;
-  background: #fff1f1;
-}
-
-.recording-panel.active {
-  display: block;
-}
-
-.timer {
-  font-size: 22px;
-  font-weight: bold;
-}
-
-.hint {
-  font-size: 13px;
-  color: #666;
-  margin-top: 4px;
-}
-
-.hidden {
-  display: none !important;
-}
-
-@media (max-width: 520px) {
-
-  .app {
-    padding: 12px;
-  }
-
-  .button-row,
-  .button-row.three {
-    grid-template-columns: 1fr;
-  }
-
-  .topic-grid {
-    grid-template-columns:
-      1fr 1fr;
-  }
-
-}
-
-</style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#ffffff">
+  <title>Deutsch Coach 🇩🇪</title>
+
+  <style>
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      font-family: Arial, Helvetica, sans-serif;
+      background: #f5f5f5;
+      color: #222;
+    }
+
+    button,
+    textarea,
+    select,
+    input {
+      font: inherit;
+    }
+
+    .app {
+      width: 100%;
+      max-width: 700px;
+      margin: 0 auto;
+      padding: 18px;
+    }
+
+    h1 {
+      margin: 0 0 18px;
+      font-size: 28px;
+    }
+
+    h2 {
+      font-size: 20px;
+      margin: 0 0 14px;
+    }
+
+    h3 {
+      font-size: 16px;
+      margin: 0 0 8px;
+    }
+
+    .card {
+      background: #fff;
+      border-radius: 16px;
+      padding: 18px;
+      margin-bottom: 16px;
+      box-shadow: 0 2px 12px rgba(0, 0, 0, 0.06);
+    }
+
+    label {
+      display: block;
+      font-weight: 700;
+      margin-bottom: 7px;
+    }
+
+    select,
+    textarea,
+    input[type="file"] {
+      width: 100%;
+      border: 1px solid #d5d5d5;
+      border-radius: 10px;
+      padding: 11px;
+      background: #fff;
+    }
+
+    select {
+      margin-bottom: 14px;
+    }
+
+    textarea {
+      min-height: 100px;
+      resize: vertical;
+      line-height: 1.5;
+    }
+
+    button {
+      border: 0;
+      border-radius: 10px;
+      padding: 11px 15px;
+      cursor: pointer;
+      font-weight: 700;
+      margin: 4px 4px 4px 0;
+      background: #e9e9e9;
+    }
+
+    button:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+
+    .primary {
+      background: #111;
+      color: #fff;
+    }
+
+    .danger {
+      background: #d93025;
+      color: #fff;
+    }
+
+    .success {
+      background: #16803c;
+      color: #fff;
+    }
+
+    .secondary {
+      background: #eee;
+    }
+
+    .small {
+      font-size: 13px;
+      color: #666;
+      line-height: 1.5;
+    }
+
+    .status {
+      padding: 10px 12px;
+      border-radius: 10px;
+      margin-top: 10px;
+      background: #f1f1f1;
+      display: none;
+      line-height: 1.45;
+    }
+
+    .status.show {
+      display: block;
+    }
+
+    .status.error {
+      background: #fff0f0;
+      color: #a00000;
+    }
+
+    .status.success {
+      background: #eef9f1;
+      color: #126b30;
+    }
+
+    .chat {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      max-height: 520px;
+      overflow-y: auto;
+      margin-bottom: 15px;
+      padding-right: 2px;
+    }
+
+    .message {
+      padding: 12px 14px;
+      border-radius: 14px;
+      max-width: 90%;
+      white-space: pre-wrap;
+      line-height: 1.5;
+    }
+
+    .message.user {
+      align-self: flex-end;
+      background: #111;
+      color: #fff;
+      border-bottom-right-radius: 4px;
+    }
+
+    .message.assistant {
+      align-self: flex-start;
+      background: #f0f0f0;
+      border-bottom-left-radius: 4px;
+    }
+
+    .message-label {
+      font-size: 11px;
+      font-weight: 700;
+      opacity: 0.65;
+      margin-bottom: 4px;
+    }
+
+    .reply-extra {
+      margin-top: 10px;
+      padding-top: 10px;
+      border-top: 1px solid #ddd;
+      font-size: 14px;
+    }
+
+    .correction {
+      background: #fff8df;
+      padding: 10px;
+      border-radius: 9px;
+      margin-top: 8px;
+    }
+
+    .vocabulary {
+      background: #eef6ff;
+      padding: 10px;
+      border-radius: 9px;
+      margin-top: 8px;
+    }
+
+    .learning {
+      background: #f3edff;
+      padding: 10px;
+      border-radius: 9px;
+      margin-top: 8px;
+    }
+
+    .recording-controls {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 5px;
+    }
+
+    .recording-time {
+      font-size: 22px;
+      font-weight: 700;
+      margin: 8px 0;
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 10px;
+    }
+
+    .stat {
+      background: #f7f7f7;
+      border-radius: 12px;
+      padding: 14px;
+      text-align: center;
+    }
+
+    .stat-number {
+      font-size: 25px;
+      font-weight: 700;
+      margin-bottom: 4px;
+    }
+
+    .stat-label {
+      font-size: 12px;
+      color: #666;
+    }
+
+    .word-list,
+    .mistake-list {
+      margin: 0;
+      padding-left: 20px;
+    }
+
+    .word-list li,
+    .mistake-list li {
+      margin-bottom: 8px;
+      line-height: 1.4;
+    }
+
+    .profile-item {
+      background: #f7f7f7;
+      padding: 11px;
+      border-radius: 10px;
+      margin-bottom: 8px;
+    }
+
+    .profile-title {
+      font-weight: 700;
+    }
+
+    .profile-bar {
+      height: 7px;
+      background: #ddd;
+      border-radius: 5px;
+      overflow: hidden;
+      margin-top: 7px;
+    }
+
+    .profile-bar-inner {
+      height: 100%;
+      background: #222;
+      width: 0%;
+    }
+
+    .toggle-row {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-top: 10px;
+    }
+
+    .toggle-row input {
+      width: auto;
+    }
+
+    .footer-note {
+      text-align: center;
+      color: #777;
+      font-size: 12px;
+      margin: 25px 0 10px;
+    }
+
+    @media (max-width: 480px) {
+      .app {
+        padding: 12px;
+      }
+
+      h1 {
+        font-size: 24px;
+      }
+
+      .card {
+        padding: 14px;
+      }
+
+      .message {
+        max-width: 94%;
+      }
+    }
+  </style>
 </head>
-
 
 <body>
 
 <div class="app">
 
-<h1>🇩🇪 Deutsch Coach</h1>
+  <h1>🇩🇪 Deutsch Coach</h1>
 
+  <!-- SETTINGS -->
+  <div class="card">
+    <h2>🎯 Dein Deutsch-Niveau</h2>
 
-<div class="card">
+    <label for="level">Niveau</label>
+    <select id="level">
+      <option value="A1">A1 – Anfänger</option>
+      <option value="A2">A2 – Grundkenntnisse</option>
+      <option value="B1" selected>B1 – Mittelstufe</option>
+      <option value="B2">B2 – Gute Mittelstufe</option>
+      <option value="C1">C1 – Fortgeschritten</option>
+      <option value="C2">C2 – Nahezu muttersprachlich</option>
+    </select>
 
-<h2>🎯 Dein Deutsch-Niveau</h2>
+    <label for="topic">Thema</label>
+    <select id="topic">
+      <option value="Freies Gespräch">Freies Gespräch</option>
+      <option value="Alltag">Alltag</option>
+      <option value="Reisen">Reisen</option>
+      <option value="Essen">Essen</option>
+      <option value="Arbeit">Arbeit</option>
+      <option value="Hobbys">Hobbys</option>
+      <option value="Familie">Familie</option>
+      <option value="Deutschland">Deutschland</option>
+    </select>
+  </div>
 
-<select
-  id="level"
-  aria-label="Deutsch-Niveau"
->
+  <!-- CHAT -->
+  <div class="card">
+    <h2>💬 Gespräch</h2>
 
-<option value="A1">
-A1 – Anfänger
-</option>
+    <div id="chat" class="chat"></div>
 
-<option value="A2">
-A2 – Grundkenntnisse
-</option>
+    <textarea
+      id="messageInput"
+      placeholder="Schreibe etwas auf Deutsch..."
+      autocomplete="off"
+    ></textarea>
 
-<option value="B1">
-B1 – Mittelstufe
-</option>
+    <div>
+      <button id="sendButton" class="primary">Senden</button>
+    </div>
 
-<option value="B2">
-B2 – Gute Mittelstufe
-</option>
+    <div id="chatStatus" class="status"></div>
+  </div>
 
-<option value="C1">
-C1 – Fortgeschritten
-</option>
+  <!-- VOICE -->
+  <div class="card">
+    <h2>🎙️ Sprechen</h2>
 
-<option value="C2">
-C2 – Nahezu muttersprachlich
-</option>
+    <p class="small">
+      Starte die Aufnahme, sprich in Ruhe deinen ganzen Satz und drücke danach
+      auf „Aufnahme stoppen“.
+    </p>
 
-</select>
+    <div class="recording-controls">
+      <button id="startRecordingButton" class="success">
+        ⏺️ Aufnahme starten
+      </button>
 
-<div
-  id="levelDescription"
-  class="level-description"
-></div>
+      <button id="stopRecordingButton" class="danger" disabled>
+        ⏹️ Aufnahme stoppen
+      </button>
+    </div>
 
-</div>
+    <div id="recordingTime" class="recording-time">00:00</div>
 
+    <div class="toggle-row">
+      <input type="checkbox" id="handsFree">
+      <label for="handsFree" style="margin:0;">🔊 Freisprechen</label>
+    </div>
 
-<div class="card">
+    <button id="stopVoiceButton" class="secondary">
+      🔇 Stimme stoppen
+    </button>
 
-<h2>🎯 Gesprächsthema</h2>
+    <div id="recordingStatus" class="status"></div>
+  </div>
 
-<div class="topic-grid">
+  <!-- PROGRESS -->
+  <div class="card">
+    <h2>📊 Lernfortschritt</h2>
 
-<button
-  type="button"
-  class="topic active"
-  data-topic=""
->
-Freies Gespräch
-</button>
+    <div class="grid">
+      <div class="stat">
+        <div id="statAnswers" class="stat-number">0</div>
+        <div class="stat-label">Antworten</div>
+      </div>
 
-<button
-  type="button"
-  class="topic"
-  data-topic="Alltag"
->
-Alltag
-</button>
+      <div class="stat">
+        <div id="statCorrections" class="stat-number">0</div>
+        <div class="stat-label">Korrekturen</div>
+      </div>
 
-<button
-  type="button"
-  class="topic"
-  data-topic="Reisen"
->
-Reisen
-</button>
+      <div class="stat">
+        <div id="statWords" class="stat-number">0</div>
+        <div class="stat-label">Wörter</div>
+      </div>
 
-<button
-  type="button"
-  class="topic"
-  data-topic="Essen"
->
-Essen
-</button>
+      <div class="stat">
+        <div id="statDays" class="stat-number">0</div>
+        <div class="stat-label">Lerntage</div>
+      </div>
+    </div>
+  </div>
 
-<button
-  type="button"
-  class="topic"
-  data-topic="Arbeit"
->
-Arbeit
-</button>
+  <!-- WORDS -->
+  <div class="card">
+    <h2>📚 Meine Wörter</h2>
+    <div id="wordsEmpty" class="small">Noch keine neuen Wörter.</div>
+    <ul id="wordList" class="word-list"></ul>
+  </div>
 
-<button
-  type="button"
-  class="topic"
-  data-topic="Hobbys"
->
-Hobbys
-</button>
+  <!-- MISTAKES -->
+  <div class="card">
+    <h2>⚠️ Meine Fehler</h2>
+    <div id="mistakesEmpty" class="small">Noch keine Fehler gespeichert.</div>
+    <ul id="mistakeList" class="mistake-list"></ul>
+  </div>
 
-<button
-  type="button"
-  class="topic"
-  data-topic="Familie"
->
-Familie
-</button>
+  <!-- PROFILE -->
+  <div class="card">
+    <h2>🧠 Mein Lernprofil</h2>
+    <div id="profileList"></div>
+  </div>
 
-<button
-  type="button"
-  class="topic"
-  data-topic="Deutschland"
->
-Deutschland
-</button>
+  <!-- DATA -->
+  <div class="card">
+    <h2>💾 Meine Daten</h2>
 
-</div>
+    <button id="exportButton">⬇️ Exportieren</button>
 
-</div>
+    <button id="importButton">⬆️ Importieren</button>
 
+    <input
+      id="importFile"
+      type="file"
+      accept=".json,application/json"
+      style="display:none;"
+    >
 
-<div class="card">
+    <button id="deleteButton" class="danger">
+      🗑️ Alle Daten löschen
+    </button>
 
-<h2>💬 Gespräch</h2>
+    <div id="dataStatus" class="status"></div>
+  </div>
 
-<div
-  id="conversation"
-  aria-live="polite"
-></div>
-
-
-<textarea
-  id="input"
-  placeholder="Schreib etwas auf Deutsch..."
-  aria-label="Deine Nachricht"
-></textarea>
-
-
-<div class="button-row three">
-
-<button
-  type="button"
-  id="sendButton"
->
-Senden
-</button>
-
-<button
-  type="button"
-  id="startRecordingButton"
-  class="success"
->
-⏺️ Aufnahme starten
-</button>
-
-<button
-  type="button"
-  id="stopRecordingButton"
-  class="recording"
-  disabled
->
-⏹️ Aufnahme stoppen
-</button>
+  <div class="footer-note">
+    Deutsch Coach 🇩🇪 – dein persönlicher Deutsch-Lernpartner
+  </div>
 
 </div>
-
-
-<div class="button-row">
-
-<button
-  type="button"
-  id="handsFreeButton"
-  class="secondary"
->
-🔄 Freisprechen: Aus
-</button>
-
-<button
-  type="button"
-  id="stopSpeakingButton"
-  class="secondary"
->
-🔇 Stimme stoppen
-</button>
-
-</div>
-
-
-<div
-  id="recordingPanel"
-  class="recording-panel"
->
-
-<div>
-🎙️ Aufnahme läuft
-</div>
-
-<div
-  id="recordingTimer"
-  class="timer"
->
-00:00
-</div>
-
-<div class="hint">
-Sprich in deinem Tempo.
-Tippe auf „Aufnahme stoppen“, wenn du fertig bist.
-Maximal 5 Minuten.
-</div>
-
-</div>
-
-
-<div
-  id="status"
-  class="status"
->
-Bereit
-</div>
-
-
-<div
-  id="error"
-  class="error hidden"
-></div>
-
-</div>
-
-
-<div class="card">
-
-<h2>📈 Lernfortschritt</h2>
-
-<div class="stats">
-
-<div class="stat">
-<div
-  id="sessionCount"
-  class="stat-number"
->
-0
-</div>
-
-<div class="stat-label">
-Antworten
-</div>
-</div>
-
-
-<div class="stat">
-<div
-  id="correctionCount"
-  class="stat-number"
->
-0
-</div>
-
-<div class="stat-label">
-Korrekturen
-</div>
-</div>
-
-
-<div class="stat">
-<div
-  id="vocabCount"
-  class="stat-number"
->
-0
-</div>
-
-<div class="stat-label">
-Wörter
-</div>
-</div>
-
-
-<div class="stat">
-<div
-  id="streakCount"
-  class="stat-number"
->
-0
-</div>
-
-<div class="stat-label">
-Lerntage
-</div>
-</div>
-
-</div>
-
-</div>
-
-
-<div class="card">
-
-<h2>📚 Meine Wörter</h2>
-
-<div id="vocabularyList"></div>
-
-<div
-  id="noVocabulary"
-  class="small"
->
-Noch keine Wörter gespeichert.
-</div>
-
-</div>
-
-
-<div class="card">
-
-<h2>⚠️ Meine Fehler</h2>
-
-<div id="mistakeList"></div>
-
-<div
-  id="noMistakes"
-  class="small"
->
-Noch keine Fehler gespeichert.
-</div>
-
-</div>
-
-
-<div class="card">
-
-<h2>🧠 Mein Lernprofil</h2>
-
-<div id="learningProfile"></div>
-
-<div
-  id="noSkills"
-  class="small"
->
-Noch keine Lernpunkte erfasst.
-</div>
-
-</div>
-
-
-<div class="card">
-
-<h2>💾 Lerndaten</h2>
-
-<p class="small">
-Deine Lernfortschritte werden nur in diesem Browser gespeichert.
-</p>
-
-
-<div class="button-row">
-
-<button
-  type="button"
-  id="exportButton"
-  class="secondary"
->
-Daten exportieren
-</button>
-
-
-<button
-  type="button"
-  id="importButton"
-  class="secondary"
->
-Daten importieren
-</button>
-
-</div>
-
-
-<button
-  type="button"
-  id="resetButton"
-  class="danger"
-  style="width:100%;margin-top:8px"
->
-Alle Daten löschen
-</button>
-
-
-<input
-  id="importFile"
-  type="file"
-  accept=".json,application/json"
-  class="hidden"
->
-
-</div>
-
-</div>
-
 
 <script>
-
 "use strict";
 
+/* =========================================================
+   CONFIG
+========================================================= */
 
 const API_URL =
   "https://deutsch-coach-api.gutenmorgantoyou.workers.dev";
 
-const CHAT_URL =
-  API_URL + "/chat";
-
-const TRANSCRIBE_URL =
-  API_URL + "/transcribe";
-
-const STORAGE_KEY =
-  "deutschCoachDataV5";
-
-const MAX_RECORDING_MS =
-  5 * 60 * 1000;
-
-
-const LEVEL_DESCRIPTIONS = {
-
-  A1:
-    "Einfache Wörter und kurze Sätze.",
-
-  A2:
-    "Einfache Gespräche mit etwas mehr Wortschatz.",
-
-  B1:
-    "Normale Gespräche mit etwas komplexeren Sätzen.",
-
-  B2:
-    "Flüssige Gespräche mit komplexerer Sprache.",
-
-  C1:
-    "Anspruchsvolle Gespräche mit komplexem Deutsch.",
-
-  C2:
-    "Nahezu muttersprachliche Gespräche."
-
-};
-
-
-const SKILL_LABELS = {
-
-  case_dative_after_mit:
-    "Dativ nach „mit“",
-
-  word_order_main_clause:
-    "Verbposition im Hauptsatz",
-
-  subordinate_clause_verb_position:
-    "Verbposition im Nebensatz",
-
-  article_accusative_masculine:
-    "Akkusativ: maskuliner Artikel",
-
-  article_dative:
-    "Dativ-Artikel",
-
-  verb_conjugation:
-    "Verbkonjugation",
-
-  past_tense_auxiliary:
-    "Hilfsverb im Präteritum/Perfekt",
-
-  preposition_case:
-    "Präposition und Kasus",
-
-  adjective_ending:
-    "Adjektivendungen",
-
-  plural_form:
-    "Pluralformen",
-
-  word_choice:
-    "Wortwahl",
-
-  collocation:
-    "Natürliche Wortverbindungen",
-
-  natural_expression:
-    "Natürliche Ausdrücke"
-
-};
-
-
-const LEGACY_SKILL_LABELS = {
-
-  "Verb position in main clauses":
-    "word_order_main_clause",
-
-  "Verb position in subordinate clauses":
-    "subordinate_clause_verb_position",
-
-  "Dative after 'mit'":
-    "case_dative_after_mit",
-
-  "Dative after mit":
-    "case_dative_after_mit"
-
-};
-
-
-const defaultData = {
-
-  level:
-    "A1",
-
-  topic:
-    "",
-
-  messages:
-    [],
-
-  vocabulary:
-    [],
-
-  mistakes:
-    [],
-
-  sessions:
-    0,
-
-  corrections:
-    0,
-
-  streak:
-    0,
-
-  lastStudyDate:
-    "",
-
-  handsFree:
-    false,
-
-  learningProfile: {
-
-    skills:
-      {},
-
-    recentTopics:
-      [],
-
-    recentQuestions:
-      []
-
-  }
-
-};
-
-
-let data =
-  loadData();
-
-
-let mediaRecorder =
-  null;
-
-let recordingChunks =
-  [];
-
-let recordingStartedAt =
-  0;
-
-let recordingTimer =
-  null;
-
-let isRecording =
-  false;
-
-let isSending =
-  false;
-
-
-const $ =
-  id =>
-    document.getElementById(id);
-
-
-const levelSelect =
-  $("level");
-
-const levelDescription =
-  $("levelDescription");
-
-const conversation =
-  $("conversation");
-
-const input =
-  $("input");
-
-const sendButton =
-  $("sendButton");
+const CHAT_URL = API_URL + "/chat";
+const TRANSCRIBE_URL = API_URL + "/transcribe";
+
+const STORAGE_KEY = "deutschCoachDataV6";
+const MAX_RECORDING_MS = 5 * 60 * 1000;
+
+/* =========================================================
+   DOM
+========================================================= */
+
+const levelSelect = document.getElementById("level");
+const topicSelect = document.getElementById("topic");
+
+const chat = document.getElementById("chat");
+const messageInput = document.getElementById("messageInput");
+const sendButton = document.getElementById("sendButton");
+const chatStatus = document.getElementById("chatStatus");
 
 const startRecordingButton =
-  $("startRecordingButton");
+  document.getElementById("startRecordingButton");
 
 const stopRecordingButton =
-  $("stopRecordingButton");
+  document.getElementById("stopRecordingButton");
 
-const handsFreeButton =
-  $("handsFreeButton");
+const recordingTime =
+  document.getElementById("recordingTime");
 
-const stopSpeakingButton =
-  $("stopSpeakingButton");
+const recordingStatus =
+  document.getElementById("recordingStatus");
 
-const statusBox =
-  $("status");
+const handsFree =
+  document.getElementById("handsFree");
 
-const errorBox =
-  $("error");
+const stopVoiceButton =
+  document.getElementById("stopVoiceButton");
 
+const statAnswers =
+  document.getElementById("statAnswers");
 
-function safeArray(
-  value
-) {
+const statCorrections =
+  document.getElementById("statCorrections");
 
-  return Array.isArray(value)
-    ? value
-    : [];
+const statWords =
+  document.getElementById("statWords");
 
-}
+const statDays =
+  document.getElementById("statDays");
 
+const wordsEmpty =
+  document.getElementById("wordsEmpty");
 
-function todayKey() {
+const wordList =
+  document.getElementById("wordList");
 
-  const date =
-    new Date();
+const mistakesEmpty =
+  document.getElementById("mistakesEmpty");
 
-  return `${date.getFullYear()}-${String(
-    date.getMonth() + 1
-  ).padStart(2, "0")}-${String(
-    date.getDate()
-  ).padStart(2, "0")}`;
+const mistakeList =
+  document.getElementById("mistakeList");
 
-}
+const profileList =
+  document.getElementById("profileList");
 
+const exportButton =
+  document.getElementById("exportButton");
 
-function escapeHtml(
-  value
-) {
+const importButton =
+  document.getElementById("importButton");
 
-  return String(
-    value ?? ""
-  )
-    .replace(
-      /&/g,
-      "&amp;"
-    )
-    .replace(
-      /</g,
-      "&lt;"
-    )
-    .replace(
-      />/g,
-      "&gt;"
-    )
-    .replace(
-      /"/g,
-      "&quot;"
-    )
-    .replace(
-      /'/g,
-      "&#039;"
-    );
+const importFile =
+  document.getElementById("importFile");
 
-}
+const deleteButton =
+  document.getElementById("deleteButton");
 
+const dataStatus =
+  document.getElementById("dataStatus");
 
-function setStatus(
-  message
-) {
+/* =========================================================
+   DEFAULT DATA
+========================================================= */
 
-  statusBox.textContent =
-    message || "";
-
-}
-
-
-function showError(
-  message
-) {
-
-  errorBox.textContent =
-    message ||
-    "Ein unbekannter Fehler ist aufgetreten.";
-
-  errorBox.classList.remove(
-    "hidden"
-  );
-
-}
-
-
-function clearError() {
-
-  errorBox.textContent =
-    "";
-
-  errorBox.classList.add(
-    "hidden"
-  );
-
-}
-
-
-function normaliseProfile(
-  profile
-) {
-
-  const source =
-    profile &&
-    typeof profile === "object"
-      ? profile
-      : {};
-
-  const rawSkills =
-    source.skills &&
-    typeof source.skills === "object"
-      ? source.skills
-      : {};
-
-  const skills =
-    {};
-
-
-  Object.entries(
-    rawSkills
-  ).forEach(
-    ([rawId, raw]) => {
-
-      if (
-        !raw ||
-        typeof raw !== "object"
-      ) {
-        return;
-      }
-
-
-      let id =
-        SKILL_LABELS[rawId]
-          ? rawId
-          : (
-              LEGACY_SKILL_LABELS[
-                String(
-                  raw.label || ""
-                )
-              ] || ""
-            );
-
-
-      if (
-        !id &&
-        SKILL_LABELS[
-          String(
-            raw.skillId || ""
-          )
-        ]
-      ) {
-        id =
-          raw.skillId;
-      }
-
-
-      if (!id) {
-        return;
-      }
-
-
-      const current =
-        skills[id] ||
-        {
-          label:
-            SKILL_LABELS[id],
-
-          mistakes:
-            0,
-
-          correctUses:
-            0,
-
-          status:
-            "new",
-
-          lastOutcome:
-            "none",
-
-          lastSeen:
-            ""
-
-        };
-
-
-      current.label =
-        SKILL_LABELS[id];
-
-
-      current.mistakes +=
-        Number(
-          raw.mistakes
-        ) > 0
-          ? Number(
-              raw.mistakes
-            )
-          : 0;
-
-
-      current.correctUses +=
-        Number(
-          raw.correctUses
-        ) > 0
-          ? Number(
-              raw.correctUses
-            )
-          : 0;
-
-
-      current.lastOutcome =
-        [
-          "mistake",
-          "correct",
-          "none"
-        ].includes(
-          raw.lastOutcome
-        )
-          ? raw.lastOutcome
-          : current.lastOutcome;
-
-
-      current.lastSeen =
-        String(
-          raw.lastSeen ||
-          current.lastSeen
-        );
-
-
-      current.status =
-        current.mistakes >= 1 &&
-        current.correctUses >= 3
-          ? "mastered"
-          : current.mistakes >= 2
-            ? "weak"
-            : current.mistakes >= 1
-              ? "developing"
-              : "new";
-
-
-      skills[id] =
-        current;
-
-    }
-  );
-
-
+function createDefaultData() {
   return {
+    level: "B1",
+    topic: "Freies Gespräch",
 
-    skills,
+    messages: [],
 
-    recentTopics:
-      safeArray(
-        source.recentTopics
-      )
-        .filter(
-          item =>
-            typeof item === "string"
-        )
-        .slice(-10),
+    answers: 0,
+    corrections: 0,
 
-    recentQuestions:
-      safeArray(
-        source.recentQuestions
-      )
-        .filter(
-          item =>
-            typeof item === "string"
-        )
-        .slice(-10)
+    learningDays: [],
+    lastLearningDate: "",
 
+    knownVocabulary: [],
+
+    mistakes: [],
+
+    profile: [],
+
+    createdAt: new Date().toISOString(),
+    updatedAt: new Date().toISOString()
+  };
+}
+
+let data = loadData();
+
+/* =========================================================
+   SKILLS
+========================================================= */
+
+const SKILLS = {
+  case_dative_after_mit: {
+    label: "Dativ nach „mit“"
+  },
+
+  word_order_main_clause: {
+    label: "Wortstellung im Hauptsatz"
+  },
+
+  subordinate_clause_verb_position: {
+    label: "Verbposition im Nebensatz"
+  },
+
+  article_accusative_masculine: {
+    label: "Artikel im Akkusativ"
+  },
+
+  article_dative: {
+    label: "Artikel im Dativ"
+  },
+
+  verb_conjugation: {
+    label: "Verbkonjugation"
+  },
+
+  past_tense_auxiliary: {
+    label: "Hilfsverb im Perfekt"
+  },
+
+  preposition_case: {
+    label: "Präposition und Kasus"
+  },
+
+  adjective_ending: {
+    label: "Adjektivendung"
+  },
+
+  plural_form: {
+    label: "Pluralbildung"
+  },
+
+  word_choice: {
+    label: "Wortwahl"
+  },
+
+  collocation: {
+    label: "Typische Wortverbindungen"
+  },
+
+  natural_expression: {
+    label: "Natürliches Deutsch"
+  }
+};
+
+/* =========================================================
+   NORMALIZATION
+========================================================= */
+
+function cleanString(value, fallback = "") {
+  if (typeof value !== "string") return fallback;
+  return value.trim();
+}
+
+function safeArray(value) {
+  return Array.isArray(value) ? value : [];
+}
+
+function normalizeSkillId(value) {
+  const raw = cleanString(value);
+
+  const aliases = {
+    "Verb position in main clauses":
+      "word_order_main_clause",
+
+    "Verb position in main clause":
+      "word_order_main_clause",
+
+    "Verb position in subordinate clauses":
+      "subordinate_clause_verb_position",
+
+    "Dative after 'mit'":
+      "case_dative_after_mit",
+
+    "Dative after mit":
+      "case_dative_after_mit",
+
+    "Dativ nach „mit“":
+      "case_dative_after_mit",
+
+    "Word order in main clauses":
+      "word_order_main_clause"
   };
 
+  return aliases[raw] || raw;
 }
 
+function normalizeProfile(profile) {
+  const map = new Map();
 
-function loadData() {
+  for (const item of safeArray(profile)) {
+    if (!item || typeof item !== "object") continue;
 
-  try {
-
-    const raw =
-      localStorage.getItem(
-        STORAGE_KEY
-      ) ||
-      localStorage.getItem(
-        "deutschCoachDataV4"
-      );
-
-
-    if (!raw) {
-
-      return structuredClone(
-        defaultData
-      );
-
-    }
-
-
-    const parsed =
-      JSON.parse(raw);
-
-
-    const merged =
-      {
-        ...defaultData,
-        ...parsed
-      };
-
-
-    merged.level =
-      LEVEL_DESCRIPTIONS[
-        merged.level
-      ]
-        ? merged.level
-        : "A1";
-
-
-    merged.topic =
-      typeof merged.topic ===
-      "string"
-        ? merged.topic
-        : "";
-
-
-    merged.messages =
-      safeArray(
-        merged.messages
-      )
-        .filter(
-          message =>
-            message &&
-            (
-              message.role ===
-                "user" ||
-              message.role ===
-                "assistant"
-            ) &&
-            typeof message.content ===
-              "string"
-        )
-        .slice(-40);
-
-
-    merged.vocabulary =
-      safeArray(
-        merged.vocabulary
-      )
-        .filter(
-          item =>
-            item &&
-            typeof item.word ===
-              "string" &&
-            typeof item.meaning ===
-              "string"
-        );
-
-
-    merged.mistakes =
-      safeArray(
-        merged.mistakes
-      )
-        .filter(
-          item =>
-            item &&
-            typeof item.original ===
-              "string" &&
-            typeof item.corrected ===
-              "string"
-        );
-
-
-    merged.learningProfile =
-      normaliseProfile(
-        merged.learningProfile
-      );
-
-
-    return merged;
-
-  } catch {
-
-    return structuredClone(
-      defaultData
+    const id = normalizeSkillId(
+      item.id || item.skill || item.name
     );
 
+    if (!id) continue;
+
+    const label =
+      SKILLS[id]?.label ||
+      cleanString(item.label || item.name, id);
+
+    const old = map.get(id);
+
+    const attempts = Math.max(
+      0,
+      Number(item.attempts || item.count || 0)
+    );
+
+    const correct = Math.max(
+      0,
+      Number(item.correct || item.successes || 0)
+    );
+
+    if (!old) {
+      map.set(id, {
+        id,
+        label,
+        attempts,
+        correct
+      });
+    } else {
+      old.attempts += attempts;
+      old.correct += correct;
+    }
   }
 
+  return Array.from(map.values());
 }
 
+function normalizeData(raw) {
+  const base = createDefaultData();
+
+  if (!raw || typeof raw !== "object") {
+    return base;
+  }
+
+  const result = {
+    ...base,
+    ...raw
+  };
+
+  result.level =
+    ["A1","A2","B1","B2","C1","C2"].includes(raw.level)
+      ? raw.level
+      : base.level;
+
+  result.topic =
+    typeof raw.topic === "string" && raw.topic.trim()
+      ? raw.topic
+      : base.topic;
+
+  result.messages = safeArray(raw.messages)
+    .filter(m => m && typeof m === "object")
+    .map(m => ({
+      role:
+        m.role === "assistant"
+          ? "assistant"
+          : "user",
+
+      content:
+        cleanString(m.content)
+    }))
+    .filter(m => m.content);
+
+  result.answers = Math.max(
+    0,
+    Number(raw.answers || 0)
+  );
+
+  result.corrections = Math.max(
+    0,
+    Number(raw.corrections || 0)
+  );
+
+  result.learningDays = [
+    ...new Set(
+      safeArray(raw.learningDays)
+        .filter(x => typeof x === "string")
+    )
+  ];
+
+  result.knownVocabulary = safeArray(raw.knownVocabulary)
+    .filter(x => x && typeof x === "object")
+    .slice(-200);
+
+  result.mistakes = safeArray(raw.mistakes)
+    .filter(x => x && typeof x === "object")
+    .slice(-100);
+
+  result.profile = normalizeProfile(raw.profile);
+
+  return result;
+}
+
+/* =========================================================
+   STORAGE
+========================================================= */
+
+function loadData() {
+  try {
+    const saved = localStorage.getItem(STORAGE_KEY);
+
+    if (!saved) {
+      return createDefaultData();
+    }
+
+    return normalizeData(JSON.parse(saved));
+  } catch (error) {
+    console.error("Could not load data:", error);
+    return createDefaultData();
+  }
+}
 
 function saveData() {
+  data.updatedAt = new Date().toISOString();
 
   try {
-
     localStorage.setItem(
       STORAGE_KEY,
       JSON.stringify(data)
     );
+  } catch (error) {
+    console.error("Could not save data:", error);
+  }
+}
 
-  } catch {
+/* =========================================================
+   STATUS
+========================================================= */
 
-    showError(
-      "Die Lerndaten konnten nicht gespeichert werden. Bitte prüfe den Browser-Speicher."
+function showStatus(element, message, type = "") {
+  element.textContent = message;
+  element.className = "status show";
+
+  if (type) {
+    element.classList.add(type);
+  }
+}
+
+function clearStatus(element) {
+  element.textContent = "";
+  element.className = "status";
+}
+
+/* =========================================================
+   CHAT RENDERING
+========================================================= */
+
+function escapeText(value) {
+  return String(value ?? "");
+}
+
+function renderChat() {
+  chat.innerHTML = "";
+
+  if (!data.messages.length) {
+    addMessageToDOM(
+      "assistant",
+      "Hallo! Wie geht es dir heute?"
     );
 
-  }
-
-}
-
-
-function updateLevelDescription() {
-
-  levelDescription.textContent =
-    LEVEL_DESCRIPTIONS[
-      levelSelect.value
-    ] || "";
-
-}
-
-
-function updateStats() {
-
-  $("sessionCount")
-    .textContent =
-      data.sessions;
-
-  $("correctionCount")
-    .textContent =
-      data.corrections;
-
-  $("vocabCount")
-    .textContent =
-      data.vocabulary.length;
-
-  $("streakCount")
-    .textContent =
-      data.streak;
-
-}
-
-
-function renderConversation() {
-
-  if (
-    !data.messages.length
-  ) {
-
-    conversation.innerHTML =
-      `
-      <div class="message coach">
-        <div class="message-label">
-          Deutsch Coach
-        </div>
-        Hallo! Wie geht es dir heute?
-      </div>
-      `;
-
     return;
-
   }
 
+  for (const message of data.messages) {
+    addMessageToDOM(
+      message.role,
+      message.content,
+      message.meta || null
+    );
+  }
 
-  conversation.innerHTML =
-    data.messages
-      .map(
-        message => {
+  scrollChatToBottom();
+}
 
-          const html =
-            [
-              `
-              <div class="message ${
-                message.role ===
-                "user"
-                  ? "user"
-                  : "coach"
-              }">
+function addMessageToDOM(role, content, meta = null) {
+  const wrapper = document.createElement("div");
+  wrapper.className = "message " + role;
 
-              <div class="message-label">
-                ${
-                  message.role ===
-                  "user"
-                    ? "Du"
-                    : "Deutsch Coach"
-                }
-              </div>
+  const label = document.createElement("div");
+  label.className = "message-label";
+  label.textContent =
+    role === "user"
+      ? "Du"
+      : "Deutsch Coach";
 
-              ${escapeHtml(
-                message.content
-              )}
-              `
-            ];
+  wrapper.appendChild(label);
 
+  const text = document.createElement("div");
+  text.textContent = escapeText(content);
+  wrapper.appendChild(text);
 
-          if (
-            message.role ===
-              "assistant" &&
-            message.correction
-          ) {
+  if (role === "assistant" && meta) {
+    if (meta.translation) {
+      const block = document.createElement("div");
+      block.className = "reply-extra";
 
-            html.push(
-              `
-              <div class="correction">
+      block.innerHTML =
+        "<strong>🇬🇧 Bedeutung:</strong><br>" +
+        escapeText(meta.translation);
 
-                <strong>
-                  ✏️ Korrektur
-                </strong>
+      wrapper.appendChild(block);
+    }
 
-                <div>
-                  ${escapeHtml(
-                    message.correction
-                  )}
-                </div>
+    if (meta.correction) {
+      const block = document.createElement("div");
+      block.className = "correction";
 
-                ${
-                  message.correctionExplanation
-                    ? `
-                      <div
-                        class="small"
-                        style="margin-top:6px"
-                      >
-                        ${escapeHtml(
-                          message.correctionExplanation
-                        )}
-                      </div>
-                    `
-                    : ""
-                }
+      block.innerHTML =
+        "<strong>✏️ Korrektur</strong><br>" +
+        escapeText(meta.correction) +
+        (
+          meta.correctionExplanation
+            ? "<br><span class='small'>" +
+              escapeText(meta.correctionExplanation) +
+              "</span>"
+            : ""
+        );
 
-              </div>
-              `
+      wrapper.appendChild(block);
+    }
+
+    if (Array.isArray(meta.vocabulary) &&
+        meta.vocabulary.length) {
+
+      const block = document.createElement("div");
+      block.className = "vocabulary";
+
+      const title =
+        document.createElement("strong");
+
+      title.textContent = "📚 Neues Wort";
+
+      block.appendChild(title);
+
+      for (const word of meta.vocabulary.slice(0, 5)) {
+        const row =
+          document.createElement("div");
+
+        if (typeof word === "string") {
+          row.textContent = word;
+        } else {
+          const german =
+            cleanString(word.german || word.word);
+
+          const meaning =
+            cleanString(
+              word.meaning ||
+              word.translation ||
+              word.english
             );
 
-          }
-
-
-          if (
-            message.role ===
-              "assistant" &&
-            message.translation
-          ) {
-
-            html.push(
-              `
-              <div class="translation">
-                🇬🇧 ${escapeHtml(
-                  message.translation
-                )}
-              </div>
-              `
-            );
-
-          }
-
-
-          if (
-            message.role ===
-              "assistant" &&
-            safeArray(
-              message.vocabulary
-            ).length
-          ) {
-
-            html.push(
-              `
-              <div class="vocab">
-
-                <strong>
-                  📚 Neue Wörter
-                </strong>
-
-                ${
-                  message.vocabulary
-                    .map(
-                      item =>
-                        `
-                        <div class="vocab-item">
-                          <strong>
-                            ${escapeHtml(
-                              item.word
-                            )}
-                          </strong>
-                          —
-                          ${escapeHtml(
-                            item.meaning
-                          )}
-                        </div>
-                        `
-                    )
-                    .join("")
-                }
-
-              </div>
-              `
-            );
-
-          }
-
-
-          html.push(
-            "</div>"
-          );
-
-
-          return html.join("");
-
+          row.textContent =
+            meaning
+              ? german + " — " + meaning
+              : german;
         }
-      )
-      .join("");
 
+        block.appendChild(row);
+      }
 
-  conversation
-    .lastElementChild
-    ?.scrollIntoView({
-      behavior:
-        "smooth",
-
-      block:
-        "nearest"
-    });
-
-}
-
-
-function renderVocabulary() {
-
-  const list =
-    $("vocabularyList");
-
-  const empty =
-    $("noVocabulary");
-
-
-  if (
-    !data.vocabulary.length
-  ) {
-
-    list.innerHTML =
-      "";
-
-    empty.classList.remove(
-      "hidden"
-    );
-
-    return;
-
+      wrapper.appendChild(block);
+    }
   }
 
-
-  empty.classList.add(
-    "hidden"
-  );
-
-
-  const now =
-    Date.now();
-
-
-  const due =
-    data.vocabulary
-      .filter(
-        item =>
-          !item.nextReview ||
-          item.nextReview <= now
-      )
-      .slice(0, 12);
-
-
-  list.innerHTML =
-    due.length
-      ? due
-          .map(
-            item =>
-              `
-              <div class="word-card">
-
-                <div>
-
-                  <div class="word">
-                    ${escapeHtml(
-                      item.word
-                    )}
-                  </div>
-
-                  <div class="meaning">
-                    ${escapeHtml(
-                      item.meaning
-                    )}
-                  </div>
-
-                </div>
-
-                <button
-                  type="button"
-                  class="review-button"
-                  data-review="${escapeHtml(
-                    item.word
-                  )}"
-                >
-                  Gelernt
-                </button>
-
-              </div>
-              `
-          )
-          .join("")
-
-      : `
-        <div class="small">
-          Keine Wörter zur Wiederholung.
-        </div>
-        `;
-
-
-  list
-    .querySelectorAll(
-      "[data-review]"
-    )
-    .forEach(
-      button =>
-        button.addEventListener(
-          "click",
-          () =>
-            reviewWord(
-              button.dataset.review
-            )
-        )
-    );
-
+  chat.appendChild(wrapper);
 }
 
-
-function reviewWord(
-  word
-) {
-
-  const item =
-    data.vocabulary.find(
-      entry =>
-        entry.word ===
-        word
-    );
-
-
-  if (!item) {
-    return;
-  }
-
-
-  item.reviewCount =
-    (item.reviewCount || 0) +
-    1;
-
-
-  const days =
-    Math.min(
-      30,
-      Math.pow(
-        2,
-        Math.min(
-          item.reviewCount,
-          5
-        )
-      )
-    );
-
-
-  item.nextReview =
-    Date.now() +
-    days *
-      86400000;
-
-
-  saveData();
-
-  renderVocabulary();
-
+function scrollChatToBottom() {
+  requestAnimationFrame(() => {
+    chat.scrollTop = chat.scrollHeight;
+  });
 }
 
+/* =========================================================
+   LEARNING DAY
+========================================================= */
 
-function renderMistakes() {
-
-  const list =
-    $("mistakeList");
-
-  const empty =
-    $("noMistakes");
-
-
-  if (
-    !data.mistakes.length
-  ) {
-
-    list.innerHTML =
-      "";
-
-    empty.classList.remove(
-      "hidden"
-    );
-
-    return;
-
-  }
-
-
-  empty.classList.add(
-    "hidden"
-  );
-
-
-  list.innerHTML =
-    data.mistakes
-      .slice()
-      .sort(
-        (a, b) =>
-          (b.count || 0) -
-          (a.count || 0)
-      )
-      .slice(0, 12)
-      .map(
-        item =>
-          `
-          <div class="word-card">
-
-            <div>
-
-              <div class="word">
-                ${escapeHtml(
-                  item.corrected
-                )}
-              </div>
-
-              <div class="meaning">
-                ${escapeHtml(
-                  item.original
-                )}
-              </div>
-
-              <div class="small">
-                ${escapeHtml(
-                  item.type ||
-                  "grammar"
-                )}
-              </div>
-
-            </div>
-
-            <div class="small">
-              ${item.count || 1}×
-            </div>
-
-          </div>
-          `
-      )
-      .join("");
-
-}
-
-
-function renderLearningProfile() {
-
-  const list =
-    $("learningProfile");
-
-  const empty =
-    $("noSkills");
-
-
-  const skills =
-    Object.values(
-      data.learningProfile.skills
-    )
-      .sort(
-        (a, b) =>
-          (b.mistakes || 0) -
-          (a.mistakes || 0)
-      );
-
-
-  if (!skills.length) {
-
-    list.innerHTML =
-      "";
-
-    empty.classList.remove(
-      "hidden"
-    );
-
-    return;
-
-  }
-
-
-  empty.classList.add(
-    "hidden"
-  );
-
-
-  list.innerHTML =
-    skills
-      .slice(0, 15)
-      .map(
-        skill =>
-          `
-          <div class="skill">
-
-            <div>
-              <strong>
-                ${escapeHtml(
-                  skill.label
-                )}
-              </strong>
-            </div>
-
-            <span
-              class="badge ${escapeHtml(
-                skill.status
-              )}"
-            >
-              Status:
-              ${escapeHtml(
-                skill.status
-              )}
-              · Fehler:
-              ${skill.mistakes || 0}
-              · Richtig:
-              ${skill.correctUses || 0}
-            </span>
-
-          </div>
-          `
-      )
-      .join("");
-
-}
-
-
-function updateStreak() {
-
+function markLearningDay() {
   const today =
-    todayKey();
+    new Date().toISOString().slice(0, 10);
 
-
-  if (
-    data.lastStudyDate ===
-    today
-  ) {
-    return;
+  if (!data.learningDays.includes(today)) {
+    data.learningDays.push(today);
   }
 
-
-  const date =
-    new Date();
-
-  date.setDate(
-    date.getDate() - 1
-  );
-
-
-  const yesterday =
-    `${date.getFullYear()}-${String(
-      date.getMonth() + 1
-    ).padStart(2, "0")}-${String(
-      date.getDate()
-    ).padStart(2, "0")}`;
-
-
-  data.streak =
-    data.lastStudyDate ===
-    yesterday
-      ? data.streak + 1
-      : 1;
-
-
-  data.lastStudyDate =
-    today;
-
+  data.lastLearningDate = today;
 }
 
+/* =========================================================
+   MEMORY
+========================================================= */
 
 function buildMemory() {
-
-  const vocabulary =
-    data.vocabulary
-      .slice(-30)
-      .map(
-        item =>
-          `${item.word} = ${item.meaning}`
-      );
-
-
-  const mistakes =
-    data.mistakes
-      .slice()
-      .sort(
-        (a, b) =>
-          (b.count || 0) -
-          (a.count || 0)
-      )
-      .slice(0, 20)
-      .map(
-        item => ({
-          original:
-            item.original,
-
-          corrected:
-            item.corrected,
-
-          type:
-            item.type,
-
-          count:
-            item.count || 1
-        })
-      );
-
-
-  const skills =
-    Object.entries(
-      data.learningProfile.skills
-    )
-      .map(
-        ([skillId, skill]) => ({
-          skillId,
-
-          label:
-            skill.label,
-
-          mistakes:
-            skill.mistakes || 0,
-
-          correctUses:
-            skill.correctUses || 0,
-
-          status:
-            skill.status,
-
-          lastOutcome:
-            skill.lastOutcome
-        })
-      )
-      .slice(-20);
-
-
   return {
-
     knownVocabulary:
-      vocabulary,
+      data.knownVocabulary.slice(-100),
 
     mistakes:
-      mistakes,
+      data.mistakes.slice(-50),
 
-    skills:
-      skills,
-
-    recentTopics:
-      data.learningProfile
-        .recentTopics,
-
-    recentQuestions:
-      data.learningProfile
-        .recentQuestions
-
+    profile:
+      normalizeProfile(data.profile).slice(-30)
   };
-
 }
 
-
-function updateLearningProfile(
-  learning
-) {
-
-  if (
-    !learning ||
-    !learning.skillId ||
-    !SKILL_LABELS[
-      learning.skillId
-    ]
-  ) {
-    return;
-  }
-
-
-  const id =
-    learning.skillId;
-
-
-  const skill =
-    data.learningProfile
-      .skills[id] ||
-    {
-      label:
-        SKILL_LABELS[id],
-
-      mistakes:
-        0,
-
-      correctUses:
-        0,
-
-      status:
-        "new",
-
-      lastOutcome:
-        "none",
-
-      lastSeen:
-        ""
-
-    };
-
-
-  if (
-    learning.outcome ===
-    "mistake"
-  ) {
-    skill.mistakes += 1;
-  }
-
-
-  if (
-    learning.outcome ===
-    "correct"
-  ) {
-    skill.correctUses += 1;
-  }
-
-
-  skill.label =
-    SKILL_LABELS[id];
-
-
-  skill.lastOutcome =
-    learning.outcome;
-
-
-  skill.lastSeen =
-    todayKey();
-
-
-  skill.status =
-    skill.mistakes >= 1 &&
-    skill.correctUses >= 3
-      ? "mastered"
-      : skill.mistakes >= 2
-        ? "weak"
-        : skill.mistakes >= 1
-          ? "developing"
-          : "new";
-
-
-  data.learningProfile
-    .skills[id] =
-      skill;
-
-}
-
-
-function addVocabulary(
-  items
-) {
-
-  safeArray(items)
-    .forEach(
-      item => {
-
-        if (
-          !item ||
-          typeof item.word !==
-            "string" ||
-          typeof item.meaning !==
-            "string"
-        ) {
-          return;
-        }
-
-
-        const word =
-          item.word.trim();
-
-        const meaning =
-          item.meaning.trim();
-
-
-        if (
-          !word ||
-          !meaning
-        ) {
-          return;
-        }
-
-
-        const existing =
-          data.vocabulary.find(
-            entry =>
-              entry.word
-                .toLowerCase() ===
-              word.toLowerCase()
-          );
-
-
-        if (existing) {
-
-          existing.meaning =
-            meaning;
-
-          return;
-
-        }
-
-
-        data.vocabulary.unshift({
-
-          word,
-
-          meaning,
-
-          reviewCount:
-            0,
-
-          nextReview:
-            0,
-
-          addedAt:
-            Date.now()
-
-        });
-
-      }
-    );
-
-
-  data.vocabulary =
-    data.vocabulary
-      .slice(0, 100);
-
-}
-
-
-function addMistake(
-  original,
-  corrected,
-  type
-) {
-
-  if (
-    !original ||
-    !corrected ||
-    original
-      .trim()
-      .toLowerCase() ===
-      corrected
-        .trim()
-        .toLowerCase()
-  ) {
-    return;
-  }
-
-
-  const existing =
-    data.mistakes.find(
-      item =>
-        item.original
-          .trim()
-          .toLowerCase() ===
-          original
-            .trim()
-            .toLowerCase() &&
-        item.corrected
-          .trim()
-          .toLowerCase() ===
-          corrected
-            .trim()
-            .toLowerCase()
-    );
-
-
-  if (existing) {
-
-    existing.count =
-      (existing.count || 1) +
-      1;
-
-    existing.type =
-      type ||
-      existing.type;
-
-    existing.lastSeen =
-      todayKey();
-
-    return;
-
-  }
-
-
-  data.mistakes.unshift({
-
-    original,
-
-    corrected,
-
-    type:
-      type ||
-      "grammar",
-
-    count:
-      1,
-
-    lastSeen:
-      todayKey()
-
-  });
-
-
-  data.mistakes =
-    data.mistakes
-      .slice(0, 100);
-
-}
-
-
-async function requestJson(
-  url,
-  options,
-  timeoutMs = 90000
-) {
-
-  const controller =
-    new AbortController();
-
-
-  const timer =
-    setTimeout(
-      () =>
-        controller.abort(),
-      timeoutMs
-    );
-
+/* =========================================================
+   API
+========================================================= */
+
+async function requestJson(url, options = {}) {
+  let response;
 
   try {
-
-    const response =
-      await fetch(
-        url,
-        {
-          ...options,
-          signal:
-            controller.signal
-        }
-      );
-
-
-    const raw =
-      await response.text();
-
-
-    let body =
-      {};
-
-
-    try {
-
-      body =
-        raw
-          ? JSON.parse(raw)
-          : {};
-
-    } catch {
-
-      body = {
-        error:
-          "Ungültige Serverantwort."
-      };
-
-    }
-
-
-    if (!response.ok) {
-
-      throw new Error(
-        body.error ||
-        `Serverfehler (${response.status})`
-      );
-
-    }
-
-
-    return body;
-
+    response = await fetch(url, {
+      ...options,
+      headers: {
+        Accept: "application/json",
+        ...(options.headers || {})
+      }
+    });
   } catch (error) {
-
-    if (
-      error.name ===
-      "AbortError"
-    ) {
-
-      throw new Error(
-        "Die Anfrage hat zu lange gedauert. Bitte versuche es noch einmal."
-      );
-
-    }
-
-    throw error;
-
-  } finally {
-
-    clearTimeout(
-      timer
+    throw new Error(
+      "Keine Verbindung zum Deutsch Coach Server. " +
+      "Bitte prüfe deine Internetverbindung."
     );
-
   }
 
+  let body = null;
+
+  try {
+    body = await response.json();
+  } catch (_) {
+    body = null;
+  }
+
+  if (!response.ok) {
+    const message =
+      body?.error ||
+      "Der Server konnte die Anfrage nicht verarbeiten.";
+
+    throw new Error(message);
+  }
+
+  return body;
 }
 
+/* =========================================================
+   CHAT
+========================================================= */
 
-async function sendMessage() {
+let isSending = false;
 
-  if (
-    isSending ||
-    isRecording
-  ) {
-    return;
-  }
+async function sendMessage(options = {}) {
+  if (isSending) return;
 
-
-  clearError();
-
-
-  const message =
-    input.value.trim();
-
-
-  if (!message) {
-    return;
-  }
-
-
-  if (
-    message.length >
-    5000
-  ) {
-
-    showError(
-      "Die Nachricht ist zu lang. Bitte teile sie in kürzere Teile auf."
+  const text =
+    cleanString(
+      options.text ?? messageInput.value
     );
 
-    return;
+  if (!text) return;
 
+  if (isRecording) {
+    showStatus(
+      chatStatus,
+      "Bitte stoppe zuerst die Aufnahme.",
+      "error"
+    );
+    return;
   }
 
+  isSending = true;
 
-  isSending =
-    true;
+  clearStatus(chatStatus);
 
+  messageInput.value = "";
 
-  sendButton.disabled =
-    true;
-
-  startRecordingButton.disabled =
-    true;
-
-
-  setStatus(
-    "🤔 Deutsch Coach denkt..."
-  );
-
-
-  const oldMessages =
-    data.messages.slice();
-
+  data.level = levelSelect.value;
+  data.topic = topicSelect.value;
 
   data.messages.push({
-
-    role:
-      "user",
-
-    content:
-      message
-
+    role: "user",
+    content: text
   });
 
+  data.messages =
+    data.messages.slice(-48);
 
-  input.value =
-    "";
+  renderChat();
 
-
-  renderConversation();
-
+  sendButton.disabled = true;
+  startRecordingButton.disabled = true;
 
   try {
+    const payload = {
+      level: data.level,
+      topic: data.topic,
+      messages: data.messages.slice(-24),
+      memory: buildMemory()
+    };
 
     const result =
       await requestJson(
         CHAT_URL,
         {
-
-          method:
-            "POST",
-
+          method: "POST",
           headers: {
-            "Content-Type":
-              "application/json"
+            "Content-Type": "application/json"
           },
-
-          body:
-            JSON.stringify({
-
-              level:
-                data.level,
-
-              topic:
-                data.topic,
-
-              messages:
-                data.messages
-                  .slice(-24),
-
-              memory:
-                buildMemory()
-
-            })
-
+          body: JSON.stringify(payload)
         }
       );
 
+    const reply =
+      cleanString(
+        result.reply,
+        "Entschuldigung, ich konnte gerade keine Antwort erstellen."
+      );
 
     data.messages.push({
+      role: "assistant",
+      content: reply,
+      meta: {
+        translation:
+          cleanString(result.translation),
 
-      role:
-        "assistant",
+        correction:
+          cleanString(result.correction),
 
-      content:
-        result.reply,
+        correctionExplanation:
+          cleanString(result.correctionExplanation),
 
-      translation:
-        result.translation ||
-        "",
+        correctionType:
+          cleanString(result.correctionType),
 
-      correction:
-        result.correction ||
-        "",
+        vocabulary:
+          Array.isArray(result.vocabulary)
+            ? result.vocabulary
+            : [],
 
-      correctionExplanation:
-        result.correctionExplanation ||
-        "",
-
-      correctionType:
-        result.correctionType ||
-        "none",
-
-      vocabulary:
-        safeArray(
-          result.vocabulary
-        ).slice(0, 3)
-
+        learning:
+          result.learning || null
+      }
     });
 
-
     data.messages =
-      data.messages
-        .slice(-40);
+      data.messages.slice(-48);
 
+    data.answers += 1;
 
-    data.sessions +=
-      1;
+    if (result.correction) {
+      data.corrections += 1;
 
+      data.mistakes.push({
+        date: new Date().toISOString(),
+        userText: text,
+        correction: result.correction,
+        explanation:
+          result.correctionExplanation || "",
+        type:
+          result.correctionType || ""
+      });
 
-    if (
-      result.correction
-    ) {
-      data.corrections +=
-        1;
+      data.mistakes =
+        data.mistakes.slice(-100);
     }
 
-
-    updateStreak();
-
-
-    addVocabulary(
-      result.vocabulary
-    );
-
-
-    addMistake(
-      message,
-      result.correction,
-      result.correctionType
-    );
-
-
-    updateLearningProfile(
-      result.learning
-    );
-
-
-    const questions =
-      (
-        result.reply.match(
-          /[^.!?]*\?/g
-        ) || []
-      )
-        .map(
-          question =>
-            question.trim()
-        )
-        .filter(Boolean);
-
-
-    if (
-      questions.length
-    ) {
-
-      data.learningProfile
-        .recentQuestions
-        .push(
-          questions[
-            questions.length - 1
-          ]
-        );
-
-    }
-
-
-    data.learningProfile
-      .recentQuestions =
-        data.learningProfile
-          .recentQuestions
-          .slice(-10);
-
-
-    if (
-      data.topic
-    ) {
-
-      data.learningProfile
-        .recentTopics
-        .push(
-          data.topic
-        );
-
-      data.learningProfile
-        .recentTopics =
-          data.learningProfile
-            .recentTopics
-            .slice(-10);
-
-    }
-
-
-    data.learningProfile =
-      normaliseProfile(
-        data.learningProfile
-      );
-
-
-    saveData();
-
-    renderConversation();
-
-    renderVocabulary();
-
-    renderMistakes();
-
-    renderLearningProfile();
-
-    updateStats();
-
-
-    setStatus("");
-
-
-    if (
-      data.handsFree
-    ) {
-
-      await speakGerman(
-        result.reply
-      );
-
-
-      window.setTimeout(
-        () => {
-
-          if (
-            data.handsFree &&
-            !isRecording &&
-            !isSending
-          ) {
-
-            startRecording();
-
+    if (Array.isArray(result.vocabulary)) {
+      for (const word of result.vocabulary.slice(0, 5)) {
+        if (typeof word === "string") {
+          if (word.trim()) {
+            data.knownVocabulary.push({
+              word: word.trim(),
+              date: new Date().toISOString()
+            });
           }
-
-        },
-        300
-      );
-
-    }
-
-
-  } catch (error) {
-
-    data.messages =
-      oldMessages;
-
-
-    input.value =
-      message;
-
-
-    renderConversation();
-
-
-    showError(
-      error.message ||
-      "Die Nachricht konnte nicht gesendet werden."
-    );
-
-
-    setStatus(
-      "Bereit"
-    );
-
-
-  } finally {
-
-    isSending =
-      false;
-
-    sendButton.disabled =
-      false;
-
-    startRecordingButton.disabled =
-      isRecording;
-
-  }
-
-}
-
-
-function getGermanVoice() {
-
-  const voices =
-    window.speechSynthesis
-      ? window.speechSynthesis
-          .getVoices()
-      : [];
-
-
-  return (
-    voices.find(
-      voice =>
-        voice.lang ===
-        "de-DE"
-    ) ||
-
-    voices.find(
-      voice =>
-        voice.lang &&
-        voice.lang
-          .toLowerCase()
-          .startsWith("de")
-    ) ||
-
-    null
-  );
-
-}
-
-
-function speakGerman(
-  text
-) {
-
-  return new Promise(
-    resolve => {
-
-      if (
-        !window.speechSynthesis
-      ) {
-
-        resolve();
-
-        return;
-
-      }
-
-
-      window.speechSynthesis
-        .cancel();
-
-
-      const utterance =
-        new SpeechSynthesisUtterance(
-          text
-        );
-
-
-      utterance.lang =
-        "de-DE";
-
-      utterance.rate =
-        0.92;
-
-      utterance.pitch =
-        1;
-
-      utterance.volume =
-        1;
-
-
-      const voice =
-        getGermanVoice();
-
-
-      if (voice) {
-        utterance.voice =
-          voice;
-      }
-
-
-      utterance.onend =
-        () =>
-          resolve();
-
-
-      utterance.onerror =
-        () =>
-          resolve();
-
-
-      window.speechSynthesis
-        .speak(
-          utterance
-        );
-
-    }
-  );
-
-}
-
-
-function stopSpeaking() {
-
-  if (
-    window.speechSynthesis
-  ) {
-
-    window.speechSynthesis
-      .cancel();
-
-  }
-
-}
-
-
-function supportedMimeType() {
-
-  const options = [
-
-    "audio/webm;codecs=opus",
-
-    "audio/webm",
-
-    "audio/ogg;codecs=opus",
-
-    "audio/mp4"
-
-  ];
-
-
-  return options.find(
-    type =>
-      window.MediaRecorder &&
-      MediaRecorder.isTypeSupported(
-        type
-      )
-  ) || "";
-
-}
-
-
-function formatTime(
-  milliseconds
-) {
-
-  const total =
-    Math.floor(
-      milliseconds / 1000
-    );
-
-
-  const minutes =
-    String(
-      Math.floor(
-        total / 60
-      )
-    ).padStart(
-      2,
-      "0"
-    );
-
-
-  const seconds =
-    String(
-      total % 60
-    ).padStart(
-      2,
-      "0"
-    );
-
-
-  return `${minutes}:${seconds}`;
-
-}
-
-
-function updateRecordingUI() {
-
-  $("recordingPanel")
-    .classList.toggle(
-      "active",
-      isRecording
-    );
-
-
-  startRecordingButton.disabled =
-    isRecording ||
-    isSending;
-
-
-  stopRecordingButton.disabled =
-    !isRecording;
-
-
-  startRecordingButton.textContent =
-    isRecording
-      ? "⏺️ Aufnahme läuft"
-      : "⏺️ Aufnahme starten";
-
-
-  stopRecordingButton.textContent =
-    isRecording
-      ? `⏹️ Aufnahme stoppen (${formatTime(
-          Date.now() -
-          recordingStartedAt
-        )})`
-      : "⏹️ Aufnahme stoppen";
-
-}
-
-
-function startTimer() {
-
-  clearInterval(
-    recordingTimer
-  );
-
-
-  recordingTimer =
-    setInterval(
-      () => {
-
-        const elapsed =
-          Date.now() -
-          recordingStartedAt;
-
-
-        $("recordingTimer")
-          .textContent =
-            formatTime(
-              elapsed
+        } else if (word && typeof word === "object") {
+          const german =
+            cleanString(
+              word.german || word.word
             );
 
-
-        stopRecordingButton
-          .textContent =
-            `⏹️ Aufnahme stoppen (${formatTime(
-              elapsed
-            )})`;
-
-
-        if (
-          elapsed >=
-          MAX_RECORDING_MS
-        ) {
-
-          stopRecording();
-
+          if (german) {
+            data.knownVocabulary.push({
+              word: german,
+              meaning:
+                cleanString(
+                  word.meaning ||
+                  word.translation ||
+                  word.english
+                ),
+              date: new Date().toISOString()
+            });
+          }
         }
+      }
 
-      },
-      250
+      data.knownVocabulary =
+        data.knownVocabulary.slice(-200);
+    }
+
+    if (result.learning) {
+      updateLearningProfile(result.learning);
+    }
+
+    markLearningDay();
+    saveData();
+    renderChat();
+    renderProgress();
+
+    if (
+      options.fromVoice ||
+      handsFree.checked
+    ) {
+      speakText(reply);
+    }
+
+  } catch (error) {
+    console.error(error);
+
+    showStatus(
+      chatStatus,
+      error.message ||
+        "Ein Fehler ist aufgetreten.",
+      "error"
     );
 
+  } finally {
+    isSending = false;
+
+    sendButton.disabled = false;
+    startRecordingButton.disabled = false;
+  }
 }
 
+/* =========================================================
+   LEARNING PROFILE
+========================================================= */
 
-function stopTimer() {
+function updateLearningProfile(learning) {
+  if (!learning || typeof learning !== "object") {
+    return;
+  }
 
-  clearInterval(
-    recordingTimer
+  let id =
+    normalizeSkillId(
+      learning.skillId ||
+      learning.id ||
+      learning.skill
+    );
+
+  if (!id) return;
+
+  let profile =
+    normalizeProfile(data.profile);
+
+  let item =
+    profile.find(x => x.id === id);
+
+  if (!item) {
+    item = {
+      id,
+      label:
+        SKILLS[id]?.label ||
+        cleanString(learning.label, id),
+      attempts: 0,
+      correct: 0
+    };
+
+    profile.push(item);
+  }
+
+  const correct =
+    learning.correct === true ||
+    learning.success === true;
+
+  item.attempts += 1;
+
+  if (correct) {
+    item.correct += 1;
+  }
+
+  data.profile = profile;
+}
+
+/* =========================================================
+   PROGRESS
+========================================================= */
+
+function renderProgress() {
+  statAnswers.textContent =
+    String(data.answers);
+
+  statCorrections.textContent =
+    String(data.corrections);
+
+  statWords.textContent =
+    String(data.knownVocabulary.length);
+
+  statDays.textContent =
+    String(data.learningDays.length);
+
+  renderWords();
+  renderMistakes();
+  renderProfile();
+}
+
+function renderWords() {
+  wordList.innerHTML = "";
+
+  const words =
+    data.knownVocabulary
+      .slice()
+      .reverse()
+      .slice(0, 30);
+
+  wordsEmpty.style.display =
+    words.length ? "none" : "block";
+
+  for (const item of words) {
+    const li =
+      document.createElement("li");
+
+    if (typeof item === "string") {
+      li.textContent = item;
+    } else {
+      li.textContent =
+        item.meaning
+          ? item.word + " — " + item.meaning
+          : item.word;
+    }
+
+    wordList.appendChild(li);
+  }
+}
+
+function renderMistakes() {
+  mistakeList.innerHTML = "";
+
+  const mistakes =
+    data.mistakes
+      .slice()
+      .reverse()
+      .slice(0, 20);
+
+  mistakesEmpty.style.display =
+    mistakes.length ? "none" : "block";
+
+  for (const mistake of mistakes) {
+    const li =
+      document.createElement("li");
+
+    li.innerHTML =
+      "<strong>Du:</strong> " +
+      escapeText(mistake.userText) +
+      "<br><strong>Besser:</strong> " +
+      escapeText(mistake.correction);
+
+    if (mistake.explanation) {
+      li.innerHTML +=
+        "<br><span class='small'>" +
+        escapeText(mistake.explanation) +
+        "</span>";
+    }
+
+    mistakeList.appendChild(li);
+  }
+}
+
+function renderProfile() {
+  profileList.innerHTML = "";
+
+  const profile =
+    normalizeProfile(data.profile);
+
+  if (!profile.length) {
+    profileList.innerHTML =
+      "<div class='small'>" +
+      "Noch kein Lernprofil. " +
+      "Sprich oder schreibe mit dem Coach, " +
+      "um dein Profil aufzubauen." +
+      "</div>";
+
+    return;
+  }
+
+  for (const item of profile) {
+    const attempts =
+      Math.max(0, Number(item.attempts));
+
+    const correct =
+      Math.max(0, Number(item.correct));
+
+    const percentage =
+      attempts
+        ? Math.round(
+            (correct / attempts) * 100
+          )
+        : 0;
+
+    const wrapper =
+      document.createElement("div");
+
+    wrapper.className = "profile-item";
+
+    wrapper.innerHTML =
+      "<div class='profile-title'>" +
+      escapeText(item.label) +
+      "</div>" +
+      "<div class='small'>" +
+      correct +
+      " von " +
+      attempts +
+      " Versuchen erfolgreich (" +
+      percentage +
+      "%)" +
+      "</div>" +
+      "<div class='profile-bar'>" +
+      "<div class='profile-bar-inner' style='width:" +
+      Math.min(100, percentage) +
+      "%'></div>" +
+      "</div>";
+
+    profileList.appendChild(wrapper);
+  }
+}
+
+/* =========================================================
+   SPEECH SYNTHESIS
+========================================================= */
+
+let currentSpeech = null;
+
+function speakText(text) {
+  if (!("speechSynthesis" in window)) {
+    return;
+  }
+
+  stopSpeech();
+
+  const utterance =
+    new SpeechSynthesisUtterance(text);
+
+  utterance.lang = "de-DE";
+  utterance.rate = 0.92;
+  utterance.pitch = 1;
+
+  const voices =
+    speechSynthesis.getVoices();
+
+  const germanVoice =
+    voices.find(v =>
+      v.lang &&
+      v.lang.toLowerCase().startsWith("de")
+    );
+
+  if (germanVoice) {
+    utterance.voice = germanVoice;
+  }
+
+  currentSpeech = utterance;
+
+  utterance.onend = () => {
+    currentSpeech = null;
+  };
+
+  utterance.onerror = () => {
+    currentSpeech = null;
+  };
+
+  speechSynthesis.speak(utterance);
+}
+
+function stopSpeech() {
+  if ("speechSynthesis" in window) {
+    speechSynthesis.cancel();
+  }
+
+  currentSpeech = null;
+}
+
+stopVoiceButton.addEventListener(
+  "click",
+  stopSpeech
+);
+
+if ("speechSynthesis" in window) {
+  speechSynthesis.onvoiceschanged = () => {};
+}
+
+/* =========================================================
+   MEDIA RECORDER
+========================================================= */
+
+let mediaRecorder = null;
+let mediaStream = null;
+let recordingChunks = [];
+let recordingStartedAt = 0;
+let recordingTimer = null;
+let isRecording = false;
+let recordingMimeType = "";
+
+function supportedMimeType() {
+  if (
+    typeof MediaRecorder === "undefined"
+  ) {
+    return "";
+  }
+
+  const types = [
+    "audio/webm;codecs=opus",
+    "audio/webm",
+    "audio/ogg;codecs=opus",
+    "audio/mp4"
+  ];
+
+  for (const type of types) {
+    try {
+      if (MediaRecorder.isTypeSupported(type)) {
+        return type;
+      }
+    } catch (_) {}
+  }
+
+  return "";
+}
+
+function formatTime(ms) {
+  const totalSeconds =
+    Math.floor(ms / 1000);
+
+  const minutes =
+    Math.floor(totalSeconds / 60);
+
+  const seconds =
+    totalSeconds % 60;
+
+  return (
+    String(minutes).padStart(2, "0") +
+    ":" +
+    String(seconds).padStart(2, "0")
   );
-
-  recordingTimer =
-    null;
-
 }
 
+function updateRecordingTimer() {
+  if (!isRecording) return;
+
+  const elapsed =
+    Date.now() - recordingStartedAt;
+
+  recordingTime.textContent =
+    formatTime(elapsed);
+
+  if (elapsed >= MAX_RECORDING_MS) {
+    stopRecording();
+  }
+}
 
 async function startRecording() {
-
-  if (
-    isRecording ||
-    isSending
-  ) {
+  if (isRecording || isSending) {
     return;
   }
 
+  clearStatus(recordingStatus);
 
-  clearError();
+  if (!navigator.mediaDevices ||
+      !navigator.mediaDevices.getUserMedia) {
 
-  stopSpeaking();
-
-
-  if (
-    !navigator.mediaDevices ||
-    !navigator.mediaDevices
-      .getUserMedia ||
-    !window.MediaRecorder
-  ) {
-
-    showError(
-      "Dieser Browser unterstützt keine längeren Audioaufnahmen. Bitte nutze einen aktuellen Chrome- oder Safari-Browser."
+    showStatus(
+      recordingStatus,
+      "Dein Browser unterstützt keine Mikrofonaufnahme.",
+      "error"
     );
 
     return;
-
   }
 
+  if (typeof MediaRecorder === "undefined") {
+    showStatus(
+      recordingStatus,
+      "Dein Browser unterstützt keine Audioaufnahme.",
+      "error"
+    );
+
+    return;
+  }
 
   const mime =
     supportedMimeType();
 
-
   if (!mime) {
-
-    showError(
-      "Dieses Gerät unterstützt kein kompatibles Audioformat für die Aufnahme."
+    showStatus(
+      recordingStatus,
+      "Dieses Gerät unterstützt kein kompatibles Audioformat.",
+      "error"
     );
 
     return;
-
   }
 
-
   try {
+    mediaStream =
+      await navigator.mediaDevices.getUserMedia({
+        audio: {
+          channelCount: 1,
+          echoCancellation: true,
+          noiseSuppression: true,
+          autoGainControl: true
+        }
+      });
 
-    const stream =
-      await navigator.mediaDevices
-        .getUserMedia({
-
-          audio: {
-
-            channelCount:
-              1,
-
-            echoCancellation:
-              true,
-
-            noiseSuppression:
-              true,
-
-            autoGainControl:
-              true
-
-          }
-
-        });
-
-
-    recordingChunks =
-      [];
-
+    recordingMimeType = mime;
 
     mediaRecorder =
       new MediaRecorder(
-        stream,
-        {
-          mimeType:
-            mime
-        }
+        mediaStream,
+        { mimeType: mime }
       );
 
+    recordingChunks = [];
 
-    isRecording =
-      true;
-
-
-    recordingStartedAt =
-      Date.now();
-
-
-    updateRecordingUI();
-
-    startTimer();
-
-
-    setStatus(
-      "🎙️ Aufnahme läuft – sprich in deinem Tempo..."
-    );
-
-
-    mediaRecorder
-      .ondataavailable =
-        event => {
-
-          if (
-            event.data &&
-            event.data.size
-          ) {
-
-            recordingChunks.push(
-              event.data
-            );
-
-          }
-
-        };
-
+    mediaRecorder.ondataavailable =
+      event => {
+        if (
+          event.data &&
+          event.data.size > 0
+        ) {
+          recordingChunks.push(
+            event.data
+          );
+        }
+      };
 
     mediaRecorder.onerror =
-      () => {
+      event => {
+        console.error(
+          "MediaRecorder error:",
+          event
+        );
 
-        showError(
-          "Die Aufnahme ist fehlgeschlagen. Bitte versuche es erneut."
+        showStatus(
+          recordingStatus,
+          "Die Aufnahme ist fehlgeschlagen.",
+          "error"
         );
 
         cleanupRecording();
-
       };
-
 
     mediaRecorder.onstop =
       async () => {
-
-        stream
-          .getTracks()
-          .forEach(
-            track =>
-              track.stop()
-          );
-
-
-        stopTimer();
-
-
-        isRecording =
-          false;
-
-
-        updateRecordingUI();
-
-
         const blob =
           new Blob(
             recordingChunks,
-            {
-              type:
-                mime
-            }
+            { type: recordingMimeType }
           );
 
+        cleanupRecording();
 
-        recordingChunks =
-          [];
-
-        mediaRecorder =
-          null;
-
-
-        if (
-          blob.size <
-          1000
-        ) {
-
-          setStatus(
-            "Bereit"
+        if (!blob.size) {
+          showStatus(
+            recordingStatus,
+            "Die Aufnahme war leer.",
+            "error"
           );
-
-          showError(
-            "Die Aufnahme war zu kurz oder leer."
-          );
-
           return;
-
         }
-
 
         await transcribeRecording(
           blob,
-          mime
+          recordingMimeType
         );
-
       };
 
+    mediaRecorder.start(1000);
 
-    mediaRecorder.start(
-      1000
+    isRecording = true;
+    recordingStartedAt = Date.now();
+
+    recordingTime.textContent = "00:00";
+
+    startRecordingButton.disabled = true;
+    stopRecordingButton.disabled = false;
+
+    showStatus(
+      recordingStatus,
+      "🔴 Aufnahme läuft. Sprich jetzt...",
+      "success"
     );
+
+    recordingTimer =
+      setInterval(
+        updateRecordingTimer,
+        500
+      );
 
   } catch (error) {
-
-    showError(
-      error.name ===
-      "NotAllowedError"
-
-        ? "Mikrofonzugriff wurde nicht erlaubt. Bitte erlaube den Mikrofonzugriff im Browser."
-
-        : "Das Mikrofon konnte nicht gestartet werden."
-    );
-
+    console.error(error);
 
     cleanupRecording();
 
+    let message =
+      "Mikrofonzugriff konnte nicht gestartet werden.";
+
+    if (error?.name === "NotAllowedError") {
+      message =
+        "Der Mikrofonzugriff wurde verweigert. " +
+        "Erlaube dem Browser den Mikrofonzugriff " +
+        "und versuche es erneut.";
+    }
+
+    showStatus(
+      recordingStatus,
+      message,
+      "error"
+    );
   }
-
 }
-
 
 function cleanupRecording() {
+  isRecording = false;
 
-  if (
-    mediaRecorder &&
-    mediaRecorder.stream
-  ) {
-
-    mediaRecorder.stream
-      .getTracks()
-      .forEach(
-        track =>
-          track.stop()
-      );
-
+  if (recordingTimer) {
+    clearInterval(recordingTimer);
+    recordingTimer = null;
   }
 
+  if (mediaStream) {
+    for (const track of mediaStream.getTracks()) {
+      track.stop();
+    }
+  }
 
-  mediaRecorder =
-    null;
+  mediaStream = null;
 
-  recordingChunks =
-    [];
+  startRecordingButton.disabled =
+    isSending;
 
-  isRecording =
-    false;
+  stopRecordingButton.disabled = true;
 
-  stopTimer();
-
-  updateRecordingUI();
-
+  recordingTime.textContent = "00:00";
 }
 
-
 function stopRecording() {
-
-  if (
-    !isRecording ||
-    !mediaRecorder
-  ) {
+  if (!isRecording) {
     return;
   }
 
-
-  setStatus(
+  showStatus(
+    recordingStatus,
     "⏳ Aufnahme wird verarbeitet..."
   );
 
-
-  try {
-
+  if (
+    mediaRecorder &&
+    mediaRecorder.state !== "inactive"
+  ) {
     mediaRecorder.stop();
-
-  } catch {
-
-    cleanupRecording();
-
-    showError(
-      "Die Aufnahme konnte nicht beendet werden."
-    );
-
   }
-
 }
-
 
 async function transcribeRecording(
   blob,
   mime
 ) {
-
-  clearError();
-
-
-  setStatus(
-    "📝 Ich höre mir deine Aufnahme an..."
-  );
-
-
-  startRecordingButton.disabled =
-    true;
-
-
-  const extension =
-    mime.includes("mp4")
-      ? "mp4"
-      : mime.includes("ogg")
-        ? "ogg"
-        : "webm";
-
-
-  const form =
-    new FormData();
-
-
-  form.append(
-    "audio",
-    blob,
-    `deutsch-coach-${Date.now()}.${extension}`
-  );
-
+  startRecordingButton.disabled = true;
+  stopRecordingButton.disabled = true;
 
   try {
+    const extension =
+      mime.includes("ogg")
+        ? "ogg"
+        : mime.includes("mp4")
+          ? "mp4"
+          : "webm";
+
+    const form =
+      new FormData();
+
+    form.append(
+      "audio",
+      blob,
+      "deutsch-coach." + extension
+    );
+
+    showStatus(
+      recordingStatus,
+      "⏳ Deine Aufnahme wird in Text umgewandelt..."
+    );
 
     const result =
       await requestJson(
         TRANSCRIBE_URL,
         {
-          method:
-            "POST",
-
-          body:
-            form
-        },
-        90000
+          method: "POST",
+          body: form
+        }
       );
-
 
     const transcript =
-      String(
-        result.text ||
-        ""
-      ).trim();
-
+      cleanString(result.text);
 
     if (!transcript) {
-
       throw new Error(
-        "Ich konnte keine klare Sprache erkennen."
+        "Die Aufnahme enthielt keinen verständlichen Text."
       );
-
     }
 
+    messageInput.value = transcript;
 
-    input.value =
-      transcript;
-
-
-    setStatus(
-      "✓ Verstanden: " +
-      transcript
+    showStatus(
+      recordingStatus,
+      "✅ Erkannt: " + transcript,
+      "success"
     );
 
-
-    await sendMessage();
+    await sendMessage({
+      text: transcript,
+      fromVoice: true
+    });
 
   } catch (error) {
-
-    showError(
-      error.message ||
-      "Die Aufnahme konnte nicht verarbeitet werden."
+    console.error(
+      "Transcription error:",
+      error
     );
 
-
-    setStatus(
-      "Bereit"
+    showStatus(
+      recordingStatus,
+      error.message ||
+        "Die Aufnahme konnte nicht transkribiert werden.",
+      "error"
     );
 
   } finally {
-
     startRecordingButton.disabled =
       isSending;
-
   }
-
 }
 
-
-function exportData() {
-
-  const payload =
-    {
-      ...data,
-
-      exportedAt:
-        new Date()
-          .toISOString(),
-
-      app:
-        "Deutsch Coach"
-
-    };
-
-
-  const blob =
-    new Blob(
-      [
-        JSON.stringify(
-          payload,
-          null,
-          2
-        )
-      ],
-      {
-        type:
-          "application/json"
-      }
-    );
-
-
-  const url =
-    URL.createObjectURL(
-      blob
-    );
-
-
-  const link =
-    document.createElement(
-      "a"
-    );
-
-
-  link.href =
-    url;
-
-  link.download =
-    "deutsch-coach-backup.json";
-
-
-  link.click();
-
-
-  setTimeout(
-    () =>
-      URL.revokeObjectURL(
-        url
-      ),
-    1000
-  );
-
-}
-
-
-function importData(
-  file
-) {
-
-  const reader =
-    new FileReader();
-
-
-  reader.onload =
-    () => {
-
-      try {
-
-        const parsed =
-          JSON.parse(
-            reader.result
-          );
-
-
-        if (
-          !parsed ||
-          typeof parsed !==
-            "object"
-        ) {
-
-          throw new Error();
-
-        }
-
-
-        const next =
-          {
-            ...defaultData,
-            ...parsed
-          };
-
-
-        if (
-          !LEVEL_DESCRIPTIONS[
-            next.level
-          ]
-        ) {
-
-          next.level =
-            "A1";
-
-        }
-
-
-        next.messages =
-          safeArray(
-            next.messages
-          )
-            .filter(
-              message =>
-                message &&
-                (
-                  message.role ===
-                    "user" ||
-                  message.role ===
-                    "assistant"
-                ) &&
-                typeof message.content ===
-                  "string"
-            )
-            .slice(-40);
-
-
-        next.vocabulary =
-          safeArray(
-            next.vocabulary
-          );
-
-
-        next.mistakes =
-          safeArray(
-            next.mistakes
-          );
-
-
-        next.learningProfile =
-          normaliseProfile(
-            next.learningProfile
-          );
-
-
-        data =
-          next;
-
-
-        saveData();
-
-
-        levelSelect.value =
-          data.level;
-
-
-        updateLevelDescription();
-
-        syncTopicButtons();
-
-        renderAll();
-
-
-        setStatus(
-          "✓ Daten importiert."
-        );
-
-      } catch {
-
-        showError(
-          "Die Datei ist kein gültiges Deutsch-Coach-Backup."
-        );
-
-      }
-
-    };
-
-
-  reader.readAsText(
-    file
-  );
-
-}
-
-
-function resetAll() {
-
-  if (
-    !confirm(
-      "Möchtest du wirklich alle Lerndaten löschen? Dieser Vorgang kann nicht rückgängig gemacht werden."
-    )
-  ) {
-    return;
+/* =========================================================
+   BUTTON EVENTS
+========================================================= */
+
+sendButton.addEventListener(
+  "click",
+  () => sendMessage()
+);
+
+messageInput.addEventListener(
+  "keydown",
+  event => {
+    if (
+      event.key === "Enter" &&
+      !event.shiftKey
+    ) {
+      event.preventDefault();
+      sendMessage();
+    }
   }
+);
 
+startRecordingButton.addEventListener(
+  "click",
+  startRecording
+);
 
-  stopSpeaking();
-
-  cleanupRecording();
-
-
-  localStorage.removeItem(
-    STORAGE_KEY
-  );
-
-
-  localStorage.removeItem(
-    "deutschCoachDataV4"
-  );
-
-
-  data =
-    structuredClone(
-      defaultData
-    );
-
-
-  levelSelect.value =
-    "A1";
-
-
-  updateLevelDescription();
-
-  syncTopicButtons();
-
-  renderAll();
-
-
-  setStatus(
-    "Alle Lerndaten wurden gelöscht."
-  );
-
-}
-
-
-function syncTopicButtons() {
-
-  document
-    .querySelectorAll(
-      "[data-topic]"
-    )
-    .forEach(
-      button =>
-        button.classList.toggle(
-          "active",
-          button.dataset.topic ===
-            data.topic
-        )
-    );
-
-}
-
-
-function renderAll() {
-
-  updateLevelDescription();
-
-  renderConversation();
-
-  renderVocabulary();
-
-  renderMistakes();
-
-  renderLearningProfile();
-
-  updateStats();
-
-
-  handsFreeButton.textContent =
-    data.handsFree
-      ? "🔄 Freisprechen: An"
-      : "🔄 Freisprechen: Aus";
-
-
-  updateRecordingUI();
-
-}
-
-
-levelSelect.value =
-  data.level;
-
+stopRecordingButton.addEventListener(
+  "click",
+  stopRecording
+);
 
 levelSelect.addEventListener(
   "change",
   () => {
-
-    data.level =
-      levelSelect.value;
-
+    data.level = levelSelect.value;
     saveData();
-
-    updateLevelDescription();
-
-    setStatus(
-      `Niveau gespeichert: ${data.level}`
-    );
-
   }
 );
 
+topicSelect.addEventListener(
+  "change",
+  () => {
+    data.topic = topicSelect.value;
+    saveData();
+  }
+);
 
-document
-  .querySelectorAll(
-    "[data-topic]"
-  )
-  .forEach(
-    button =>
-      button.addEventListener(
-        "click",
-        () => {
+/* =========================================================
+   EXPORT
+========================================================= */
 
-          data.topic =
-            button.dataset.topic ||
-            "";
-
-          saveData();
-
-          syncTopicButtons();
-
-
-          setStatus(
-            data.topic
-              ? `Thema: ${data.topic}`
-              : "Freies Gespräch"
-          );
-
-        }
-      )
-  );
-
-
-sendButton.addEventListener(
+exportButton.addEventListener(
   "click",
-  sendMessage
-);
+  () => {
+    try {
+      const content =
+        JSON.stringify(
+          normalizeData(data),
+          null,
+          2
+        );
 
+      const blob =
+        new Blob(
+          [content],
+          { type: "application/json" }
+        );
 
-input.addEventListener(
-  "keydown",
-  event => {
+      const url =
+        URL.createObjectURL(blob);
 
-    if (
-      event.key ===
-        "Enter" &&
-      !event.shiftKey
-    ) {
+      const link =
+        document.createElement("a");
 
-      event.preventDefault();
+      link.href = url;
 
-      sendMessage();
+      link.download =
+        "deutsch-coach-backup.json";
 
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+
+      setTimeout(
+        () => URL.revokeObjectURL(url),
+        1000
+      );
+
+      showStatus(
+        dataStatus,
+        "✅ Deine Daten wurden exportiert.",
+        "success"
+      );
+
+    } catch (error) {
+      console.error(error);
+
+      showStatus(
+        dataStatus,
+        "Der Export ist fehlgeschlagen.",
+        "error"
+      );
     }
-
   }
 );
 
+/* =========================================================
+   IMPORT
+========================================================= */
 
-startRecordingButton
-  .addEventListener(
-    "click",
-    startRecording
-  );
+importButton.addEventListener(
+  "click",
+  () => importFile.click()
+);
 
+importFile.addEventListener(
+  "change",
+  async () => {
+    const file =
+      importFile.files?.[0];
 
-stopRecordingButton
-  .addEventListener(
-    "click",
-    stopRecording
-  );
+    if (!file) return;
 
+    try {
+      const text =
+        await file.text();
 
-handsFreeButton
-  .addEventListener(
-    "click",
-    () => {
+      const parsed =
+        JSON.parse(text);
 
-      data.handsFree =
-        !data.handsFree;
+      data =
+        normalizeData(parsed);
+
+      levelSelect.value =
+        data.level;
+
+      topicSelect.value =
+        data.topic;
 
       saveData();
+      renderChat();
+      renderProgress();
 
-      renderAll();
-
-
-      setStatus(
-        data.handsFree
-          ? "Freisprechen ist an. Nach Antworten startet die nächste Aufnahme automatisch."
-          : "Freisprechen ist aus."
+      showStatus(
+        dataStatus,
+        "✅ Deine Daten wurden importiert.",
+        "success"
       );
 
-    }
-  );
+    } catch (error) {
+      console.error(error);
 
-
-stopSpeakingButton
-  .addEventListener(
-    "click",
-    () => {
-
-      stopSpeaking();
-
-      setStatus(
-        "Stimme gestoppt."
+      showStatus(
+        dataStatus,
+        "Die Datei konnte nicht importiert werden.",
+        "error"
       );
 
+    } finally {
+      importFile.value = "";
     }
-  );
+  }
+);
 
+/* =========================================================
+   DELETE DATA
+========================================================= */
 
-$("exportButton")
-  .addEventListener(
-    "click",
-    exportData
-  );
+deleteButton.addEventListener(
+  "click",
+  () => {
+    const confirmed =
+      confirm(
+        "Möchtest du wirklich alle Deutsch-Coach-Daten löschen?"
+      );
 
+    if (!confirmed) return;
 
-$("importButton")
-  .addEventListener(
-    "click",
-    () =>
-      $("importFile").click()
-  );
+    data =
+      createDefaultData();
 
+    levelSelect.value =
+      data.level;
 
-$("importFile")
-  .addEventListener(
-    "change",
-    event => {
+    topicSelect.value =
+      data.topic;
 
-      const file =
-        event.target.files &&
-        event.target.files[0];
+    saveData();
+    renderChat();
+    renderProgress();
 
+    showStatus(
+      dataStatus,
+      "Alle Daten wurden gelöscht.",
+      "success"
+    );
+  }
+);
 
-      if (file) {
-        importData(file);
-      }
+/* =========================================================
+   STARTUP
+========================================================= */
 
+levelSelect.value =
+  data.level;
 
-      event.target.value =
-        "";
+topicSelect.value =
+  data.topic;
 
-    }
-  );
+renderChat();
+renderProgress();
 
-
-$("resetButton")
-  .addEventListener(
-    "click",
-    resetAll
-  );
-
-
-if (
-  window.speechSynthesis
-) {
-
-  window.speechSynthesis
-    .onvoiceschanged =
-      () => {};
-
-}
-
-
-syncTopicButtons();
-
-renderAll();
-
-saveData();
+clearStatus(chatStatus);
+clearStatus(recordingStatus);
+clearStatus(dataStatus);
 
 </script>
 
