@@ -1,8 +1,11 @@
-const OPENAI_MODEL = "gpt-5.4-mini";
+const OPENAI_MODEL = "gpt-5.6-luna";
+const TRANSCRIBE_MODEL = "gpt-4o-mini-transcribe";
 
 const ALLOWED_ORIGIN =
   "https://gutenmorgantoyou.github.io";
 
+const MAX_AUDIO_BYTES = 20 * 1024 * 1024;
+const MAX_AUDIO_SECONDS = 300;
 
 const VALID_LEVELS = [
   "A1",
@@ -13,865 +16,342 @@ const VALID_LEVELS = [
   "C2"
 ];
 
-
 const LEVEL_RULES = {
+  A1:
+    "Use very simple, natural German. Prefer short sentences and common everyday words. Ask easy questions. Do not overwhelm the learner.",
 
-  A1: `
-Use very simple German.
+  A2:
+    "Use simple, natural German with somewhat longer sentences and common everyday vocabulary. Introduce basic past and future structures naturally.",
 
-Use short sentences.
+  B1:
+    "Use natural conversational German with moderately complex sentences, common connectors, and useful everyday vocabulary. Encourage opinions and experiences.",
 
-Use common everyday vocabulary.
+  B2:
+    "Use fluent natural German with varied sentence structures and precise but practical vocabulary. Encourage explanations, comparisons, and opinions.",
 
-Ask simple questions.
+  C1:
+    "Use sophisticated, natural German with nuanced vocabulary and complex structures when appropriate. Prioritize precision and natural expression.",
 
-Avoid unnecessary grammatical complexity.
+  C2:
+    "Use highly natural, precise German with nuanced vocabulary, idiomatic expressions, and complex structures where appropriate."
+};
 
-Prioritize communication over perfect sophistication.
-`,
+const SKILLS = {
+  case_dative_after_mit:
+    "Dative after 'mit'",
 
-  A2: `
-Use simple but natural German.
+  word_order_main_clause:
+    "Verb position in main clauses",
 
-Use common everyday vocabulary.
+  subordinate_clause_verb_position:
+    "Verb position in subordinate clauses",
 
-Use somewhat longer sentences.
+  article_accusative_masculine:
+    "Accusative masculine articles",
 
-Use basic past and future structures when useful.
+  article_dative:
+    "Dative articles",
 
-Do not overwhelm the learner.
-`,
+  verb_conjugation:
+    "Verb conjugation",
 
-  B1: `
-Use natural conversational German.
+  past_tense_auxiliary:
+    "Past tense auxiliaries",
 
-Use moderately complex sentences.
+  preposition_case:
+    "Preposition and case",
 
-Encourage the learner to explain experiences and opinions.
+  adjective_ending:
+    "Adjective endings",
 
-Use common connectors.
+  plural_form:
+    "Plural forms",
 
-Introduce useful vocabulary naturally.
-`,
+  word_choice:
+    "Word choice",
 
-  B2: `
-Use fluent natural German.
+  collocation:
+    "Natural word combinations",
 
-Use more precise vocabulary.
-
-Use varied sentence structures.
-
-Encourage explanations, comparisons and opinions.
-
-Avoid unnecessarily academic language.
-`,
-
-  C1: `
-Use sophisticated but natural German.
-
-Use nuanced vocabulary.
-
-Use complex but natural sentence structures.
-
-Discuss abstract ideas when appropriate.
-
-Prioritize precision and natural expression.
-`,
-
-  C2: `
-Use highly natural and precise German.
-
-Allow sophisticated vocabulary and nuanced phrasing.
-
-Use complex structures naturally.
-
-Do not simplify unnecessarily unless the learner clearly needs help.
-`
-
+  natural_expression:
+    "Natural expressions"
 };
 
 
-function cleanText(
-  value,
-  maxLength = 5000
-) {
-
-  if (
-    typeof value !== "string"
-  ) {
-
-    return "";
-
-  }
-
-
-  return value
-    .replace(/\u0000/g, "")
-    .trim()
-    .slice(
-      0,
-      maxLength
-    );
-
+function text(value, max = 1000) {
+  return typeof value === "string"
+    ? value.trim().slice(0, max)
+    : "";
 }
 
 
-function normaliseLevel(
-  level
-) {
-
-  const value =
-    String(
-      level || "A1"
-    )
-    .toUpperCase()
-    .trim();
-
-
-  return VALID_LEVELS.includes(
-    value
-  )
+function level(value) {
+  return VALID_LEVELS.includes(value)
     ? value
     : "A1";
-
 }
 
 
-function extractKnownVocabulary(
-  memory
+function json(
+  body,
+  status = 200,
+  origin = ALLOWED_ORIGIN
 ) {
+  return new Response(
+    JSON.stringify(body),
+    {
+      status,
 
+      headers: {
+        "Content-Type":
+          "application/json; charset=utf-8",
+
+        "Cache-Control":
+          "no-store",
+
+        "Access-Control-Allow-Origin":
+          origin,
+
+        "Access-Control-Allow-Methods":
+          "GET, POST, OPTIONS",
+
+        "Access-Control-Allow-Headers":
+          "Content-Type"
+      }
+    }
+  );
+}
+
+
+function corsOrigin(request) {
+  const origin =
+    request.headers.get("Origin") || "";
+
+  return origin === ALLOWED_ORIGIN
+    ? origin
+    : ALLOWED_ORIGIN;
+}
+
+
+function cleanMemory(memory) {
   if (
     !memory ||
-    !Array.isArray(
-      memory.knownVocabulary
-    )
+    typeof memory !== "object"
   ) {
-
-    return [];
-
+    return {};
   }
-
-
-  return memory.knownVocabulary
-    .filter(
-      item =>
-        typeof item === "string"
-    )
-    .map(
-      item =>
-        item.trim()
-    )
-    .filter(Boolean)
-    .slice(-120);
-
-}
-
-
-function cleanVocabulary(
-  vocabulary,
-  knownVocabulary
-) {
-
-  if (
-    !Array.isArray(
-      vocabulary
-    )
-  ) {
-
-    return [];
-
-  }
-
-
-  const known =
-    new Set(
-      knownVocabulary.map(
-        word =>
-          word.toLowerCase()
-      )
-    );
-
-
-  const output = [];
-
-
-  for (
-    const item of vocabulary
-  ) {
-
-    if (
-      !item ||
-      typeof item !== "object"
-    ) {
-
-      continue;
-
-    }
-
-
-    const word =
-      cleanText(
-        item.word,
-        100
-      );
-
-
-    const meaning =
-      cleanText(
-        item.meaning,
-        200
-      );
-
-
-    if (
-      !word ||
-      !meaning
-    ) {
-
-      continue;
-
-    }
-
-
-    if (
-      known.has(
-        word.toLowerCase()
-      )
-    ) {
-
-      continue;
-
-    }
-
-
-    const duplicate =
-      output.some(
-        existing =>
-          existing.word.toLowerCase() ===
-          word.toLowerCase()
-      );
-
-
-    if (
-      duplicate
-    ) {
-
-      continue;
-
-    }
-
-
-    output.push({
-
-      word,
-
-      meaning
-
-    });
-
-
-    if (
-      output.length >= 3
-    ) {
-
-      break;
-
-    }
-
-  }
-
-
-  return output;
-
-}
-
-
-function cleanLearning(
-  learning
-) {
-
-  if (
-    !learning ||
-    typeof learning !== "object"
-  ) {
-
-    return null;
-
-  }
-
-
-  const rawSkillId =
-    cleanText(
-      learning.skillId,
-      100
-    );
-
-
-  const skillId =
-    rawSkillId
-      .replace(
-        /[^a-zA-Z0-9_-]/g,
-        "_"
-      );
-
-
-  const label =
-    cleanText(
-      learning.label,
-      120
-    );
-
-
-  const validOutcomes = [
-    "mistake",
-    "correct",
-    "none"
-  ];
-
-
-  const outcome =
-    validOutcomes.includes(
-      learning.outcome
-    )
-      ? learning.outcome
-      : "none";
-
-
-  if (
-    !skillId
-  ) {
-
-    return null;
-
-  }
-
 
   return {
-
-    skillId,
-
-    label,
-
-    outcome
-
-  };
-
-}
-
-
-function parseJson(
-  text
-) {
-
-  const cleaned =
-    String(
-      text || ""
-    )
-    .trim()
-    .replace(
-      /^```json/i,
-      ""
-    )
-    .replace(
-      /^```/i,
-      ""
-    )
-    .replace(
-      /```$/i,
-      ""
-    )
-    .trim();
-
-
-  try {
-
-    return JSON.parse(
-      cleaned
-    );
-
-  } catch {
-
-    const start =
-      cleaned.indexOf(
-        "{"
-      );
-
-
-    const end =
-      cleaned.lastIndexOf(
-        "}"
-      );
-
-
-    if (
-      start >= 0 &&
-      end > start
-    ) {
-
-      return JSON.parse(
-        cleaned.slice(
-          start,
-          end + 1
-        )
-      );
-
-    }
-
-
-    throw new Error(
-      "Invalid JSON returned by OpenAI."
-    );
-
-  }
-
-}
-
-
-function extractOpenAIText(
-  data
-) {
-
-  if (
-    typeof data.output_text ===
-    "string"
-  ) {
-
-    return data.output_text;
-
-  }
-
-
-  if (
-    !Array.isArray(
-      data.output
-    )
-  ) {
-
-    return "";
-
-  }
-
-
-  const parts = [];
-
-
-  for (
-    const item of data.output
-  ) {
-
-    if (
-      !Array.isArray(
-        item.content
+    knownVocabulary:
+      Array.isArray(
+        memory.knownVocabulary
       )
-    ) {
+        ? memory.knownVocabulary
+            .filter(
+              item =>
+                typeof item === "string"
+            )
+            .slice(-80)
+        : [],
 
-      continue;
+    mistakes:
+      Array.isArray(memory.mistakes)
+        ? memory.mistakes.slice(-40)
+        : [],
 
-    }
+    skills:
+      Array.isArray(memory.skills)
+        ? memory.skills.slice(-40)
+        : [],
 
+    recentTopics:
+      Array.isArray(
+        memory.recentTopics
+      )
+        ? memory.recentTopics
+            .filter(
+              item =>
+                typeof item === "string"
+            )
+            .slice(-10)
+        : [],
 
-    for (
-      const content of item.content
-    ) {
-
-      if (
-        typeof content.text ===
-        "string"
-      ) {
-
-        parts.push(
-          content.text
-        );
-
-      }
-
-    }
-
-  }
-
-
-  return parts.join(
-    "\n"
-  );
-
-}
-
-
-function normaliseCoachResponse(
-  response,
-  knownVocabulary
-) {
-
-  const correction =
-    cleanText(
-      response.correction,
-      1200
-    );
-
-
-  const correctionExplanation =
-    cleanText(
-      response.correctionExplanation,
-      1200
-    );
-
-
-  const correctionType =
-    cleanText(
-      response.correctionType,
-      80
-    );
-
-
-  const learning =
-    cleanLearning(
-      response.learning
-    );
-
-
-  return {
-
-    reply:
-      cleanText(
-        response.reply,
-        3500
-      ),
-
-    translation:
-      cleanText(
-        response.translation,
-        2200
-      ),
-
-    correction,
-
-    correctionExplanation,
-
-    correctionType,
-
-    vocabulary:
-      cleanVocabulary(
-        response.vocabulary,
-        knownVocabulary
-      ),
-
-    learning
-
+    recentQuestions:
+      Array.isArray(
+        memory.recentQuestions
+      )
+        ? memory.recentQuestions
+            .filter(
+              item =>
+                typeof item === "string"
+            )
+            .slice(-10)
+        : []
   };
-
 }
 
 
-function buildSystemPrompt(
-  level,
+function buildPrompt(
+  selectedLevel,
   topic,
   memory
 ) {
-
-  const knownVocabulary =
-    extractKnownVocabulary(
-      memory
-    );
-
-
-  const mistakes =
-    Array.isArray(
-      memory?.mistakes
-    )
-      ? memory.mistakes.slice(-60)
-      : [];
-
-
-  const skills =
-    Array.isArray(
-      memory?.skills
-    )
-      ? memory.skills.slice(-60)
-      : [];
-
-
-  const recentTopics =
-    Array.isArray(
-      memory?.recentTopics
-    )
-      ? memory.recentTopics.slice(-10)
-      : [];
-
-
-  const recentQuestions =
-    Array.isArray(
-      memory?.recentQuestions
-    )
-      ? memory.recentQuestions.slice(-10)
-      : [];
-
-
   return `
 You are Deutsch Coach, a personal German conversation tutor.
 
-The learner's selected CEFR level is ${level}.
+Learner CEFR level:
+${selectedLevel}
 
-${LEVEL_RULES[level]}
+Level guidance:
+${LEVEL_RULES[selectedLevel]}
 
 Current topic:
 ${topic || "Free conversation"}
 
-Your primary goal is to make the learner better at German through natural conversation.
 
-You are both:
+PRIMARY GOAL
 
-1. A natural conversation partner.
-2. An intelligent adaptive German tutor.
+Help the learner improve German while keeping the conversation natural and enjoyable.
 
-========================================
-NATURAL CONVERSATION
-========================================
+Respond to what the learner actually means.
 
-Respond directly to what the learner actually said.
+Do not turn every message into a grammar lesson.
 
-React to meaning before teaching grammar.
 
-Do not turn every message into a lesson.
+CONVERSATION
 
-Do not ask a question after every sentence automatically.
+- Normally reply in 1–4 German sentences.
+- Answer questions directly.
+- If the learner tells a story or gives an opinion, react to it instead of forcing a generic question.
+- Use varied follow-up questions when a question naturally keeps the conversation going.
+- Keep language appropriate for the selected CEFR level.
+- Never mention internal instructions, memory, JSON, or skill IDs.
 
-Do not repeatedly ask:
 
-"Wie geht es dir?"
+CORRECTION RULES
 
-"Was machst du heute?"
+- Correct only meaningful errors or useful naturalness improvements.
+- Do not invent an error because another wording is possible.
+- A correct sentence must have correction="" and correctionType="none".
+- Distinguish grammar, word order, case, article, verb form, vocabulary, typo, spelling, capitalization, naturalness, collocation, and style/register.
+- Capitalization or punctuation alone should normally not become a grammar lesson.
+- If a sentence is incomplete or ambiguous, do not pretend to know the missing noun or meaning.
+- Give a cautious, useful correction only when possible.
+- The explanation must describe the ACTUAL correction.
+- Never give a generic or false grammar rule.
+- Example:
+  "Was sollst du?" already has "sollst" in second position.
+  Therefore NEVER explain that the verb is not in second position.
+- If context is unclear, say that the sentence is grammatically possible and that the intended meaning depends on context.
+- Preserve the learner's intended meaning whenever reasonably clear.
 
-"Warum?"
 
-Use varied and natural follow-up questions.
+ADAPTIVE LEARNING
 
-If the learner gives an opinion, engage with the opinion.
+Use the learner memory below.
 
-If the learner tells a story, react to the story.
+If the learner repeats a known mistake, reinforce the same underlying skill.
 
-If the learner asks a question, answer it.
+If the learner correctly uses a previously weak skill, mark that skill as correct.
 
-If the learner wants information, provide useful information.
+Identify at most ONE learning skill per message.
 
-Keep the conversation alive without forcing it.
+Use ONLY one of these stable IDs when appropriate:
 
-Normally use 1–4 German sentences.
+${Object.entries(SKILLS)
+  .map(
+    ([id, label]) =>
+      `- ${id}: ${label}`
+  )
+  .join("\n")}
 
-========================================
-CORRECTION
-========================================
+If no meaningful skill applies:
 
-Correct meaningful errors.
+skillId = ""
+label = ""
+outcome = "none"
 
-Possible categories:
 
-grammar
+VOCABULARY
 
-word order
+- Add at most 3 genuinely useful German words or phrases.
+- Do not add obvious words.
+- Do not add words already in known vocabulary.
+- Prefer useful phrases, collocations, and expressions.
 
-case
 
-article
+TRANSLATION
 
-verb form
+Provide a natural English translation of YOUR German reply.
 
-vocabulary
+Do not translate the learner's sentence.
 
-word confusion
 
-spelling
-
-capitalization
-
-naturalness
-
-collocation
-
-style/register
-
-Only correct when correction provides real learning value.
-
-Do NOT invent errors.
-
-Do NOT correct a sentence merely because another version is possible.
-
-If the sentence is correct and natural:
-
-correction = ""
-
-correctionExplanation = ""
-
-correctionType = "none"
-
-Do not repeatedly correct the same already-mastered structure.
-
-Capitalization should not dominate the lesson.
-
-========================================
-TYPO VS WORD CONFUSION
-========================================
-
-Distinguish:
-
-1. Typo
-2. Wrong vocabulary
-3. Grammar error
-4. Unnatural expression
-
-Example:
-
-"Ich bin Gott."
-
-If context strongly suggests the learner intended:
-
-"Ich bin gut."
-
-Treat this as likely word confusion/typo rather than inventing a strange grammar lesson.
-
-========================================
-PERSISTENT LEARNER MEMORY
-========================================
-
-The learner has a persistent learning profile.
+LEARNER MEMORY
 
 Known vocabulary:
-
 ${JSON.stringify(
-  knownVocabulary
+  memory.knownVocabulary
 )}
 
 Previous mistakes:
-
 ${JSON.stringify(
-  mistakes
+  memory.mistakes
 )}
 
 Learning skills:
-
 ${JSON.stringify(
-  skills
+  memory.skills
 )}
 
 Recent topics:
-
 ${JSON.stringify(
-  recentTopics
+  memory.recentTopics
 )}
 
 Recent coach questions:
-
 ${JSON.stringify(
-  recentQuestions
+  memory.recentQuestions
 )}
 
-Use this information.
 
 The learner should NOT feel like they are starting from zero every conversation.
 
-========================================
+
 REPEATED MISTAKES
-========================================
 
 If the learner repeats the same type of mistake, reinforce the existing learning point.
 
 Example:
 
 First:
-
 "mit meine Freunde"
 
 Correction:
-
 "mit meinen Freunden"
 
 Later:
-
 "mit meine Eltern"
 
 Recognize the same underlying skill:
 
 case_dative_after_mit
 
-A useful reinforcement might be:
-
-"Fast richtig: mit meinen Eltern. Remember: mit takes the dative."
-
 Do not create a new unrelated skill ID for the same concept.
 
-========================================
+
 CORRECT REINFORCEMENT
-========================================
 
-If the learner correctly uses a previously problematic structure, do NOT correct it.
+If the learner correctly uses a previously problematic structure:
 
-Instead mark that learning skill as:
-
-outcome = "correct"
-
-Do not claim mastery after one correct use.
+- Do NOT correct it.
+- Mark that learning skill as outcome="correct".
+- Do not claim mastery after one correct use.
 
 The frontend tracks repeated successful uses.
 
-========================================
-STABLE LEARNING SKILLS
-========================================
 
-Use stable skill IDs.
-
-Examples:
-
-case_dative_after_mit
-
-word_order_main_clause
-
-subordinate_clause_verb_position
-
-article_accusative_masculine
-
-article_dative
-
-verb_conjugation
-
-past_tense_auxiliary
-
-preposition_case
-
-adjective_ending
-
-plural_form
-
-word_choice
-
-collocation
-
-natural_expression
-
-If there is no meaningful learning skill:
-
-skillId = ""
-
-label = ""
-
-outcome = "none"
-
-If the learner makes a mistake:
-
-outcome = "mistake"
-
-If the learner correctly demonstrates a previously tracked skill:
-
-outcome = "correct"
-
-Otherwise:
-
-outcome = "none"
-
-Only identify ONE main learning skill per message.
-
-========================================
 VOCABULARY
-========================================
 
 Teach useful vocabulary naturally.
 
@@ -879,37 +359,16 @@ Do not teach vocabulary already known.
 
 Do not teach obvious words simply because they appeared.
 
-Useful vocabulary can be:
-
-individual words
-
-phrases
-
-collocations
-
-idiomatic expressions
-
-natural conversational expressions
-
 Maximum 3 items.
 
 If there is an important correction, use 0–2 vocabulary items.
 
-========================================
-TRANSLATION
-========================================
 
-Provide a natural English translation of your German response.
-
-Translate meaning, not word-for-word structure.
-
-========================================
 LEVEL ADAPTATION
-========================================
 
 The selected CEFR level is:
 
-${level}
+${selectedLevel}
 
 Follow that level.
 
@@ -919,9 +378,8 @@ Do not artificially simplify C1/C2 conversation.
 
 The learner's actual mistakes should influence explanations, not automatically lower the whole conversation level.
 
-========================================
+
 TOPIC ADAPTATION
-========================================
 
 Current topic:
 
@@ -931,549 +389,924 @@ Use the topic as guidance, not as a rigid requirement.
 
 The learner may naturally change topics.
 
-========================================
-OUTPUT FORMAT
-========================================
 
-Return ONLY valid JSON.
+OUTPUT
 
-Use exactly:
-
-{
-  "reply": "German response",
-  "translation": "Natural English translation",
-  "correction": "Corrected learner sentence or empty string",
-  "correctionExplanation": "Short English explanation or empty string",
-  "correctionType": "grammar|word_order|case|vocabulary|spelling|capitalization|naturalness|typo|style|none",
-  "vocabulary": [
-    {
-      "word": "German word or phrase",
-      "meaning": "English meaning"
-    }
-  ],
-  "learning": {
-    "skillId": "stable_skill_id_or_empty",
-    "label": "Short human-readable skill name or empty string",
-    "outcome": "mistake|correct|none"
-  }
-}
-
-No markdown.
-
-No commentary outside JSON.
+Return only the requested structured response.
 `;
-
 }
 
 
-function buildConversationInput(
-  messages
-) {
-
-  if (
-    !Array.isArray(
-      messages
-    )
-  ) {
-
+function cleanMessages(messages) {
+  if (!Array.isArray(messages)) {
     return [];
-
   }
-
 
   return messages
-    .slice(-40)
-    .map(
-      message => {
+    .slice(-24)
+    .map(message => ({
+      role:
+        message &&
+        message.role === "assistant"
+          ? "assistant"
+          : "user",
 
-        const role =
-          message.role === "assistant"
-            ? "assistant"
-            : "user";
-
-
-        return {
-
-          role,
-
-          content:
-            cleanText(
-              message.content,
-              4000
-            )
-
-        };
-
-      }
-    )
+      content:
+        text(
+          message &&
+            message.content,
+          3000
+        )
+    }))
     .filter(
       message =>
         message.content
     );
-
 }
 
 
-function jsonResponse(
-  body,
-  status = 200
+function cleanSkill(skill) {
+  if (
+    !skill ||
+    typeof skill !== "object"
+  ) {
+    return null;
+  }
+
+  const skillId =
+    text(
+      skill.skillId,
+      80
+    ).replace(
+      /[^a-zA-Z0-9_-]/g,
+      ""
+    );
+
+  if (!SKILLS[skillId]) {
+    return null;
+  }
+
+  const outcome =
+    [
+      "mistake",
+      "correct",
+      "none"
+    ].includes(
+      skill.outcome
+    )
+      ? skill.outcome
+      : "none";
+
+  return {
+    skillId,
+    label: SKILLS[skillId],
+    outcome
+  };
+}
+
+
+function normalise(
+  result,
+  memory
 ) {
+  const allowedTypes = [
+    "grammar",
+    "word_order",
+    "case",
+    "article",
+    "verb_form",
+    "vocabulary",
+    "typo",
+    "spelling",
+    "capitalization",
+    "naturalness",
+    "collocation",
+    "style",
+    "none"
+  ];
 
-  return new Response(
-    JSON.stringify(
-      body
-    ),
-    {
+  const correction =
+    text(
+      result?.correction,
+      1000
+    );
 
-      status,
+  const correctionExplanation =
+    text(
+      result?.correctionExplanation,
+      1000
+    );
 
-      headers: {
+  const correctionType =
+    allowedTypes.includes(
+      result?.correctionType
+    )
+      ? result.correctionType
+      : correction
+        ? "grammar"
+        : "none";
 
-        "Content-Type":
-          "application/json",
+  const known =
+    new Set(
+      (
+        memory.knownVocabulary ||
+        []
+      ).map(
+        word =>
+          word.toLowerCase()
+      )
+    );
 
-        "Access-Control-Allow-Origin":
-          ALLOWED_ORIGIN,
+  const vocabulary =
+    Array.isArray(
+      result?.vocabulary
+    )
+      ? result.vocabulary
+          .map(item => ({
+            word:
+              text(
+                item?.word,
+                80
+              ),
 
-        "Access-Control-Allow-Methods":
-          "POST, OPTIONS",
+            meaning:
+              text(
+                item?.meaning,
+                160
+              )
+          }))
+          .filter(
+            item =>
+              item.word &&
+              item.meaning &&
+              !known.has(
+                item.word.toLowerCase()
+              )
+          )
+          .slice(0, 3)
+      : [];
 
-        "Access-Control-Allow-Headers":
-          "Content-Type"
+  const learning =
+    cleanSkill(
+      result?.learning
+    ) || {
+      skillId: "",
+      label: "",
+      outcome: "none"
+    };
 
+  return {
+    reply:
+      text(
+        result?.reply,
+        3000
+      ),
+
+    translation:
+      text(
+        result?.translation,
+        1600
+      ),
+
+    correction,
+
+    correctionExplanation:
+      correction
+        ? correctionExplanation
+        : "",
+
+    correctionType:
+      correction
+        ? correctionType
+        : "none",
+
+    vocabulary,
+
+    learning
+  };
+}
+
+
+const RESPONSE_SCHEMA = {
+  type: "object",
+
+  additionalProperties: false,
+
+  properties: {
+    reply: {
+      type: "string"
+    },
+
+    translation: {
+      type: "string"
+    },
+
+    correction: {
+      type: "string"
+    },
+
+    correctionExplanation: {
+      type: "string"
+    },
+
+    correctionType: {
+      type: "string",
+
+      enum: [
+        "grammar",
+        "word_order",
+        "case",
+        "article",
+        "verb_form",
+        "vocabulary",
+        "typo",
+        "spelling",
+        "capitalization",
+        "naturalness",
+        "collocation",
+        "style",
+        "none"
+      ]
+    },
+
+    vocabulary: {
+      type: "array",
+
+      items: {
+        type: "object",
+
+        additionalProperties: false,
+
+        properties: {
+          word: {
+            type: "string"
+          },
+
+          meaning: {
+            type: "string"
+          }
+        },
+
+        required: [
+          "word",
+          "meaning"
+        ]
       }
+    },
 
+    learning: {
+      type: "object",
+
+      additionalProperties: false,
+
+      properties: {
+        skillId: {
+          type: "string"
+        },
+
+        label: {
+          type: "string"
+        },
+
+        outcome: {
+          type: "string",
+
+          enum: [
+            "mistake",
+            "correct",
+            "none"
+          ]
+        }
+      },
+
+      required: [
+        "skillId",
+        "label",
+        "outcome"
+      ]
     }
+  },
+
+  required: [
+    "reply",
+    "translation",
+    "correction",
+    "correctionExplanation",
+    "correctionType",
+    "vocabulary",
+    "learning"
+  ]
+};
+
+
+async function callOpenAI(
+  apiKey,
+  body
+) {
+  const response =
+    await fetch(
+      "https://api.openai.com/v1/responses",
+      {
+        method: "POST",
+
+        headers: {
+          "Content-Type":
+            "application/json",
+
+          Authorization:
+            `Bearer ${apiKey}`
+        },
+
+        body:
+          JSON.stringify(body)
+      }
+    );
+
+  const raw =
+    await response.text();
+
+  if (!response.ok) {
+    console.error(
+      "OpenAI error",
+      response.status,
+      raw.slice(0, 2000)
+    );
+
+    throw new Error(
+      "AI service error"
+    );
+  }
+
+  let data;
+
+  try {
+    data =
+      JSON.parse(raw);
+  } catch {
+    throw new Error(
+      "Invalid AI response"
+    );
+  }
+
+  if (
+    typeof data.output_text ===
+    "string"
+  ) {
+    return data.output_text;
+  }
+
+  const parts = [];
+
+  for (
+    const item of
+    data.output || []
+  ) {
+    for (
+      const content of
+      item.content || []
+    ) {
+      if (
+        typeof content.text ===
+        "string"
+      ) {
+        parts.push(
+          content.text
+        );
+      }
+    }
+  }
+
+  return parts.join("\n");
+}
+
+
+async function handleChat(
+  request,
+  env,
+  origin
+) {
+  let body;
+
+  try {
+    body =
+      await request.json();
+  } catch {
+    return json(
+      {
+        error:
+          "Invalid request body."
+      },
+      400,
+      origin
+    );
+  }
+
+  if (!env.OPENAI_API_KEY) {
+    return json(
+      {
+        error:
+          "OPENAI_API_KEY is not configured."
+      },
+      500,
+      origin
+    );
+  }
+
+  const selectedLevel =
+    level(body.level);
+
+  const topic =
+    text(
+      body.topic,
+      100
+    );
+
+  const messages =
+    cleanMessages(
+      body.messages
+    );
+
+  if (!messages.length) {
+    return json(
+      {
+        error:
+          "No conversation messages provided."
+      },
+      400,
+      origin
+    );
+  }
+
+  const memory =
+    cleanMemory(
+      body.memory
+    );
+
+  const input =
+    messages.map(
+      message => ({
+        role:
+          message.role,
+
+        content:
+          message.content
+      })
+    );
+
+  let raw;
+
+  try {
+    raw =
+      await callOpenAI(
+        env.OPENAI_API_KEY,
+        {
+          model:
+            OPENAI_MODEL,
+
+          instructions:
+            buildPrompt(
+              selectedLevel,
+              topic,
+              memory
+            ),
+
+          input,
+
+          max_output_tokens:
+            900,
+
+          text: {
+            format: {
+              type:
+                "json_schema",
+
+              name:
+                "deutsch_coach_response",
+
+              strict:
+                true,
+
+              schema:
+                RESPONSE_SCHEMA
+            }
+          }
+        }
+      );
+  } catch (error) {
+    console.error(error);
+
+    return json(
+      {
+        error:
+          "The AI service is temporarily unavailable. Please try again."
+      },
+      502,
+      origin
+    );
+  }
+
+  let parsed;
+
+  try {
+    parsed =
+      JSON.parse(raw);
+  } catch {
+    console.error(
+      "Invalid structured response",
+      raw.slice(0, 2000)
+    );
+
+    return json(
+      {
+        error:
+          "The AI returned an invalid response. Please try again."
+      },
+      502,
+      origin
+    );
+  }
+
+  const result =
+    normalise(
+      parsed,
+      memory
+    );
+
+  if (!result.reply) {
+    return json(
+      {
+        error:
+          "The AI returned an empty reply. Please try again."
+      },
+      502,
+      origin
+    );
+  }
+
+  return json(
+    result,
+    200,
+    origin
+  );
+}
+
+
+async function handleTranscription(
+  request,
+  env,
+  origin
+) {
+  if (!env.OPENAI_API_KEY) {
+    return json(
+      {
+        error:
+          "OPENAI_API_KEY is not configured."
+      },
+      500,
+      origin
+    );
+  }
+
+  const length =
+    Number(
+      request.headers.get(
+        "Content-Length"
+      ) || 0
+    );
+
+  if (
+    length &&
+    length > MAX_AUDIO_BYTES
+  ) {
+    return json(
+      {
+        error:
+          "The recording is too large. Please record a shorter message."
+      },
+      413,
+      origin
+    );
+  }
+
+  let form;
+
+  try {
+    form =
+      await request.formData();
+  } catch {
+    return json(
+      {
+        error:
+          "Could not read the audio recording."
+      },
+      400,
+      origin
+    );
+  }
+
+  const file =
+    form.get("audio");
+
+  if (!(file instanceof File)) {
+    return json(
+      {
+        error:
+          "No audio recording was provided."
+      },
+      400,
+      origin
+    );
+  }
+
+  if (file.size <= 0) {
+    return json(
+      {
+        error:
+          "The recording is empty."
+      },
+      400,
+      origin
+    );
+  }
+
+  if (
+    file.size >
+    MAX_AUDIO_BYTES
+  ) {
+    return json(
+      {
+        error:
+          "The recording is too large. Please record a shorter message."
+      },
+      413,
+      origin
+    );
+  }
+
+  const upload =
+    new FormData();
+
+  upload.append(
+    "file",
+    file,
+    file.name ||
+      "recording.webm"
   );
 
+  upload.append(
+    "model",
+    TRANSCRIBE_MODEL
+  );
+
+  upload.append(
+    "language",
+    "de"
+  );
+
+  upload.append(
+    "response_format",
+    "json"
+  );
+
+  let response;
+
+  try {
+    response =
+      await fetch(
+        "https://api.openai.com/v1/audio/transcriptions",
+        {
+          method: "POST",
+
+          headers: {
+            Authorization:
+              `Bearer ${env.OPENAI_API_KEY}`
+          },
+
+          body: upload
+        }
+      );
+  } catch (error) {
+    console.error(
+      "Transcription network error",
+      error
+    );
+
+    return json(
+      {
+        error:
+          "Could not connect to the transcription service."
+      },
+      502,
+      origin
+    );
+  }
+
+  const raw =
+    await response.text();
+
+  if (!response.ok) {
+    console.error(
+      "Transcription error",
+      response.status,
+      raw.slice(0, 2000)
+    );
+
+    return json(
+      {
+        error:
+          "The recording could not be transcribed. Please try again."
+      },
+      502,
+      origin
+    );
+  }
+
+  let result;
+
+  try {
+    result =
+      JSON.parse(raw);
+  } catch {
+    return json(
+      {
+        error:
+          "The transcription service returned invalid data."
+      },
+      502,
+      origin
+    );
+  }
+
+  const transcript =
+    text(
+      result.text,
+      10000
+    );
+
+  if (!transcript) {
+    return json(
+      {
+        error:
+          "I could not hear any clear German speech in the recording."
+      },
+      422,
+      origin
+    );
+  }
+
+  return json(
+    {
+      text:
+        transcript
+    },
+    200,
+    origin
+  );
 }
 
 
-async function handleRequest(
+async function handle(
   request,
   env
 ) {
+  const origin =
+    corsOrigin(request);
 
   if (
     request.method ===
     "OPTIONS"
   ) {
-
     return new Response(
       null,
       {
-
         status: 204,
 
         headers: {
-
           "Access-Control-Allow-Origin":
-            ALLOWED_ORIGIN,
+            origin,
 
           "Access-Control-Allow-Methods":
-            "POST, OPTIONS",
+            "GET, POST, OPTIONS",
 
           "Access-Control-Allow-Headers":
-            "Content-Type"
+            "Content-Type",
 
+          "Access-Control-Max-Age":
+            "86400"
         }
-
       }
     );
-
   }
 
+  const url =
+    new URL(
+      request.url
+    );
+
+  if (
+    request.method === "GET" &&
+    (
+      url.pathname === "/" ||
+      url.pathname === "/health"
+    )
+  ) {
+    return json(
+      {
+        ok: true,
+        service:
+          "deutsch-coach-api",
+        model:
+          OPENAI_MODEL,
+        transcriptionModel:
+          TRANSCRIBE_MODEL
+      },
+      200,
+      origin
+    );
+  }
 
   if (
     request.method !==
     "POST"
   ) {
-
-    return jsonResponse(
+    return json(
       {
         error:
           "Method not allowed."
       },
-      405
+      405,
+      origin
     );
-
   }
 
-
-  if (
-    !env.OPENAI_API_KEY
-  ) {
-
-    return jsonResponse(
+  if (!env.OPENAI_API_KEY) {
+    return json(
       {
         error:
           "OPENAI_API_KEY is not configured."
       },
-      500
+      500,
+      origin
     );
-
   }
-
-
-  let body;
-
-
-  try {
-
-    body =
-      await request.json();
-
-  } catch {
-
-    return jsonResponse(
-      {
-        error:
-          "Invalid request body."
-      },
-      400
-    );
-
-  }
-
-
-  const level =
-    normaliseLevel(
-      body.level
-    );
-
-
-  const topic =
-    cleanText(
-      body.topic,
-      200
-    );
-
-
-  const messages =
-    buildConversationInput(
-      body.messages
-    );
-
 
   if (
-    !messages.length
+    url.pathname ===
+    "/chat" ||
+    url.pathname === "/"
   ) {
-
-    return jsonResponse(
-      {
-        error:
-          "No conversation messages provided."
-      },
-      400
+    return handleChat(
+      request,
+      env,
+      origin
     );
-
   }
 
-
-  const memory =
-    body.memory &&
-    typeof body.memory ===
-      "object"
-      ? body.memory
-      : {};
-
-
-  const systemPrompt =
-    buildSystemPrompt(
-      level,
-      topic,
-      memory
+  if (
+    url.pathname ===
+    "/transcribe"
+  ) {
+    return handleTranscription(
+      request,
+      env,
+      origin
     );
+  }
 
-
-  const input = [
-
+  return json(
     {
-
-      role: "developer",
-
-      content: [
-
-        {
-
-          type:
-            "input_text",
-
-          text:
-            systemPrompt
-
-        }
-
-      ]
-
+      error:
+        "Not found."
     },
-
-    ...messages.map(
-      message => ({
-
-        role:
-          message.role,
-
-        content: [
-
-          {
-
-            type:
-              message.role ===
-              "user"
-                ? "input_text"
-                : "output_text",
-
-            text:
-              message.content
-
-          }
-
-        ]
-
-      })
-    )
-
-  ];
-
-
-  let openaiResponse;
-
-
-  try {
-
-    openaiResponse =
-      await fetch(
-        "https://api.openai.com/v1/responses",
-        {
-
-          method: "POST",
-
-          headers: {
-
-            "Content-Type":
-              "application/json",
-
-            "Authorization":
-              `Bearer ${env.OPENAI_API_KEY}`
-
-          },
-
-          body:
-            JSON.stringify({
-
-              model:
-                OPENAI_MODEL,
-
-              input,
-
-              temperature:
-                0.4,
-
-              max_output_tokens:
-                700,
-
-              text: {
-
-                format: {
-
-                  type:
-                    "json_object"
-
-                }
-
-              }
-
-            })
-
-        }
-      );
-
-  } catch (error) {
-
-    console.error(
-      "OpenAI network error:",
-      error
-    );
-
-
-    return jsonResponse(
-      {
-        error:
-          "Could not connect to the AI service."
-      },
-      502
-    );
-
-  }
-
-
-  const raw =
-    await openaiResponse.text();
-
-
-  if (
-    !openaiResponse.ok
-  ) {
-
-    console.error(
-      "OpenAI API error:",
-      raw
-    );
-
-
-    return jsonResponse(
-      {
-        error:
-          "The AI service returned an error."
-      },
-      502
-    );
-
-  }
-
-
-  let openaiData;
-
-
-  try {
-
-    openaiData =
-      JSON.parse(
-        raw
-      );
-
-  } catch {
-
-    return jsonResponse(
-      {
-        error:
-          "The AI service returned invalid data."
-      },
-      502
-    );
-
-  }
-
-
-  const outputText =
-    extractOpenAIText(
-      openaiData
-    );
-
-
-  if (
-    !outputText
-  ) {
-
-    return jsonResponse(
-      {
-        error:
-          "The AI service returned an empty response."
-      },
-      502
-    );
-
-  }
-
-
-  let parsed;
-
-
-  try {
-
-    parsed =
-      parseJson(
-        outputText
-      );
-
-  } catch (error) {
-
-    console.error(
-      "AI JSON parsing error:",
-      error.message,
-      outputText
-    );
-
-
-    return jsonResponse(
-      {
-        error:
-          "The AI returned an invalid response format."
-      },
-      502
-    );
-
-  }
-
-
-  const knownVocabulary =
-    extractKnownVocabulary(
-      memory
-    );
-
-
-  const result =
-    normaliseCoachResponse(
-      parsed,
-      knownVocabulary
-    );
-
-
-  if (
-    !result.reply
-  ) {
-
-    return jsonResponse(
-      {
-        error:
-          "The AI returned an empty reply."
-      },
-      502
-    );
-
-  }
-
-
-  return jsonResponse(
-    result
+    404,
+    origin
   );
-
 }
 
 
 export default {
-
   async fetch(
     request,
     env
   ) {
-
     try {
-
-      return await handleRequest(
+      return await handle(
         request,
         env
       );
-
     } catch (error) {
-
       console.error(
-        "Unhandled Worker error:",
+        "Unhandled Worker error",
         error
       );
 
-
-      return jsonResponse(
+      return json(
         {
           error:
             "Internal server error."
         },
         500
       );
-
     }
-
   }
-
 };
