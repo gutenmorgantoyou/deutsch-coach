@@ -169,12 +169,6 @@
       font-size: 13px;
     }
 
-    .button-row {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 8px;
-    }
-
     .topic-grid {
       display: grid;
       grid-template-columns: repeat(2, 1fr);
@@ -485,7 +479,8 @@ function loadData() {
       return structuredClone(defaultData);
     }
 
-    const parsed = JSON.parse(saved);
+    const parsed =
+      JSON.parse(saved);
 
     return {
 
@@ -637,13 +632,10 @@ document
   .querySelectorAll(".topic-button")
   .forEach(button => {
 
-    if (
+    button.classList.toggle(
+      "active",
       button.dataset.topic === data.topic
-    ) {
-      button.classList.add("active");
-    } else {
-      button.classList.remove("active");
-    }
+    );
 
   });
 
@@ -700,9 +692,9 @@ function renderChat() {
       addMessageToDOM(
         "coach",
         message.content,
-        message.translation,
-        message.correction,
-        message.correctionExplanation
+        message.translation || "",
+        message.correction || "",
+        message.correctionExplanation || ""
       );
 
     }
@@ -890,27 +882,23 @@ function updateLearningProfile(learning) {
     skill.correctUses >= 3
   ) {
 
-    skill.status =
-      "mastered";
+    skill.status = "mastered";
 
   } else if (
     skill.mistakes >= 2
   ) {
 
-    skill.status =
-      "weak";
+    skill.status = "weak";
 
   } else if (
     skill.mistakes >= 1
   ) {
 
-    skill.status =
-      "developing";
+    skill.status = "developing";
 
   } else {
 
-    skill.status =
-      "new";
+    skill.status = "new";
 
   }
 
@@ -919,8 +907,6 @@ function updateLearningProfile(learning) {
 
 /* --------------------------------------------------
    SEND MESSAGE
-   IMPORTANT: options.fromVoice fixes the
-   microphone → speech race condition.
 -------------------------------------------------- */
 
 async function sendMessage(options = {}) {
@@ -951,16 +937,28 @@ async function sendMessage(options = {}) {
   );
 
   data.messages.push({
+
     role: "user",
+
     content: text
+
   });
 
   saveData();
 
-  setStatus("⏳ Deutsch Coach denkt...");
+  setStatus(
+    "⏳ Deutsch Coach denkt..."
+  );
 
 
   try {
+
+    /*
+      IMPORTANT:
+
+      The Worker expects "messages",
+      not "message" + "history".
+    */
 
     const response =
       await fetch(API_URL, {
@@ -977,11 +975,8 @@ async function sendMessage(options = {}) {
 
           topic: data.topic,
 
-          message: text,
-
-          history:
-            data.messages
-              .slice(-20),
+          messages:
+            data.messages.slice(-20),
 
           memory:
             buildMemory()
@@ -996,9 +991,12 @@ async function sendMessage(options = {}) {
       let errorText = "";
 
       try {
+
         errorText =
           await response.text();
+
       } catch (_) {}
+
 
       throw new Error(
         errorText ||
@@ -1085,7 +1083,8 @@ async function sendMessage(options = {}) {
             result.correction,
 
           type:
-            result.correctionType || "grammar",
+            result.correctionType ||
+            "grammar",
 
           count: 1
 
@@ -1187,14 +1186,10 @@ async function sendMessage(options = {}) {
 
 
     /*
-      THIS IS THE IMPORTANT FIX.
+      Voice messages are always spoken.
 
-      Previously the app checked isListening here.
-      But recognition.onend() sets isListening=false
-      before the AI response comes back.
-
-      Now we remember that the message came from
-      the microphone with fromVoice=true.
+      Typed messages are spoken only when
+      Freisprechen is enabled.
     */
 
     if (
@@ -1260,7 +1255,9 @@ function getGermanVoice() {
     voices.find(
       voice =>
         voice.lang &&
-        voice.lang.toLowerCase().startsWith("de")
+        voice.lang
+          .toLowerCase()
+          .startsWith("de")
     )
 
     ||
@@ -1279,10 +1276,6 @@ function speakGerman(text) {
     if (
       !("speechSynthesis" in window)
     ) {
-
-      console.warn(
-        "Speech synthesis is not supported."
-      );
 
       setStatus(
         "Die Antwort wurde geschrieben, aber dein Browser unterstützt keine Sprachausgabe.",
@@ -1312,11 +1305,6 @@ function speakGerman(text) {
     window.speechSynthesis.cancel();
 
 
-    /*
-      Small delay helps Android Chrome start
-      speech reliably after microphone use.
-    */
-
     setTimeout(() => {
 
       const utterance =
@@ -1340,6 +1328,7 @@ function speakGerman(text) {
 
       const germanVoice =
         getGermanVoice();
+
 
       if (germanVoice) {
 
@@ -1366,11 +1355,6 @@ function speakGerman(text) {
 
         setStatus("");
 
-
-        /*
-          If Freisprechen is enabled,
-          listen again after the Coach finishes.
-        */
 
         if (
           data.handsFree &&
@@ -1416,10 +1400,6 @@ function speakGerman(text) {
 
 }
 
-
-/*
-  Android Chrome can load voices asynchronously.
-*/
 
 if (
   "speechSynthesis" in window
@@ -1521,12 +1501,8 @@ function setupRecognition() {
     /*
       IMPORTANT:
 
-      Tell sendMessage() that this message
-      came from the microphone.
-
-      This guarantees the Coach will speak
-      its reply even though recognition.onend()
-      sets isListening=false.
+      This explicitly tells sendMessage()
+      that the message came from voice.
     */
 
     setTimeout(() => {
@@ -1558,8 +1534,7 @@ function setupRecognition() {
 
 
     if (
-      event.error ===
-      "not-allowed"
+      event.error === "not-allowed"
     ) {
 
       setStatus(
@@ -1568,8 +1543,7 @@ function setupRecognition() {
       );
 
     } else if (
-      event.error ===
-      "no-speech"
+      event.error === "no-speech"
     ) {
 
       setStatus(
@@ -1600,14 +1574,6 @@ function setupRecognition() {
 
     voiceButton.textContent =
       "🎙️ Sprechen";
-
-
-    /*
-      In Freisprechen mode, the next
-      listening cycle is started by
-      speakGerman() after the Coach
-      finishes speaking.
-    */
 
   };
 
@@ -1755,7 +1721,7 @@ function scheduleHandsFreeListening() {
 
 
 /* --------------------------------------------------
-   ENTER KEY
+   TEXT INPUT
 -------------------------------------------------- */
 
 messageInput.addEventListener(
@@ -1778,7 +1744,7 @@ messageInput.addEventListener(
 
 
 /* --------------------------------------------------
-   SEND BUTTON
+   SEND
 -------------------------------------------------- */
 
 sendButton.addEventListener(
@@ -1856,8 +1822,12 @@ function renderVocabulary() {
       .map(item =>
 
         `<div class="word">
-          <strong>${escapeHtml(item.word)}</strong>
+          <strong>
+            ${escapeHtml(item.word)}
+          </strong>
+
           <br>
+
           <span class="small">
             ${escapeHtml(item.meaning)}
           </span>
